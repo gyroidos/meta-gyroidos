@@ -1,6 +1,6 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI += "file://trustx.cfg" 
-SRC_URI += "file://netfilter.cfg" 
+SRC_URI += "file://module_signing.cfg" 
 SRC_URI += "file://trustx-intel.cfg" 
 
 DEPENDS += " sbsigntool-native efitools-native pki-native"
@@ -20,4 +20,12 @@ do_uefi_sign() {
     done
 }
 
+do_copy_ssig_certs() {
+      openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform DER -out ${S}/certs/signing_key.x509
+      
+      cp ${TEST_CERT_DIR}/ssig_subca.key ${S}/certs/signing_key.pem
+      openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform PEM >> ${S}/certs/signing_key.pem
+}
+
+addtask do_copy_ssig_certs after do_configure before do_build
 addtask uefi_sign after do_deploy before do_build
