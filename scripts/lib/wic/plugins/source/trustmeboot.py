@@ -1,3 +1,6 @@
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
 # Copyright (c) 2014, Intel Corporation.
 # All rights reserved.
 #
@@ -74,7 +77,7 @@ class TrustmeBootPlugin(SourcePlugin):
 
 
         try:
-            cp_cmd = "cp %s/bzImage-initramfs-intel-corei7-64.bin %s/EFI/BOOT/BOOTX64.EFI" % (kernel_dir, hdddir)
+            cp_cmd = "cp -L %s/bzImage %s/EFI/BOOT/BOOTX64.EFI" % (kernel_dir, hdddir)
             exec_cmd(cp_cmd, True)
         except KeyError:
             raise WicError("error while copying kernel")

@@ -1,3 +1,6 @@
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
 # Copyright (c) 2014, Intel Corporation.
 # All rights reserved.
 #
@@ -72,9 +75,10 @@ class TrustmeModulesPlugin(SourcePlugin):
 
         hdddir = "%s/hdd/modules/" % cr_workdir
 
+        machine = get_bitbake_var('MACHINE_ARCH')
 
         try:
-            cp_cmd = "tar -xzf %s/modules-intel-corei7-64.tgz --directory %s" % (kernel_dir, hdddir)
+            cp_cmd = "tar -xzf {0}/modules-{1}.tgz --directory {2}".format(kernel_dir, machine, hdddir)
             exec_cmd(cp_cmd, True)
         except KeyError:
             raise WicError("error while copying kernel modules")

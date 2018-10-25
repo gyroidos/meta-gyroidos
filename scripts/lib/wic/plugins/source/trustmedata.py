@@ -1,3 +1,6 @@
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
 # Copyright (c) 2014, Intel Corporation.
 # All rights reserved.
 #
@@ -102,8 +105,7 @@ class TrustmeDataPlugin(SourcePlugin):
         test_cert_dir = "%s/test_certificates" % topdir
 
         if not os.path.exists(test_cert_dir):
-            cert_gen_cmd = "%s/gen_dev_certs.sh %s" % provisioning_dir, test_cert_dir
-            exec_cmd(cert_gen_cmd)
+            raise WicError("Test PKI not generated at {0}\nIs trustx-cml-userdata built?".format(test_cert_dir))
 
         install_cmd = "install -d %s/cml/tokens" % hdddir 
         exec_cmd(install_cmd)
