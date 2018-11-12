@@ -27,8 +27,6 @@
 # short-description: Create an UEFI-bootable trustme disk image
 # long-description: Create an UEFI-bootable trustme disk image
 
-part /boot --source trustmeboot --label boot --active --align 4 --size 16
-part /modules --source trustmemodules --fstype=squashfs --label modules --align 4
-part /data --source trustmedata --fstype=ext4 --label data --align 4
+part /boot --source keytool --label boot --active --align 4 --size 16
 
 bootloader  --ptable gpt

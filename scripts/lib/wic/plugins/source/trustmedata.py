@@ -1,6 +1,3 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
-#
 # Copyright (c) 2014, Intel Corporation.
 # All rights reserved.
 #
@@ -31,7 +28,6 @@
 # Contact Information:
 # Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
 #
-
 
 import logging
 import os
@@ -127,7 +123,7 @@ class TrustmeDataPlugin(SourcePlugin):
         mkdir_cmd = "mkdir -p %s/cml/operatingsystems/" % hdddir
         exec_cmd(mkdir_cmd)
         
-        cp_cmd = "cp -r {0}/trustx-guests {1}/cml/operatingsystems".format(deploy_dir_image, hdddir)
+        cp_cmd = "cp -ar {0}/trustx-guests/. {1}/cml/operatingsystems".format(deploy_dir_image, hdddir)
         exec_cmd(cp_cmd)
 
         du_cmd = "du -B 1024 -s %s" % hdddir
@@ -140,9 +136,7 @@ class TrustmeDataPlugin(SourcePlugin):
 
         userdataimg = "%s/userdata.img" % cr_workdir
 
-        datadir = "{0}/trustx-guests/".format(deploy_dir_image)
-
-        e2fs_cmd = "mke2fs -t ext4 -b 1024 -L data -d {0} {1} {2}".format(datadir, userdataimg, blocks)
+        e2fs_cmd = "mke2fs -t ext4 -b 1024 -L data -d {0} {1} {2}".format(hdddir, userdataimg, blocks)
         logger.debug("Executing: %s" % e2fs_cmd)
         exec_native_cmd(e2fs_cmd, native_sysroot)
 

@@ -41,85 +41,82 @@ from wic.misc import (exec_cmd, exec_native_cmd,
 
 logger = logging.getLogger('wic')
 
-class TrustmeModulesPlugin(SourcePlugin):
+class TrustmeBootPlugin(SourcePlugin):
     """
-    Creates trustme kernel modules partition
+    Creates KeyTool boot partition.
     Based on bootimg-efi.py
     """
 
-    name = 'trustmemodules'
+    name = 'keytool'
 
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,
                                oe_builddir, bootimg_dir, kernel_dir,
                                native_sysroot):
-        hdddir = "%s/hdd/modules" % cr_workdir
+        hdddir = "%s/hdd/boot" % cr_workdir
 
-        install_cmd = "install -d %s" % hdddir
+        install_cmd = "install -d %s/EFI/BOOT/" % hdddir
         exec_cmd(install_cmd)
+
+        install_cmd = "install -d %s/keys" % hdddir
+        exec_cmd(install_cmd)
+
+
 
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
                              oe_builddir, bootimg_dir, kernel_dir,
                              rootfs_dir, native_sysroot):
-        if not kernel_dir:
-            kernel_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
-            if not kernel_dir:
-                raise WicError("Couldn't find DEPLOY_DIR_IMAGE, exiting")
 
-        hdddir = "%s/hdd/" % cr_workdir
+        hdddir = "%s/hdd/boot" % cr_workdir
 
-        machine_translated = get_bitbake_var('MACHINE_ARCH')
-
-        #underscores in MACHINE_ARCH are replaced by - in filenames
-        machine_translated = machine_translated.replace("_","-")
-
-        kernel_stagingdir = get_bitbake_var("STAGING_KERNEL_BUILDDIR")
-
-        rootfs = get_bitbake_var("IMAGE_ROOTFS")
-
-        versionfile = open(kernel_stagingdir + "/kernel-abiversion", "r")
-        kernelversion = versionfile.read().rstrip()
-        versionfile.close()
-        
-        modulesname = "{0}/modules-{1}.tgz".format(kernel_dir, machine_translated)
-        modulesname = os.readlink(modulesname)
+        builddir = get_bitbake_var("RECIPE_SYSROOT_NATIVE")
+        topdir = get_bitbake_var("TOPDIR")
 
         try:
-            cp_cmd = "tar -xzf {0}/{1} --directory {2}".format(kernel_dir, modulesname, hdddir)
+            cp_cmd = "cp -L {0}/usr/bin/KeyTool.efi {1}/EFI/BOOT/BOOTX64.EFI".format(builddir, hdddir)
             exec_cmd(cp_cmd, True)
         except KeyError:
-            raise WicError("error while copying kernel modules")
+            raise WicError("error copying KeyTool.efi")
 
         try:
-            cp_cmd = "/sbin/depmod --basedir \"{1}\" --config \"{0}/etc/depmod.d\" {2}".format(rootfs, hdddir, kernelversion)
+            cp_cmd = "cp  {0}/test_certificates/DB.esl {0}/test_certificates/KEK.esl {0}/test_certificates/PK.auth {1}/keys/".format(topdir, hdddir)
             exec_cmd(cp_cmd, True)
         except KeyError:
-            raise WicError("Failed to execute depmod on modules")
-        
-        du_cmd = "du -B 1 -s %s" % hdddir
+            raise WicError("error copying test keys")
+
+
+        du_cmd = "du -bks %s" % hdddir
         out = exec_cmd(du_cmd)
-        size_bytes = int(out.split()[0])
+        blocks = int(out.split()[0])
 
-        size_bytes += 2**20
+        extra_blocks = part.get_extra_block_count(blocks)
 
-        logger.debug("out: %s, final size: %d", out, size_bytes)
+        if extra_blocks < BOOTDD_EXTRA_SPACE:
+            extra_blocks = BOOTDD_EXTRA_SPACE
 
-        # create filesystem image 
-        modulesimg = "%s/modules.img" % cr_workdir
+        blocks += extra_blocks
 
-        dosfs_cmd = "mksquashfs \"{0}/lib/modules/{1}\" {2} -b {3} -noI -noD -noF -noX -all-root  ".format(hdddir, kernelversion, modulesimg, "4096")
-        logger.debug("Executing: %s" % dosfs_cmd)
+        logger.debug("Added %d extra blocks to %s to get to %d total blocks",
+                     extra_blocks, part.mountpoint, blocks)
+
+        # dosfs image, created by mkdosfs
+        bootimg = "%s/boot.img" % cr_workdir
+
+        dosfs_cmd = "mkdosfs -n efi -C %s %d" % (bootimg, blocks)
         exec_native_cmd(dosfs_cmd, native_sysroot)
 
-        chmod_cmd = "chmod 644 %s" % modulesimg
+        mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
+        exec_native_cmd(mcopy_cmd, native_sysroot)
+
+        chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)
 
-        du_cmd = "du -Lbks %s" % modulesimg
+        du_cmd = "du -Lbks %s" % bootimg
         out = exec_cmd(du_cmd)
-        modulesimg_size = out.split()[0]
+        bootimg_size = out.split()[0]
 
-        part.size = int(modulesimg_size)
-        part.source_file = modulesimg
+        part.size = int(bootimg_size)
+        part.source_file = bootimg

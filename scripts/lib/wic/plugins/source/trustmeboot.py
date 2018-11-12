@@ -1,6 +1,3 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
-#
 # Copyright (c) 2014, Intel Corporation.
 # All rights reserved.
 #
@@ -31,7 +28,6 @@
 # Contact Information:
 # Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
 #
-
 
 import logging
 import os
@@ -76,8 +72,14 @@ class TrustmeBootPlugin(SourcePlugin):
         hdddir = "%s/hdd/boot/" % cr_workdir
 
 
+
+        machine = get_bitbake_var("MACHINE_ARCH")
+
+        machine = machine.replace("_","-")
+
+
         try:
-            cp_cmd = "cp -L %s/bzImage %s/EFI/BOOT/BOOTX64.EFI" % (kernel_dir, hdddir)
+            cp_cmd = "cp -L {0}/bzImage-initramfs-{1}.bin.signed {2}/EFI/BOOT/BOOTX64.EFI".format(kernel_dir, machine, hdddir)
             exec_cmd(cp_cmd, True)
         except KeyError:
             raise WicError("error while copying kernel")

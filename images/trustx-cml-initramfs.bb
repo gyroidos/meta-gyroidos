@@ -34,13 +34,19 @@ IMAGE_FEATURES_remove += "package-management"
 
 IMAGE_ROOTFS_SIZE = "4096"
 
+TEST_CERT_DIR = "${TOPDIR}/test_certificates"
+SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
+SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
+KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
+
 update_fstab () {
+
     mkdir -p ${IMAGE_ROOTFS}/data
     cat >> ${IMAGE_ROOTFS}/etc/fstab <<EOF
 
 /dev/disk/by-partlabel/boot /boot vfat umask=0077 0 1 
 /dev/disk/by-partlabel/data /data ext4 defaults   0 0 
-
+/dev/disk/by-partlabel/modules /lib/modules/${KERNELVERSION} squashfs defaults 0 0
 EOF
 }
 
@@ -51,7 +57,29 @@ update_inittab () {
     mknod -m 622 ${IMAGE_ROOTFS}/dev/tty12 c 4 1
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "update_fstab; update_inittab;"
+#workaround: packages named "kernel-module-<modulename>" install unsigned kernel modules
+sign_modules(){
+    signing_enabled=$(sed -n 's/CONFIG_MODULE_SIG=//p' "${STAGING_KERNEL_BUILDDIR}/.config")
+
+    if [ signing-enabled="y" ]; then
+        hash_algo=$(sed -n 's/CONFIG_MODULE_SIG_HASH="\(.*\)"/\1/p' "${STAGING_KERNEL_BUILDDIR}/.config")
+
+
+        find "${IMAGE_ROOTFS}/lib/modules/" -type f -name '*.ko' | while IFS="\0" read -r path; do
+            "${STAGING_KERNEL_BUILDDIR}/sign-file" "${hash_algo}" "${SECURE_BOOT_SIGNING_KEY}" "${SECURE_BOOT_SIGNING_CERT}" "${path}"
+        done
+    fi
+}
+
+update_modules_dep () {
+	sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
+}
+
+ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; " 
+ROOTFS_POSTPROCESS_COMMAND_append = " update_inittab; "
+ROOTFS_POSTPROCESS_COMMAND_append = " sign_modules; "
+ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
+
 
 ## uncomment for debug purpose to allow login
 #inherit extrausers
