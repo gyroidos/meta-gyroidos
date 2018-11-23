@@ -12,12 +12,12 @@ PACKAGE_INSTALL = "\
 	strace \
 	iptables \
 	ibmtss2 \
-	lvm2 \
-	kpartx \
 	tpm2d \
 	e2fsprogs-mke2fs \
+	btrfs-tools \
 	kvmtool \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
+	cml-boot \
 "
 
 IMAGE_LINUGUAS = " "
