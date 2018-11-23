@@ -12,8 +12,9 @@ SRC_URI[sha256sum] = "d48b66768374ce742971c44e475b7336992b3d0a51407920a2e3876e8d
 SRC_URI = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git/snapshot/efitools_${PV}.tar.gz"
 
 inherit native
+inherit perlnative
 
-DEPENDS = "gnu-efi-native help2man-native sbsigntool-native"
+DEPENDS = "gnu-efi-native help2man-native sbsigntool-native libfile-slurp-perl-native"
 
 S = "${WORKDIR}/efitools_${PV}"
 
