@@ -5,6 +5,7 @@ PACKAGE_INSTALL = "\
 	${VIRTUAL-RUNTIME_base-utils} \
 	udev \
 	base-passwd \
+	shadow \
 	mingetty \
 	libselinux \
 	cmld \
@@ -77,11 +78,11 @@ update_modules_dep () {
 }
 
 ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; " 
-ROOTFS_POSTPROCESS_COMMAND_append = " update_inittab; "
 ROOTFS_POSTPROCESS_COMMAND_append = " sign_modules; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
 
+# For debug purpose allow login if debug-tweaks is set in local.conf
+ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_inittab ; ", "",d)}'
 
-## uncomment for debug purpose to allow login
-#inherit extrausers
-#EXTRA_USERS_PARAMS = "usermod -P root root;"
+inherit extrausers
+EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -P root root; ", "",d)}'
