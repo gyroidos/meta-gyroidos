@@ -33,6 +33,10 @@ modprobe loop
 modprobe btrfs
 
 
+if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.conf" ]; then
+	cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf /data/cml/containers/00000000-0000-0000-0000-000000000000.conf
+fi
+
 exec /bin/sh
 
 #if device.cert is not present, start scd to initialize device
