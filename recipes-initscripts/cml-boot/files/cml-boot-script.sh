@@ -37,11 +37,9 @@ if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.conf" ]; th
 	cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf /data/cml/containers/00000000-0000-0000-0000-000000000000.conf
 fi
 
-exec /bin/sh
-
 #if device.cert is not present, start scd to initialize device
-if [ ! -f data/cml/tokens/device.cert ]; then
-	scd
+if [ ! -f /data/cml/tokens/device.cert ]; then
+	scd&
 fi
 
 scd&
@@ -54,4 +52,4 @@ sleep 2
 
 udevadm control --exit
 
-exec /bin/sh
+exec /sbin/init
