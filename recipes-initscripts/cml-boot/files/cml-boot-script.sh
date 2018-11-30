@@ -25,6 +25,8 @@ mount -a
 
 sleep 5
 
+mkdir -p /data/logs
+
 #now modules partition is mounted
 udevadm trigger --action=add
 udevadm settle
