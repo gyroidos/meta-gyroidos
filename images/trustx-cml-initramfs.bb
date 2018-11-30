@@ -15,7 +15,7 @@ PACKAGE_INSTALL = "\
 	ibmtss2 \
 	tpm2d \
 	e2fsprogs-mke2fs \
-	fsck \
+	e2fsprogs-e2fsck \
 	btrfs-tools \
 	kvmtool \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
