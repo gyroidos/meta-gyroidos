@@ -15,6 +15,7 @@ PACKAGE_INSTALL = "\
 	ibmtss2 \
 	tpm2d \
 	e2fsprogs-mke2fs \
+	fsck \
 	btrfs-tools \
 	kvmtool \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
@@ -46,9 +47,9 @@ update_fstab () {
     cat >> ${IMAGE_ROOTFS}/etc/fstab <<EOF
 
 /dev/disk/by-partlabel/boot /boot vfat umask=0077 0 1 
-/dev/disk/by-partlabel/data /data ext4 defaults   0 0 
+/dev/disk/by-partlabel/data /data btrfs defaults   0 0 
 /dev/disk/by-partlabel/modules /lib/modules/${KERNELVERSION} squashfs defaults 0 0
-/dev/disk/by-partlabel/containers /data/cml/containers ext4 defaults 0 0
+/dev/disk/by-partlabel/containers /data/cml/containers btrfs defaults 0 0
 EOF
 }
 
