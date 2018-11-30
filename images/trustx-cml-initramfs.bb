@@ -54,7 +54,7 @@ EOF
 }
 
 update_inittab () {
-    echo "12:2345:respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "tty12::respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
     mkdir -p ${IMAGE_ROOTFS}/dev
     mknod -m 622 ${IMAGE_ROOTFS}/dev/console c 5 1
     mknod -m 622 ${IMAGE_ROOTFS}/dev/tty12 c 4 1
