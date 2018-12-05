@@ -39,14 +39,15 @@ if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.conf" ]; th
 	cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf /data/cml/containers/00000000-0000-0000-0000-000000000000.conf
 fi
 
+# Uncomment to automatically start scd and cmld
 #if device.cert is not present, start scd to initialize device
-if [ ! -f /data/cml/tokens/device.cert ]; then
-	scd&
-fi
-
-scd&
-
-cmld&
+#if [ ! -f /data/cml/tokens/device.cert ]; then
+#	scd&
+#fi
+#
+#scd&
+#
+#cmld&
 
 # give kernel some extra time to setup stuff, so
 # we get a clear console for user promt
