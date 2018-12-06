@@ -1,4 +1,4 @@
-DECRIPTION = "Minimal initramfs-based root file system for CML"
+DECRIPTION = "KeyTool image"
 
 DEPENDS= "efitools-native"
 

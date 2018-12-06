@@ -29,6 +29,7 @@
 # Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
 #
 
+import math
 import logging
 import os
 import shutil
@@ -106,9 +107,16 @@ class TrustmeDataPlugin(SourcePlugin):
         install_cmd = "install -d %s/cml/tokens" % hdddir 
         exec_cmd(install_cmd)
 
+        install_cmd = "install -d %s/cml/containers_templates" % hdddir 
+        exec_cmd(install_cmd)
 
-        cp_cmd = "cp {0}/{1}/device.conf {2}/cml/".format(cfg_overlay_dir, trustme_hardware, hdddir)
+        cp_cmd = "cp {0}/x86/device.conf {1}/cml/device.conf".format(cfg_overlay_dir, hdddir)
         exec_cmd(cp_cmd)
+
+        # copy config for a0
+        cp_cmd = "cp {0}/x86/00000000-0000-0000-0000-000000000000.conf {1}/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf".format(cfg_overlay_dir, hdddir)
+        exec_cmd(cp_cmd)
+
 
         cp_cmd = "cp {0}/ssig_rootca.cert {1}/cml/tokens/".format(test_cert_dir, hdddir)
         exec_cmd(cp_cmd)
@@ -122,23 +130,33 @@ class TrustmeDataPlugin(SourcePlugin):
 
         mkdir_cmd = "mkdir -p %s/cml/operatingsystems/" % hdddir
         exec_cmd(mkdir_cmd)
+
+        mkdir_cmd = "mkdir -p %s/cml/containers/" % hdddir
+        exec_cmd(mkdir_cmd)
+
         
         cp_cmd = "cp -ar {0}/trustx-guests/. {1}/cml/operatingsystems".format(deploy_dir_image, hdddir)
         exec_cmd(cp_cmd)
 
-        du_cmd = "du -B 1024 -s %s" % hdddir
+        du_cmd = "du --bytes -s %s" % hdddir
         out = exec_cmd(du_cmd)
-        blocks = int(out.split()[0])
+        fs_bytes = int(out.split()[0])
 
-        blocks += 2**18
+        fs_bytes += 2**28
 
-        logger.debug("out: %s, blocksfinal: %d", out, blocks)
+        logger.debug("out: %s, bytes final: %d", out, fs_bytes)
 
         userdataimg = "%s/userdata.img" % cr_workdir
 
-        e2fs_cmd = "mke2fs -t ext4 -b 1024 -L data -d {0} {1} {2}".format(hdddir, userdataimg, blocks)
-        logger.debug("Executing: %s" % e2fs_cmd)
-        exec_native_cmd(e2fs_cmd, native_sysroot)
+        ddblocks=math.ceil(fs_bytes/4096.0)
+
+        mkfs_cmd = "dd if=/dev/zero of={0} bs={1} count={2}".format(userdataimg, "4096", ddblocks)
+        exec_cmd(mkfs_cmd, native_sysroot)
+
+        mkfs_cmd = "mkfs.btrfs --label data --byte-count {0} --rootdir {1} {2}".format(fs_bytes, hdddir, userdataimg)
+        logger.debug("Executing: %s" % mkfs_cmd)
+        exec_native_cmd(mkfs_cmd, native_sysroot)
+
 
         chmod_cmd = "chmod 644 %s" % userdataimg
         exec_cmd(chmod_cmd)
