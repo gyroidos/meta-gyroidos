@@ -13,10 +13,10 @@ EXCLUDE_FROM_WORLD = "1"
 
 SRC_URI[md5sum] = "af05b2cca289f7b86eef2734a0cdc8b9"
 SRC_URI[sha256sum] = "2667b7cda4a6bc8a09e5463adf3b5984e08d94e72338277affa8594d8b6e5cd1"
-SRC_URI = "https://github.com/google/protobuf/archive/v2.6.1.tar.gz;downloadfilename=protobuf-2.6.1.tar.gz\
-	file://protobuf-allow-running-python-scripts-from-anywhere.patch \
-	file://Omit-google-apputils-dependency.patch \
-	file://run-ptest"
+SRC_URI = "https://github.com/google/protobuf/archive/v2.6.1.tar.gz;downloadfilename=protobuf-2.6.1.tar.gz"
+#	file://protobuf-allow-running-python-scripts-from-anywhere.patch \
+#	file://Omit-google-apputils-dependency.patch \
+#	file://run-ptest"
 
 COMPATIBLE_HOST = "(x86_64|arm|aarch64).*-linux"
 

@@ -13,7 +13,7 @@ DEPENDS = "protobuf protobuf-c-native"
 SRC_URI[md5sum] = "41d437677ea16f9d3611d98841c4af3b"
 SRC_URI[sha256sum] = "09c5bb187b7a8e86bc0ff860f7df86370be9e8661cdb99c1072dcdab0763562c"
 SRC_URI = "https://github.com/protobuf-c/protobuf-c/releases/download/v1.1.1/protobuf-c-1.1.1.tar.gz "
-SRC_URI_append_class-target ="file://0001-protobuf-c-Remove-the-rules-which-depend-on-the-nati.patch"
+#SRC_URI_append_class-target ="file://0001-protobuf-c-Remove-the-rules-which-depend-on-the-nati.patch"
 
 inherit autotools pkgconfig
 
