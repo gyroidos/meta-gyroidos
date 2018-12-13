@@ -85,6 +85,18 @@ class TrustmeDataPlugin(SourcePlugin):
         if not topdir:
             raise WicError("Can not get TOPDIR directory - not in cooked mode?")
 
+        tmpdir = TMPDIR = "%s/tmp_container" % topdir
+        if not tmpdir:
+            raise WicError("Can not get TMPDIR directory - not in cooked mode?")
+
+        #machine = get_bitbake_var("MACHINE")
+        #if not machine:
+        #    raise WicError("Can not get MACHINE - not in cooked mode?")
+
+        deploy_dir_image = "{0}/deploy/images/{1}".format(tmpdir, "trustx-corei7-64")
+        if not deploy_dir_image:
+            raise WicError("Can not get DEPLOY_DIR_IMAGE directory - not in cooked mode?")
+
         D = get_bitbake_var("D")
         if not D:
             raise WicError("Can not get D directory - not in cooked mode?")

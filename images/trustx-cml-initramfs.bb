@@ -49,7 +49,7 @@ update_fstab () {
 /dev/disk/by-partlabel/boot /boot vfat umask=0077 0 1 
 /dev/disk/by-partlabel/data /data btrfs defaults   0 0 
 /dev/disk/by-partlabel/modules /lib/modules/${KERNELVERSION} squashfs defaults 0 0
-/dev/disk/by-partlabel/containers /data/cml/containers btrfs defaults 0 0
+/dev/disk/by-label/containers /data/cml/containers btrfs defaults 0 0
 EOF
 }
 
