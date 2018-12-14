@@ -13,6 +13,7 @@ PACKAGE_INSTALL = "\
 	strace \
 	iptables \
 	ibmtss2 \
+	tpm2d \
 	stunnel \
 	openssl-tpm2-engine \
 	e2fsprogs-mke2fs \
