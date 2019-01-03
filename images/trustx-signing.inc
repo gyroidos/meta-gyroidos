@@ -16,15 +16,15 @@ DEPENDS += " pki-native protobuf-c-native cmld"
 
 do_sign_guestos () {
     protoc --python_out=${ENROLLMENT_DIR}/config_creator -I${PROTO_FILE_DIR} ${PROTO_FILE_DIR}/guestos.proto
-    if [ -d ${FINAL_OUT} ]; then
-        rm -r ${FINAL_OUT}
-    fi
     mkdir -p ${FINAL_OUT}
+    if [ -d ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION} ]; then
+    	rm -r ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}
+    fi
     mkdir -p ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}/
     cp ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.squashfs ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}/root.img
 
     python ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
-            -b ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${PN}.conf -v ${TRUSTME_VERSION} \
+            -b ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${PN}os.conf -v ${TRUSTME_VERSION} \
             -c ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}.conf \
             -i ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}/ -n ${PN}os
     bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}.conf \
