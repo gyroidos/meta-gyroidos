@@ -3,6 +3,10 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/git/COPYING;md5=b234ee4d69f5fce4486a80fdaf
 
 BRANCH = "trustx-master"
 SRCREV = "${AUTOREV}"
+
+PVBASE := "${PV}"
+PV = "${PVBASE}+${SRCPV}"
+
 SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH}"
 
 S = "${WORKDIR}/git/"
