@@ -23,6 +23,8 @@ SRC_URI[sha256sum] = "5eeec797d7ff1d4b1e507925a1780fad5dd8dd11163203d8832e5a9f20
 
 inherit autotools pkgconfig
 
+EXTRA_OECONF_append = "--enable-static=yes"
+
 FILES_${PN}-compiler = "${bindir}"
 
 BBCLASSEXTEND = "native nativesdk"

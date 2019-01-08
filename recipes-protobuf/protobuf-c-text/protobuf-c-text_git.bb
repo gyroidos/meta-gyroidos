@@ -26,6 +26,8 @@ S = "${WORKDIR}/git"
 
 TARGET_CFLAGS += "-DHAVE_PROTOBUF_C_MESSAGE_CHECK"
 
+EXTRA_OECONF_append = "--enable-static=yes"
+
 do_configure(){
 #       oe_runconf --libdir=${libdir} --sbindir=${sbindir} --bindir=${bindir} --mandir=${mandir} --includedir=${includedir} DESTDIR=${D}
 #       oe_runconf --with-sysroot=${STAGING_DIR_TARGET}

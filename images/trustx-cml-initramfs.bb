@@ -9,6 +9,7 @@ PACKAGE_INSTALL = "\
 	mingetty \
 	libselinux \
 	cmld \
+	service-static \
 	scd \
 	strace \
 	iptables \
