@@ -30,5 +30,4 @@ do_install () {
         :
 	install -d ${D}${base_sbindir}/
 	install -m 0755 ${S}service/cml-service-container ${D}${base_sbindir}/
-	cp ${S}daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
 }
