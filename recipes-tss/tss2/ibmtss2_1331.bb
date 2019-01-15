@@ -35,9 +35,12 @@ EXTRA_OEMAKE = "\
 	'CCLFLAGS = ${LIBRARY_FLAGS}' \
 "
 
-do_populate_lic() {
-	:
-	cp ${WORKDIR}/${PN}/LICENSE ${S}/LICENSE
+do_populate_lic_prepend() {
+    bb.build.exec_func('do_copy_lic', d)
+}
+
+do_copy_lic() {
+    cp ${WORKDIR}/${PN}/LICENSE ${S}/LICENSE
 }
 
 do_compile() {
