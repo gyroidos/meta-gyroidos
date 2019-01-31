@@ -21,7 +21,7 @@ do_sign_guestos () {
     	rm -r ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}
     fi
     mkdir -p ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}/
-    cp ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.squashfs ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}/root.img
+    cp ${DEPLOY_DIR_IMAGE}/${IMAGE_BASENAME}-${MACHINE}.squashfs ${FINAL_OUT}/${PN}os-${TRUSTME_VERSION}/root.img
 
     python ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
             -b ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${PN}os.conf -v ${TRUSTME_VERSION} \

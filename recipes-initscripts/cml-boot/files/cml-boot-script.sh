@@ -41,8 +41,9 @@ fi
 
 # Uncomment to automatically start scd and cmld
 #if device.cert is not present, start scd to initialize device
+#export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 #if [ ! -f /data/cml/tokens/device.cert ]; then
-#	scd&
+#	scd
 #fi
 #
 #scd&
