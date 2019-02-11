@@ -106,7 +106,6 @@ class TrustmeDataPlugin(SourcePlugin):
             raise WicError("Can not get trustme_hardware directory - not in cooked mode?")
 
         src = "%s/../trustme/build/" % topdir
-        cfg_overlay_dir = "%s/config_overlay" % src
         config_creator_dir = "%s/config_creator" %src
         proto_file_dir = "%s/cml/daemon" % workdir
         provisioning_dir = "%s/device_provisioning" % src
@@ -122,11 +121,13 @@ class TrustmeDataPlugin(SourcePlugin):
         install_cmd = "install -d %s/cml/containers_templates" % hdddir 
         exec_cmd(install_cmd)
 
-        cp_cmd = "cp {0}/x86/device.conf {1}/cml/device.conf".format(cfg_overlay_dir, hdddir)
+        # copy device config
+        cp_cmd = "cp {0}/trustx-configs/device.conf {1}/cml/".format(deploy_dir_image, hdddir)
         exec_cmd(cp_cmd)
 
-        # copy config for a0
-        cp_cmd = "cp {0}/x86/00000000-0000-0000-0000-000000000000.conf {1}/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf".format(cfg_overlay_dir, hdddir)
+
+        # copy container configs
+        cp_cmd = "cp -ar {0}/trustx-configs/container/. {1}/cml/containers_templates/".format(deploy_dir_image, hdddir)
         exec_cmd(cp_cmd)
 
 
