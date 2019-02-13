@@ -23,6 +23,7 @@ PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
 SRC_URI = "git://github.com/industrial-data-space/trusted-connector.git;branch=${BRANCH}"
+SRC_URI_append = " file://start_connector.sh "
 
 S = "${WORKDIR}/git"
 
@@ -38,6 +39,16 @@ do_compile() {
 do_install() {
   install -d ${D}/root/
   tar xvf ${S}/karaf-assembly/build/karaf-assembly-*.tar.gz --strip-components=1 -C ${D}/root
+  install -d ${D}${sysconfdir}/init.d
+  install -m 0755 ${WORKDIR}/start_connector.sh ${D}${sysconfdir}/init.d/
 }
 
+
+CONFFILES_${PN} += "${sysconfdir}/init.d/start_connector.sh"
 FILES_${PN} += "/root/* "
+
+inherit update-rc.d
+INITSCRIPT_PARAMS = "start 90 5 ."
+INITSCRIPT_NAME = "start_connector.sh"
+
+INHIBIT_PACKAGE_STRIP = "1"
