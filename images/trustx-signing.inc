@@ -32,12 +32,6 @@ do_sign_guestos () {
             ${TEST_CERT_DIR}/ssig.key ${TEST_CERT_DIR}/ssig.cert
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
-
-    cp ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/00000000-0000-0000-0000-000000000000.conf ${CONFIGS_OUT}/container
-    sed -i '/guest_os:*/c\guest_os: \"${PN}os\"' ${CONFIGS_OUT}/container/00000000-0000-0000-0000-000000000000.conf
-
-    cp ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/device.conf ${CONFIGS_OUT}
-    sed -i '/c0os:*/c\c0os: \"${PN}os\"' ${CONFIGS_OUT}/device.conf
 }
 
 addtask do_sign_guestos after do_image_complete before do_build
