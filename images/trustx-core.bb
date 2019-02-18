@@ -4,9 +4,10 @@ include images/trustx-signing.inc
 
 IMAGE_FSTYPES = "squashfs ext4"
 
-EXTRA_IMAGE_FEATURES += "allow-empty-password"
-EXTRA_IMAGE_FEATURES += "empty-root-password"
-EXTRA_IMAGE_FEATURES += "ssh-server-dropbear"
+IMAGE_FEATURES_append = " allow-empty-password"
+IMAGE_FEATURES_append = " empty-root-password"
+IMAGE_FEATURES_append = " ssh-server-dropbear"
+IMAGE_INSTALL_append = " control"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
