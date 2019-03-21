@@ -15,12 +15,13 @@ SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BR
 
 S = "${WORKDIR}/git/"
 
-PACKAGES =+ "control scd tpm2d"
+PACKAGES =+ "control scd tpm2d rattestation"
 
 INSANE_SKIP_${PN} = "ldflags"
 INSANE_SKIP_scd = "ldflags"
 INSANE_SKIP_tpm2d = "ldflags"
 INSANE_SKIP_control = "ldflags"
+INSANE_SKIP_rattestation = "ldflags"
 
 DEPENDS = "protobuf-c-native protobuf-c libselinux protobuf-c-text libcap e2fsprogs openssl ibmtss2"
 
@@ -38,6 +39,7 @@ do_compile () {
     oe_runmake -C scd
     oe_runmake -C tpm2d
     oe_runmake -C tpm2_control
+    oe_runmake -C rattestation
 }
 
 do_install () {
@@ -49,6 +51,7 @@ do_install () {
     install -m 0755 ${S}scd/scd ${D}${sbindir}/
     install -m 0755 ${S}tpm2d/tpm2d ${D}${sbindir}/
     install -m 0755 ${S}tpm2_control/tpm2_control ${D}${sbindir}/
+    install -m 0755 ${S}rattestation/rattestation ${D}${sbindir}/
     mkdir -p ${DEPLOY_DIR_IMAGE}/proto
     cp ${S}daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
 }
@@ -56,8 +59,10 @@ do_install () {
 RDEPENDS_scd += "cmld openssl"
 RDEPENDS_tpm2d += "cmld ibmtss2"
 RDEPENDS_control += "protobuf-c protobuf-c-text"
+RDEPENDS_rattestation += "openssl protobuf-c protobuf-c-text"
 
 FILES_scd = "${sbindir}/scd"
 FILES_control = "${sbindir}/control"
 FILES_tpm2d = "${sbindir}/tpm2*"
+FILES_rattestation = "${sbindir}/rattestation"
 

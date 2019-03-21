@@ -16,6 +16,7 @@ PACKAGE_INSTALL = "\
 	iptables \
 	ibmtss2 \
 	tpm2d \
+	rattestation \
 	stunnel \
 	openssl-tpm2-engine \
 	e2fsprogs-mke2fs \
