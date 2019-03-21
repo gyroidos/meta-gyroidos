@@ -39,20 +39,33 @@ if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.conf" ]; th
 	cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf /data/cml/containers/00000000-0000-0000-0000-000000000000.conf
 fi
 
-# Uncomment to automatically start scd and cmld
-#if device.cert is not present, start scd to initialize device
-#export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
-#if [ ! -f /data/cml/tokens/device.cert ]; then
-#	scd
-#fi
-#
-#scd&
-#
-#cmld&
+if [ ! -f "/dev/tpm0" ]; then
+	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d)"
+	tpm2d &
+fi
 
-# give kernel some extra time to setup stuff, so
-# we get a clear console for user promt
-sleep 2
+while [ ! -S /run/socket/cml-tpm2d-control ]; do
+	echo "Waiting for tpm2d's control interface"
+	sleep 1
+done
+
+# if device.cert is not present, start scd to initialize device
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+if [ ! -f /data/cml/tokens/device.cert ]; then
+	echo "--- Provisionung/Installing Mode ---" > /etc/motd
+	echo "Starting Security Helpder Daemon (scd) in Provisioning Mode"
+	scd
+else
+	echo "Starting Security Helpder Daemon (scd)"
+	scd &
+	while [ ! -S /run/socket/cml-scd-control ]; do
+		echo "Waiting for scd's control interface"
+		sleep 1
+	done
+
+	echo "Starting Compartment Manger Daemon (cmld)"
+	cmld &
+fi
 
 udevadm control --exit
 
