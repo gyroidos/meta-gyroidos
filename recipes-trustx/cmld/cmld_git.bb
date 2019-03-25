@@ -31,7 +31,6 @@ do_configure () {
     :
 }
 
-
 do_compile () {
     oe_runmake -C daemon
     oe_runmake -C control
@@ -40,6 +39,7 @@ do_compile () {
     oe_runmake -C tpm2d
     oe_runmake -C tpm2_control
     oe_runmake -C rattestation
+    oe_runmake -C common libcommon_full
 }
 
 do_install () {
@@ -52,6 +52,10 @@ do_install () {
     install -m 0755 ${S}tpm2d/tpm2d ${D}${sbindir}/
     install -m 0755 ${S}tpm2_control/tpm2_control ${D}${sbindir}/
     install -m 0755 ${S}rattestation/rattestation ${D}${sbindir}/
+    install -d ${D}${libdir}
+    install -m 0755 ${S}common/libcommon_full.a ${D}${libdir}/
+    install -d 0755 ${D}${includedir}/common
+    install -m 0644 ${S}common/*.h ${D}${includedir}/common
     mkdir -p ${DEPLOY_DIR_IMAGE}/proto
     cp ${S}daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
 }
