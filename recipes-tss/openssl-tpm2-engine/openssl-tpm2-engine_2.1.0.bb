@@ -7,9 +7,9 @@ cryptographically, it must be build with the IBM TSS."
 HOMEPAGE = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/openssl_tpm2_engine.git/"
 LICENSE = "LGPL-2.1"
 
-DEPENDS = "openssl ibmtss2"
+DEPENDS = "openssl10 ibmtss2"
 
-RDEPENDS_${PN} += "openssl libgcc"
+RDEPENDS_${PN} += "openssl10 libgcc"
 
 EXTRA_OECONF = "--with-openssl=${RECIPE_SYSROOT}/usr"
 

@@ -87,6 +87,11 @@ class TrustmeBootPlugin(SourcePlugin):
         except KeyError:
             raise WicError("error copying test keys")
 
+        try:
+            cp_cmd = "cp  {0}/test_certificates/DB.der {0}/test_certificates/KEK.der {0}/test_certificates/PK.der {1}/keys/".format(topdir, hdddir)
+            exec_cmd(cp_cmd, True)
+        except KeyError:
+            raise WicError("error copying test certs")
 
         du_cmd = "du -bks %s" % hdddir
         out = exec_cmd(du_cmd)

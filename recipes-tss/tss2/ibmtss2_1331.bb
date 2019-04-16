@@ -11,7 +11,7 @@ SRC_URI[sha256sum] = "70ca492040f795c1471ccea57cf4afcb852860ebc2b135ef9606287fe2
 
 SRC_URI = "https://sourceforge.net/projects/ibmtpm20tss/files/ibmtss${PV}.tar.gz/download;downloadfilename=ibmtss-${PV}.tar.gz;subdir=${PN}"
 
-DEPENDS += "openssl"
+DEPENDS += "openssl10"
 
 S = "${WORKDIR}/${PN}/utils"
 

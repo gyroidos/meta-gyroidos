@@ -10,7 +10,7 @@ PROVISIONING_DIR = "${SRC}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 
-DEPENDS = "sbsigntool-native efitools-native"
+DEPENDS = "openssl10-native sbsigntool-native efitools-native"
 
 inherit native
 

@@ -93,7 +93,7 @@ class TrustmeDataPlugin(SourcePlugin):
         #if not machine:
         #    raise WicError("Can not get MACHINE - not in cooked mode?")
 
-        deploy_dir_image = "{0}/deploy/images/{1}".format(tmpdir, "trustx-corei7-64")
+        deploy_dir_image = "{0}/deploy/images/{1}".format(tmpdir, "qemux86-64")
         if not deploy_dir_image:
             raise WicError("Can not get DEPLOY_DIR_IMAGE directory - not in cooked mode?")
 
