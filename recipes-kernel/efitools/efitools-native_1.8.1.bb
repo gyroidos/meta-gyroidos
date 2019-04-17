@@ -14,7 +14,7 @@ SRC_URI = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git/sna
 inherit native
 inherit perlnative
 
-DEPENDS = "openssl10-native gnu-efi-native help2man-native sbsigntool-native libfile-slurp-perl-native"
+DEPENDS = "gnu-efi-native help2man-native sbsigntool-native libfile-slurp-perl-native"
 
 S = "${WORKDIR}/efitools_${PV}"
 

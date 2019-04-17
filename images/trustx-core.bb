@@ -2,8 +2,6 @@ require recipes-core/images/core-image-minimal.bb
 
 include images/trustx-signing.inc
 
-IMAGE_INSTALL += "iproute2"
-
 IMAGE_FSTYPES = "squashfs ext4"
 
 IMAGE_FEATURES_append = " allow-empty-password"
