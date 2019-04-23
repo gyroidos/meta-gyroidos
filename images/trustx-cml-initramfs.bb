@@ -18,6 +18,7 @@ PACKAGE_INSTALL = "\
 	tpm2d \
 	rattestation \
 	stunnel \
+	openssl-bin \
 	openssl-tpm2-engine \
 	e2fsprogs-mke2fs \
 	e2fsprogs-e2fsck \

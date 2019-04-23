@@ -19,13 +19,12 @@ TAR_N = "openssl_tpm2_engine"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=a055871bc591288e6970672b3ff8736d"
 SRC_URI = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/${TAR_N}.git/snapshot/${TAR_N}-${PV}.tar.gz \
-	file://Cross-compile-compatible-enginesdir-variable.patch \
-	file://dont-depend-on-help2man.patch"
+file://Cross-compile-compatible-enginesdir-variable.patch"
 
 S = "${WORKDIR}/${TAR_N}-${PV}"
 
-SRC_URI[md5sum] = "09fbc28add9ceadc4752a5192bd368cb"
-SRC_URI[sha256sum] = "b898b9901f9b50dabdbb08795b9a4b2736d8f71cb23ba13891bd0894f5614108"
+SRC_URI[md5sum] = "93fffb93cc664770b9f2cbb5d67ad454"
+SRC_URI[sha256sum] = "765ea5ddeeb7b72b2979e184ae5c7ad2f2695e54a8eb6270ff8ce4077418a04e"
 
 inherit autotools pkgconfig
 
@@ -34,6 +33,12 @@ do_configure_prepend() {
 	touch ${S}/AUTHORS
 	touch ${S}/ChangeLog
 	cp ${S}/LICENSE ${S}/COPYING
+}
+
+do_install_append() {
+	install -d ${D}${libdir}/engines-1.1
+	mv ${D}${libdir}/engines/libtpm2.so ${D}${libdir}/engines-1.1/tpm2.so
+	rm ${D}${libdir}/engines/tpm2.so
 }
 
 FILES_${PN} += "${libdir}/*"

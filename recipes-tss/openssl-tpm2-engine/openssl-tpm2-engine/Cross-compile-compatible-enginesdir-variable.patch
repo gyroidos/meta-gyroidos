@@ -1,49 +1,66 @@
-From 2f6038512afafa7f1931bca6d4c675a7e93ae172 Mon Sep 17 00:00:00 2001
+From 11b0666da17c8427a69c9fa8b2eaf9b9f9a4ac62 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
-Date: Fri, 14 Dec 2018 17:15:55 +0000
-Subject: [PATCH] Cross-compile compatible enginesdir variable
+Date: Tue, 23 Apr 2019 15:59:46 +0200
+Subject: [PATCH] [PATCH] Cross-compile compatible enginesdir variable
 
 Get enginesdir from pkg-config instead of non portable use of gcc.
 Further provide a --with-engingesdir option for configure.
 ---
  Makefile.am  |  2 +-
- configure.ac | 22 ++++++++++++++--------
- 2 files changed, 15 insertions(+), 9 deletions(-)
+ configure.ac | 44 ++++++++++++++------------------------------
+ 2 files changed, 15 insertions(+), 31 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 8c24dbe..c8fe9e3 100644
+index 734bfc5..8033ac7 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -6,7 +6,7 @@ CLEANFILES = $(man1_MANS)
+@@ -9,7 +9,7 @@ endif
  
  openssl_engine_LTLIBRARIES=libtpm2.la
- bin_PROGRAMS=create_tpm2_key
+ bin_PROGRAMS=create_tpm2_key load_tpm2_key
 -openssl_enginedir=@enginesdir@
 +openssl_enginedir=$(ENGINESDIR)
  
  libtpm2_la_LDFLAGS= -no-undefined -avoid-version
  libtpm2_la_LIBADD=${DEPS_LIBS}
 diff --git a/configure.ac b/configure.ac
-index ea544ea..42713b1 100644
+index a3a3c5b..49b9e7b 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -62,16 +62,22 @@ AC_LANG_CONFTEST(
- 		  puts(OpenSSL_version(OPENSSL_ENGINES_DIR));
- 		  #endif
- 		  ]])])
--gcc $CFLAGS conftest.c -lcrypto
--enginesdir=`./a.out|sed 's/ENGINESDIR: //'`
+@@ -55,36 +55,20 @@ AC_ARG_WITH(openssl,
+ 	 AC_SUBST(OPENSSL_INCLUDE_DIR)])
+ 
+ AC_LANG(C)
+-AC_ARG_WITH(
+-	[enginesdir],
+-	[AC_HELP_STRING([--with-enginesdir], [OpenSSL engines directory])],
+-	[enginesdir="${withval}"],
+-	[AC_LANG_CONFTEST([AC_LANG_PROGRAM(
+-		[[
+-		  #define HEADER_CRYPTLIB_H
+-		  #include <openssl/crypto.h>
+-		  #include <stdio.h>
+-		]],
+-		[[
+-		  #if OPENSSL_VERSION_NUMBER < 0x10100000
+-		  puts(ENGINESDIR);
+-		  #else
+-		  puts(OpenSSL_version(OPENSSL_ENGINES_DIR));
+-		  #endif
+-		]]
+-		)])
+-		gcc $CFLAGS conftest.c -lcrypto
+-		enginesdir=`./a.out|sed 's/ENGINESDIR: //'`
+-	]
+-	)
+-
 -if test -z "$enginesdir" ; then
 -    AC_MSG_FAILURE([Failed to find SSL engines directory])
 -fi
 -
 -AC_SUBST(enginesdir)
- 
- PKG_PROG_PKG_CONFIG
+-
 -PKG_CHECK_MODULES([DEPS], [libcrypto])
-+PKG_CHECK_MODULES([DEPS], [libcrypto],
-+	[ac_enginesdir=`$PKG_CONFIG --variable=enginesdir libcrypto`])
-+
 +AC_ARG_WITH([enginesdir],
 +	[AS_HELP_STRING([--with-enginesdir],
 +			[Set the OpenSSL engine directory (default: use pkg-config)])],
@@ -55,9 +72,12 @@ index ea544ea..42713b1 100644
 +AS_IF([test -z "$with_enginesdir"],
 +	[with_enginesdir=$libdir/engines])
 +AC_SUBST(ENGINESDIR, "$with_enginesdir")
++
++PKG_CHECK_MODULES([DEPS], [libcrypto],
++	[ac_enginesdir=`$PKG_CONFIG --variable=enginesdir libcrypto`])
  
  AC_SEARCH_LIBS([TSS_Create], [tss ibmtss], [], [
  	AC_MSG_ERROR([Unable to find the TSS2 library])
 -- 
-2.19.2
+2.20.1
 
