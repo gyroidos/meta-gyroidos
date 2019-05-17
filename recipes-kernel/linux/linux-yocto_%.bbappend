@@ -1,6 +1,14 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI += "file://trustx.cfg"
 
+if [ "${TRUSTME_MODSIGNING}"="1" ]; then
+	SRC_URI += "file://module_signing.cfg"
+fi
+
+if [ "$TRUSTME_KERNDBG"="1" ];then
+	SRC_URI += "file://debugging.cfg"
+fi
+
 do_copy_signing_tool (){ 
     mkdir -p "${STAGING_KERNEL_BUILDDIR}"
 
