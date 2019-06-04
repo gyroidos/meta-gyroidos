@@ -27,17 +27,5 @@ do_copy_ssig_certs() {
       openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform PEM >> ${S}/certs/signing_key.pem
 }
 
-do_copy_signing_tool (){ 
-    mkdir -p "${STAGING_KERNEL_BUILDDIR}"
-
-    if [ -f "${B}/scripts/sign-file" ]; then
-        cp "${B}/scripts/sign-file" "${STAGING_KERNEL_BUILDDIR}/"
-    else
-        bberror "Failed copying sign-file from cp ${B}/scripts/"
-    fi
-}
-
-
 addtask do_copy_ssig_certs after do_configure before do_build
 addtask uefi_sign after do_deploy before do_build
-addtask do_copy_signing_tool after do_compile before do_build

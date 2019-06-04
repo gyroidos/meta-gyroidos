@@ -56,8 +56,8 @@ update_fstab () {
 
 tmpfs /tmp tmpfs defaults 0 0
 
-/dev/disk/by-partlabel/boot /boot vfat umask=0077 0 1 
-/dev/disk/by-partlabel/data /data btrfs defaults   0 0 
+/dev/disk/by-partlabel/boot /boot vfat umask=0077 0 1
+/dev/disk/by-partlabel/data /data btrfs defaults 0 0
 /dev/disk/by-partlabel/modules /lib/modules/${KERNELVERSION} squashfs defaults 0 0
 /dev/disk/by-label/containers /data/cml/containers btrfs defaults 0 0
 EOF
@@ -74,7 +74,7 @@ update_modules_dep () {
 	sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; " 
+ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
