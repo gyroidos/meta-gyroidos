@@ -18,12 +18,15 @@ udevd --daemon
 udevadm trigger --action=add
 udevadm settle 
 
-
 sleep 5
 
 mount -a
 
 sleep 5
+
+mount --bind /mnt/modules /lib/modules
+
+mount --bind /mnt/userdata /data
 
 mkdir -p /data/logs
 
@@ -33,7 +36,6 @@ udevadm settle
 
 modprobe loop
 modprobe btrfs
-
 
 if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.conf" ]; then
 	cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf /data/cml/containers/00000000-0000-0000-0000-000000000000.conf
