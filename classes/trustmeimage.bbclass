@@ -1,36 +1,20 @@
 inherit image_types
+inherit kernel-artifact-names
 
 #
 # Create an partitioned trustme image that can be dd'ed to the boot medium
 #
 
-# Set alignment to 4MB [in KiB]
-#TODO
-IMAGE_ROOTFS_ALIGNMENT = "4096"
 
-# Use an uncompressed ext3 by default as rootfs
-#TODO
-SDIMG_ROOTFS = "${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${SDIMG_ROOTFS_TYPE}"
+TEST_CERT_DIR = "${TOPDIR}/test_certificates"
+SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
+SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
-# For the names of kernel artifacts
-inherit kernel-artifact-names
+do_image_trustmeimage[nostamp] = "1"
+do_trustme_bootpart[nostamp] = "1"
 
-#TODO set in trustx-cml-initramfs
-#do_image_trustmeimage[depends] = ""
+do_trustme_bootpart[depends] += "virtual/kernel:do_deploy"
 
-#TODO
-#do_image_trustmeimage[recrdeps] = "do_build"
-
-# SD card image name
-SDIMG = "${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.trustmeimage"
-
-# Additional files and/or directories to be copied into the vfat partition from the IMAGE_ROOTFS.
-FATPAYLOAD ?= ""
-
-# SD card vfat partition image name
-SDIMG_VFAT_DEPLOY ?= "${RPI_USE_U_BOOT}"
-SDIMG_VFAT = "${IMAGE_NAME}.vfat"
-SDIMG_LINK_VFAT = "${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.vfat"
 
 do_trustme_bootpart () {
 
@@ -43,6 +27,20 @@ do_trustme_bootpart () {
 		bbfatal "Cannot get bitbake variable \"TRUSTME_BOOTPART_DIR\""
 		exit 1
 	fi
+
+	if [ -z "${MACHINE}" ];then
+		bbfatal "Cannot get bitbake variable \"MACHINE\""
+		exit 1
+	fi
+
+	bbnote "Signing kernel binary"
+	kernelbin="${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${MACHINE}.bin"
+	if [ -L "${kernelbin}" ]; then
+	    link=`readlink "${kernelbin}"`
+	    ln -sf ${link}.signed ${kernelbin}.signed
+	fi
+
+	sbsign --key "${SECURE_BOOT_SIGNING_KEY}" --cert "${SECURE_BOOT_SIGNING_CERT}" --output "${kernelbin}.signed" "${kernelbin}"
 
 	bbnote "Copying boot partition files to ${TRUSTME_BOOTPART_DIR}"
 
