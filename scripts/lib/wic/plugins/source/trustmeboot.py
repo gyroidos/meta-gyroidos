@@ -77,6 +77,24 @@ class TrustmeBootPlugin(SourcePlugin):
 
         machine = machine.replace("_","-")
 
+        topdir = get_bitbake_var("TOPDIR")
+
+        deploy_dir_image = get_bitbake_var("DEPLOY_DIR_IMAGE")
+
+        test_cert_dir = "{0}/test_certificates".format(topdir)
+        secure_boot_signing_key = "{0}/ssig_subca.key".format(test_cert_dir)
+        secure_boot_signing_cert = "{0}/ssig_subca.cert".format(test_cert_dir)
+        kernelbin="{0}/bzImage-initramfs-{1}.bin".format(deploy_dir_image, machine)
+        link=os.readlink(kernelbin)
+        try:
+            os.symlink("{0}.signed".format(kernelbin), "{0}.signed".format(link))
+
+            sign_cmd='sbsign --key "${SECURE_BOOT_SIGNING_KEY}" --cert "${SECURE_BOOT_SIGNING_CERT}" --output "${kernelbin}.signed" "${kernelbin}"'
+            exec_native_cmd(sign_cmd, native_sysroot)
+        except FileExistsError as e:
+            print("Signed binary symlink already existing, skipping signing")
+
+
 
         try:
             cp_cmd = "cp -L {0}/bzImage-initramfs-{1}.bin.signed {2}/EFI/BOOT/BOOTX64.EFI".format(kernel_dir, machine, hdddir)
