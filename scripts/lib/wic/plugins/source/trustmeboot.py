@@ -88,7 +88,7 @@ class TrustmeBootPlugin(SourcePlugin):
         secure_boot_signing_key = "{0}/ssig_subca.key".format(test_cert_dir)
         secure_boot_signing_cert = "{0}/ssig_subca.cert".format(test_cert_dir)
         kernelbin_link="{0}/bzImage-initramfs-{1}.bin".format(deploy_dir_image, machine)
-        kernelbin_path=os.readlink(kernelbin_link)
+        kernelbin_path="{0}/{1}".format(deploy_dir_image, os.readlink(kernelbin_link))
 
         try:
             os.symlink("{0}.signed".format(kernelbin_path), "{0}.signed".format(kernelbin_link))
@@ -97,7 +97,7 @@ class TrustmeBootPlugin(SourcePlugin):
             exec_cmd(sign_cmd)
 
             try:
-                cp_cmd = "cp -L {0}/bzImage-initramfs-{1}.bin.signed {2}/EFI/BOOT/BOOTX64.EFI".format(kernel_dir, machine, hdddir)
+                cp_cmd = "cp {0} {1}/EFI/BOOT/BOOTX64.EFI".format(kernelbin_path, hdddir)
                 exec_cmd(cp_cmd, True)
             except KeyError:
                 raise WicError("error while copying kernel")
