@@ -93,7 +93,7 @@ class TrustmeBootPlugin(SourcePlugin):
         try:
             os.symlink("{0}.signed".format(kernelbin_path), "{0}.signed".format(kernelbin_link))
 
-            sign_cmd='{0} --key "${secure_boot_signing_key}" --cert "${secure_boot_signing_key}" --output "${kernelbin}.signed" "${kernelbin}"'.format(sbsign_cmd)
+            sign_cmd='{0} --key "{1}" --cert "{2}" --output "{3}.signed" "{3}"'.format(sbsign_cmd, secure_boot_signing_key, secure_boot_signing_cert, kernelbin)
             exec_cmd(sign_cmd)
 
             try:

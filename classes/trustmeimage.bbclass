@@ -13,7 +13,10 @@ SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 do_image_trustmeimage[nostamp] = "1"
 do_trustme_bootpart[nostamp] = "1"
 
-do_trustme_bootpart[depends] += "virtual/kernel:do_deploy"
+do_trustme_bootpart[depends] += " \
+    virtual/kernel:do_deploy \
+    sbsigntool-native:do_populate_sysroot \
+"
 
 
 do_trustme_bootpart () {
@@ -48,8 +51,8 @@ do_trustme_bootpart () {
 	bbdebug 1 "Boot machine: $machine"
 
 	rm -fr "${TRUSTME_BOOTPART_DIR}"
-	install -d "${TRUSTME_BOOTPART_DIR}/BOOT/EFI"
-	cp --dereference "${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/BOOT/EFI/BOOTX64.EFI"
+	install -d "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/"
+	cp --dereference "${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
 }
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
