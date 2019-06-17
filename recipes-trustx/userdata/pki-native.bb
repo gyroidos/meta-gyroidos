@@ -15,11 +15,9 @@ DEPENDS = "sbsigntool-native efitools-native openssl-native"
 inherit native
 
 do_compile() {
-    if [ ! -d ${TEST_CERT_DIR} ]; then
-        bash ${PROVISIONING_DIR}/gen_dev_certs.sh ${TEST_CERT_DIR}
-    fi
-    if [ ! -d ${TEST_CERT_DIR}/certs ]; then
+   if [ ! -d ${TEST_CERT_DIR}/certs ]; then
         mkdir -p ${TEST_CERT_DIR}/certs
+        bash ${PROVISIONING_DIR}/gen_dev_certs.sh ${TEST_CERT_DIR}
         openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform DER -out ${TEST_CERT_DIR}/certs/signing_key.x509
         cp ${TEST_CERT_DIR}/ssig_subca.key ${TEST_CERT_DIR}/certs/signing_key.pem
         openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform PEM >> ${TEST_CERT_DIR}/certs/signing_key.pem
