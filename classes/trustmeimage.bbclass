@@ -16,6 +16,13 @@ do_trustme_bootpart[nostamp] = "1"
 do_trustme_bootpart[depends] += " \
     virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
+    parted-native:do_populate_sysroot \
+    mtools-native:do_populate_sysroot \
+    dosfstools-native:do_populate_sysroot \
+    btrfs-tools-native:do_populate_sysroot \
+    gptfdisk-native:do_populate_sysroot \
+    trustx-cml-initramfs:do_image_complete \
+    virtual/kernel:do_shared_workdir \
 "
 
 

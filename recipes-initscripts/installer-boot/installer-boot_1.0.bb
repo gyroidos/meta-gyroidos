@@ -10,7 +10,7 @@ PR = "r2"
 S = "${WORKDIR}"
 
 do_install() {
-        install -m 0755 ${WORKDIR}/cml-boot-script.sh ${D}/init
+        install -m 0755 ${WORKDIR}/cml-installer-script.sh ${D}/init
         install -d ${D}/dev
 #        mknod -m 622 ${D}/dev/console c 5 1
         mknod -m 622 ${D}/dev/tty0 c 4 0

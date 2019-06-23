@@ -10,12 +10,18 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
 SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
-do_image_trustmeimage[nostamp] = "1"
+do_image_trustmeinstaller[nostamp] = "1"
 do_trustme_bootpart[nostamp] = "1"
 
-do_trustme_bootpart[depends] += " \
-    virtual/kernel:do_deploy \
+do_image_trustmeimage[depends] = " \
+    parted-native:do_populate_sysroot \
+    mtools-native:do_populate_sysroot \
+    dosfstools-native:do_populate_sysroot \
+    btrfs-tools-native:do_populate_sysroot \
+    gptfdisk-native:do_populate_sysroot \
     trustx-cml:do_image_complete \
+    trustx-cml-initramfs:do_image_complete \
+    virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
 "
 
@@ -57,7 +63,7 @@ do_trustme_bootpart () {
 }
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
-TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage"
+TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeinstaller"
 TRUSTME_TARGET_ALIGN="4096"
 TRUSTME_TARGET_SECTOR_SIZE="4096"
 TRUSTME_SECTOR_SIZE="4096"
@@ -67,7 +73,7 @@ TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
 TRUSTME_CONTAINER_ARCH="qemux86-64"
 
-TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
+TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeinstaller.img"
 TRUSTME_DATAPART_EXTRA_FACTOR="1.2"
 TRUSTME_BOOTPART_EXTRA_FACTOR="1.2"
 TRUSTME_BOOTPART_FS="fat16"
@@ -78,22 +84,22 @@ TRUSTME_ROOTFS_ALIGN="4096"
 
 TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
 
-addtask do_trustme_bootpart before do_image_trustmeimage
+addtask do_trustme_bootpart before do_image_trustmeinstaller
 
-do_image_trustmeimage[depends] = " \
+do_image_trustmeinstaller[depends] = " \
     parted-native:do_populate_sysroot \
     mtools-native:do_populate_sysroot \
     dosfstools-native:do_populate_sysroot \
     btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
-    trustx-cml-initramfs:do_image_complete \
+    trustx-cml:do_populate_lic_deploy \
     virtual/kernel:do_shared_workdir \
 "
 
 
 
 
-IMAGE_CMD_trustmeimage () {
+IMAGE_CMD_trustmeinstaller () {
 
 	if [ -z "${TRUSTME_BOOTPART_DIR}" ];then
 		bbfatal_log "Cannot get bitbake variable \"TRUSTME_BOOTPART_DIR\""
@@ -200,8 +206,8 @@ IMAGE_CMD_trustmeimage () {
 	# copy files to temp data directory
 	bbnote "Preparing files for data partition"
 
-	cp -afr "${DEPLOY_DIR_IMAGE}/trustme_image/trustmeimage.img" "${rootfs_datadir}/"
-	cp -afr "${TOPDIR}/../trustme/build/yocto/copy_image_to_disk.sh" "${rootfs_datadir}/"
+	cp "${DEPLOY_DIR_IMAGE}/trustme_image/trustmeimage.img" "${rootfs_datadir}/"
+	cp "${TOPDIR}/../trustme/build/yocto/copy_image_to_disk.sh" "${rootfs_datadir}/"
 
 	# copy modules to data partition directory
 	cp -fL "${DEPLOY_DIR_IMAGE}/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"

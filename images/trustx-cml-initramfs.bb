@@ -62,6 +62,8 @@ EOF
 }
 
 update_inittab () {
+    sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
+
     echo "tty12::respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
     mkdir -p ${IMAGE_ROOTFS}/dev
     mknod -m 622 ${IMAGE_ROOTFS}/dev/console c 5 1
