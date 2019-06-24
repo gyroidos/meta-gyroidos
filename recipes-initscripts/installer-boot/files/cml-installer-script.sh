@@ -78,7 +78,7 @@ while [ ! "$DISK_OK" = "y" ];do
 	DISK_OK="y"
 done
 
-/mnt/copy_image_to_disk.sh /mnt/trustmeimage.img "$DISK"
+/data/copy_image_to_disk.sh /data/trustmeimage.img "$DISK"
 
 echo "trustme was sucessfully installed to $DISK. Launching shell to inspect installation"
 exec /bin/sh

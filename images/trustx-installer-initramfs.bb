@@ -19,12 +19,15 @@ PACKAGE_INSTALL = "\
 	rattestation \
 	stunnel \
 	openssl-tpm2-engine \
+	e2fsprogs-resize2fs \
 	e2fsprogs-mke2fs \
 	e2fsprogs-e2fsck \
 	btrfs-tools \
 	kvmtool \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	installer-boot \
+	util-linux \
+	util-linux-uuidgen \
 "
 
 PACKAGE_INSTALL += "\
