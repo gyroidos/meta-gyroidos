@@ -24,7 +24,7 @@ PACKAGE_INSTALL = "\
 	btrfs-tools \
 	kvmtool \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
-	cml-installer \
+	installer-boot \
 "
 
 PACKAGE_INSTALL += "\
@@ -39,7 +39,7 @@ LICENSE = "GPLv2"
 
 IMAGE_FEATURES = ""
 
-export IMAGE_BASENAME = "trustx-cml-initramfs"
+export IMAGE_BASENAME = "trustx-installer-initramfs"
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 inherit image
 

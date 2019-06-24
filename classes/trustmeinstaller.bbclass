@@ -11,9 +11,9 @@ SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
 SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
 do_image_trustmeinstaller[nostamp] = "1"
-do_trustme_bootpart[nostamp] = "1"
+do_installer_bootpart[nostamp] = "1"
 
-do_image_trustmeimage[depends] = " \
+do_installer_bootpart[depends] = " \
     parted-native:do_populate_sysroot \
     mtools-native:do_populate_sysroot \
     dosfstools-native:do_populate_sysroot \
@@ -26,7 +26,7 @@ do_image_trustmeimage[depends] = " \
 "
 
 
-do_trustme_bootpart () {
+do_installer_bootpart () {
 
 	if [ -z "${DEPLOY_DIR_IMAGE}" ];then
 		bbfatal "Cannot get bitbake variable \"DEPLOY_DIR_IMAGE\""
@@ -84,7 +84,7 @@ TRUSTME_ROOTFS_ALIGN="4096"
 
 TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
 
-addtask do_trustme_bootpart before do_image_trustmeinstaller
+addtask do_installer_bootpart before do_image_trustmeinstaller
 
 do_image_trustmeinstaller[depends] = " \
     parted-native:do_populate_sysroot \
