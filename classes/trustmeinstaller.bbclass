@@ -19,8 +19,6 @@ do_installer_bootpart[depends] = " \
     dosfstools-native:do_populate_sysroot \
     btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
-    trustx-cml:do_image_complete \
-    trustx-cml-initramfs:do_image_complete \
     virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
 "
@@ -43,11 +41,14 @@ do_installer_bootpart () {
 		exit 1
 	fi
 
+	rm -fr ${TRUSTME_BOOTPART_DIR}
+
 	bbnote "Signing kernel binary"
-	kernelbin="${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${MACHINE}.bin"
+	kernelbin="${DEPLOY_DIR_IMAGE}/installer-kernel/bzImage-initramfs-${MACHINE}.bin"
 	if [ -L "${kernelbin}" ]; then
-	    link=`readlink "${kernelbin}"`
-	    ln -sf ${link}.signed ${kernelbin}.signed
+		link=`readlink "${kernelbin}"`
+		rm -f ${link}.signed ${kernelbin}.signed
+		ln -sf ${link}.signed ${kernelbin}.signed
 	fi
 
 	sbsign --key "${SECURE_BOOT_SIGNING_KEY}" --cert "${SECURE_BOOT_SIGNING_CERT}" --output "${kernelbin}.signed" "${kernelbin}"
@@ -59,17 +60,17 @@ do_installer_bootpart () {
 
 	rm -fr "${TRUSTME_BOOTPART_DIR}"
 	install -d "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/"
-	cp --dereference "${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
+	cp --dereference "${DEPLOY_DIR_IMAGE}/installer-kernel/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
 }
 
-TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
+TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
 TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeinstaller"
 TRUSTME_TARGET_ALIGN="4096"
 TRUSTME_TARGET_SECTOR_SIZE="4096"
 TRUSTME_SECTOR_SIZE="4096"
 TRUSTME_PARTTABLE_TYPE="gpt"
 
-TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
+TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
 TRUSTME_CONTAINER_ARCH="qemux86-64"
 
@@ -92,7 +93,6 @@ do_image_trustmeinstaller[depends] = " \
     dosfstools-native:do_populate_sysroot \
     btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
-    trustx-cml:do_populate_lic_deploy \
     virtual/kernel:do_shared_workdir \
 "
 
@@ -156,7 +156,7 @@ IMAGE_CMD_trustmeinstaller () {
 		exit 1
 	fi
 
-
+	rm -fr ${TRUSTME_IMAGE_TMP}
 	rm -f "${TRUSTME_IMAGE}"
 
 	machine=$(echo "${MACHINE}" | tr "-" "_")
@@ -183,9 +183,6 @@ IMAGE_CMD_trustmeinstaller () {
 	rm -fr "${tmp_modules}/"
 	install -d "${tmp_modules}/"
 
-	install -d "${rootfs_datadir}/cml/tokens"
-	install -d "${rootfs_datadir}/cml/containers_templates"
-
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
 	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_ARCH}" | tr "_" "-")"
@@ -199,18 +196,21 @@ IMAGE_CMD_trustmeinstaller () {
 
 
 	if ! [ -d "${test_cert_dir}" ];then
-		bbfatal_log "Test PKI not generated at ${test_cert_dir}\nIs trustx-cml-userdata built?"
+		bbfatal_log "Test PKI not generated at ${test_cert_dir}\nIs trustx-cml built?"
 		exit 1
 	fi
 
-	# copy files to temp data directory
+	# copy files to tmp data directory
 	bbnote "Preparing files for data partition"
 
-	cp "${DEPLOY_DIR_IMAGE}/trustme_image/trustmeimage.img" "${rootfs_datadir}/"
-	cp "${TOPDIR}/../trustme/build/yocto/copy_image_to_disk.sh" "${rootfs_datadir}/"
+	install -d "${rootfs_datadir}/trustme_boot/EFI/BOOT"
+
+	cp -r "${DEPLOY_DIR_IMAGE}/tmp_trustmeimage/tmp_data" "${rootfs_datadir}/trustme_data"
+	cp -r --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-trustx-corei7-64.bin.signed" "${rootfs_datadir}/trustme_boot/EFI/BOOT/BOOTX64.EFI"
+	cp "${TOPDIR}/../trustme/build/yocto/install_trustme.sh" "${rootfs_datadir}/"
 
 	# copy modules to data partition directory
-	cp -fL "${DEPLOY_DIR_IMAGE}/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
+	cp -fL "${DEPLOY_DIR_IMAGE}/installer-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
 	ls -l "${tmp_modules}"
 	tar -C "${tmp_modules}/" -xf "${tmp_modules}/modules.tgz"
 	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
@@ -320,7 +320,7 @@ IMAGE_CMD_trustmeinstaller () {
 	# Create boot partition
 	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart boot ${TRUSTME_BOOTPART_FS} "${start_bootpart}B" "${end_bootpart}B"
 	parted -s ${TRUSTME_IMAGE} set 1 legacy_boot on
-	parted -s ${TRUSTME_IMAGE} set 1 msftdata  on
+	parted -s ${TRUSTME_IMAGE} set 1 msftdata on
 	parted -s ${TRUSTME_IMAGE} set 1 boot off
 	parted -s ${TRUSTME_IMAGE} set 1 esp off
 	partprobe
@@ -329,12 +329,12 @@ IMAGE_CMD_trustmeinstaller () {
 	parted -s ${TRUSTME_IMAGE} unit B --align none print
 
 	# Create data partition
-	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart trustme "${TRUSTME_BOOTPART_FS}" "${start_datapart}B" "${end_datapart}B"
+	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart trustmeinstaller "${TRUSTME_BOOTPART_FS}" "${start_datapart}B" "${end_datapart}B"
 	parted -s ${TRUSTME_IMAGE} set 2 legacy_boot off
-	parted -s ${TRUSTME_IMAGE} set 2 msftdata  off
+	parted -s ${TRUSTME_IMAGE} set 2 msftdata off
 	parted -s ${TRUSTME_IMAGE} set 2 boot off
 	parted -s ${TRUSTME_IMAGE} set 2 esp off
-	
+
 	bbnote "Created data partition"
 
 	bbnote "Copying filesystems to partitions"
@@ -373,10 +373,6 @@ IMAGE_CMD_trustmeinstaller () {
 	else
 		bbfatal_log "Failed to verify integrity of boot filesystem. Aborting..."
 	fi
-
-	rm -fr ${TRUSTME_IMAGE_TMP}
-	rm -fr ${TRUSTME_BOOTPART_DIR}
-
 
 	bbnote "Successfully created trustme image at ${TRUSTME_IMAGE}"
 }

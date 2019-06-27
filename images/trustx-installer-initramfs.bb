@@ -28,9 +28,6 @@ PACKAGE_INSTALL = "\
 	installer-boot \
 	util-linux \
 	util-linux-uuidgen \
-"
-
-PACKAGE_INSTALL += "\
 	gptfdisk \
 	parted \
 	util-linux-sfdisk \
@@ -60,15 +57,17 @@ update_fstab () {
 tmpfs /tmp tmpfs defaults 0 0
 
 /dev/disk/by-partlabel/boot /boot vfat umask=0077 0 1
-/dev/disk/by-partlabel/trustme /mnt ext4 defaults 0 0
+/dev/disk/by-partlabel/trustmeinstaller /mnt ext4 defaults 0 0
 EOF
 }
 
 update_inittab () {
+    sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
+
     echo "tty12::respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
     mkdir -p ${IMAGE_ROOTFS}/dev
     mknod -m 622 ${IMAGE_ROOTFS}/dev/console c 5 1
-    mknod -m 622 ${IMAGE_ROOTFS}/dev/tty12 c 4 1
+    mknod -m 622 ${IMAGE_ROOTFS}/dev/tty1 c 4 1
 }
 
 update_modules_dep () {
@@ -83,3 +82,5 @@ ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATU
 
 inherit extrausers
 EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -P root root; ", "",d)}'
+
+do_bundle_initramfs[nostamp] = "1"

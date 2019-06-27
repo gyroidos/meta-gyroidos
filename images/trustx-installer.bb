@@ -1,9 +1,6 @@
 inherit image
 inherit trustmeinstaller
 
-KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
-KERNEL_IMAGETYPE="installer"
-
 DEPENDS += "coreutils-native"
 
 IMAGE_FSTYPES="trustmeinstaller"

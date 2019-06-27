@@ -74,6 +74,8 @@ update_modules_dep () {
 	sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
 }
 
+do_bundle_initramfs[nostamp] = "1"
+
 ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
 

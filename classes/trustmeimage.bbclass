@@ -10,9 +10,6 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
 SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
-do_image_trustmeimage[nostamp] = "1"
-do_trustme_bootpart[nostamp] = "1"
-
 do_trustme_bootpart[depends] += " \
     virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
@@ -27,6 +24,7 @@ do_trustme_bootpart[depends] += " \
 
 
 do_trustme_bootpart () {
+	rm -fr ${TRUSTME_BOOTPART_DIR}
 
 	if [ -z "${DEPLOY_DIR_IMAGE}" ];then
 		bbfatal "Cannot get bitbake variable \"DEPLOY_DIR_IMAGE\""
@@ -44,7 +42,7 @@ do_trustme_bootpart () {
 	fi
 
 	bbnote "Signing kernel binary"
-	kernelbin="${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${MACHINE}.bin"
+	kernelbin="${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${MACHINE}.bin"
 	if [ -L "${kernelbin}" ]; then
 	    link=`readlink "${kernelbin}"`
 	    ln -sf ${link}.signed ${kernelbin}.signed
@@ -57,9 +55,8 @@ do_trustme_bootpart () {
 	machine=$(echo "${MACHINE}" | tr "_" "-")
 	bbdebug 1 "Boot machine: $machine"
 
-	rm -fr "${TRUSTME_BOOTPART_DIR}"
 	install -d "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/"
-	cp --dereference "${DEPLOY_DIR_IMAGE}/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
+	cp --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
 }
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
@@ -157,6 +154,7 @@ IMAGE_CMD_trustmeimage () {
 	fi
 
 
+	rm -fr ${TRUSTME_IMAGE_TMP}
 	rm -f "${TRUSTME_IMAGE}"
 
 	machine=$(echo "${MACHINE}" | tr "-" "_")
@@ -173,8 +171,6 @@ IMAGE_CMD_trustmeimage () {
 	trustme_bootfs="$trustme_fsdir/trustme_bootfs"
 	trustme_datafs="$trustme_fsdir/trustme_datafs"
 
-	# TODO warn user?
-	rm -fr "${TRUSTME_IMAGE_TMP}"
 	install -d "${TRUSTME_IMAGE_TMP}"
 	rm -fr "${rootfs_datadir}"
 	install -d "${rootfs_datadir}"
@@ -228,7 +224,7 @@ IMAGE_CMD_trustmeimage () {
 	cp -afr "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
 
 	# copy modules to data partition directory
-	cp -fL "${DEPLOY_DIR_IMAGE}/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
+	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
 	ls -l "${tmp_modules}"
 	tar -C "${tmp_modules}/" -xf "${tmp_modules}/modules.tgz"
 	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
@@ -391,10 +387,6 @@ IMAGE_CMD_trustmeimage () {
 	else
 		bbfatal_log "Failed to verify integrity of boot filesystem. Aborting..."
 	fi
-
-	rm -fr ${TRUSTME_IMAGE_TMP}
-	rm -fr ${TRUSTME_BOOTPART_DIR}
-
 
 	bbnote "Successfully created trustme image at ${TRUSTME_IMAGE}"
 }
