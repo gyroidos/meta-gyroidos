@@ -37,6 +37,11 @@ udevadm settle
 modprobe loop
 modprobe btrfs
 
+if [ -e "/dev/disk/by-label/containers" ]; then
+	echo "Found dedicated filesystem for containers, mounting it!"
+	mount /dev/disk/by-label/containers /data/cml/containers
+fi
+
 if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.conf" ]; then
 	cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.conf /data/cml/containers/00000000-0000-0000-0000-000000000000.conf
 fi
