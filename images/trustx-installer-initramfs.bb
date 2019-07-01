@@ -31,6 +31,7 @@ PACKAGE_INSTALL = "\
 	gptfdisk \
 	parted \
 	util-linux-sfdisk \
+	dosfstools \
 "
 
 IMAGE_LINUGUAS = " "
@@ -64,7 +65,7 @@ EOF
 update_inittab () {
     sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
 
-    echo "tty12::respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "tty1::respawn:${base_sbindir}/mingetty --autologin root tty1" >> ${IMAGE_ROOTFS}/etc/inittab
     mkdir -p ${IMAGE_ROOTFS}/dev
     mknod -m 622 ${IMAGE_ROOTFS}/dev/console c 5 1
     mknod -m 622 ${IMAGE_ROOTFS}/dev/tty1 c 4 1
