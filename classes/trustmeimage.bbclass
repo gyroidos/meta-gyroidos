@@ -94,6 +94,7 @@ do_image_trustmeimage[depends] = " \
 "
 
 
+IMAGE_CMD_trustmeimage[deptask] += " do_trustme_bootpart "
 
 
 IMAGE_CMD_trustmeimage () {

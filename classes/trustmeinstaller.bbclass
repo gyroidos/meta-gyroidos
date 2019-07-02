@@ -10,9 +10,6 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
 SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
-do_image_trustmeinstaller[nostamp] = "1"
-do_installer_bootpart[nostamp] = "1"
-
 do_installer_bootpart[depends] = " \
     parted-native:do_populate_sysroot \
     mtools-native:do_populate_sysroot \
@@ -22,7 +19,6 @@ do_installer_bootpart[depends] = " \
     virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
 "
-
 
 do_installer_bootpart () {
 
@@ -96,7 +92,7 @@ do_image_trustmeinstaller[depends] = " \
     virtual/kernel:do_shared_workdir \
 "
 
-
+IMAGE_CMD_trustmeinstaller[deptask] += " do_installer_bootpart "
 
 
 IMAGE_CMD_trustmeinstaller () {

@@ -7,5 +7,3 @@ IMAGE_FSTYPES="trustmeinstaller"
 
 INITRAMFS_IMAGE_BUNDLE = "1"
 INITRAMFS_IMAGE = "trustx-installer-initramfs"
-
-do_bundle_initramfs[nostamp] = "1"
