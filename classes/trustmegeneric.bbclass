@@ -10,61 +10,12 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
 SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
-do_trustme_bootpart[depends] += " \
-    virtual/kernel:do_deploy \
-    sbsigntool-native:do_populate_sysroot \
-    parted-native:do_populate_sysroot \
-    mtools-native:do_populate_sysroot \
-    dosfstools-native:do_populate_sysroot \
-    btrfs-tools-native:do_populate_sysroot \
-    gptfdisk-native:do_populate_sysroot \
-    trustx-cml-initramfs:do_image_complete \
-    virtual/kernel:do_shared_workdir \
-"
-
-
-do_trustme_bootpart () {
-	rm -fr ${TRUSTME_BOOTPART_DIR}
-
-	if [ -z "${DEPLOY_DIR_IMAGE}" ];then
-		bbfatal "Cannot get bitbake variable \"DEPLOY_DIR_IMAGE\""
-		exit 1
-	fi
-
-	if [ -z "${TRUSTME_BOOTPART_DIR}" ];then
-		bbfatal "Cannot get bitbake variable \"TRUSTME_BOOTPART_DIR\""
-		exit 1
-	fi
-
-	if [ -z "${MACHINE}" ];then
-		bbfatal "Cannot get bitbake variable \"MACHINE\""
-		exit 1
-	fi
-
-	bbnote "Signing kernel binary"
-	kernelbin="${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${MACHINE}.bin"
-	if [ -L "${kernelbin}" ]; then
-	    link=`readlink "${kernelbin}"`
-	    ln -sf ${link}.signed ${kernelbin}.signed
-	fi
-
-	sbsign --key "${SECURE_BOOT_SIGNING_KEY}" --cert "${SECURE_BOOT_SIGNING_CERT}" --output "${kernelbin}.signed" "${kernelbin}"
-
-	bbnote "Copying boot partition files to ${TRUSTME_BOOTPART_DIR}"
-
-	machine=$(echo "${MACHINE}" | tr "_" "-")
-	bbdebug 1 "Boot machine: $machine"
-
-	install -d "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/"
-	cp --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
-}
-
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage"
 TRUSTME_TARGET_ALIGN="4096"
 TRUSTME_TARGET_SECTOR_SIZE="4096"
 TRUSTME_SECTOR_SIZE="4096"
-TRUSTME_PARTTABLE_TYPE="gpt"
+TRUSTME_PARTTABLE_TYPE?="gpt"
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
@@ -81,8 +32,6 @@ TRUSTME_ROOTFS_ALIGN="4096"
 
 TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
 
-addtask do_trustme_bootpart before do_image_trustmeimage
-
 do_image_trustmeimage[depends] = " \
     parted-native:do_populate_sysroot \
     mtools-native:do_populate_sysroot \
@@ -94,10 +43,10 @@ do_image_trustmeimage[depends] = " \
 "
 
 
-IMAGE_CMD_trustmeimage[deptask] += " do_trustme_bootpart "
+do_build_trustmeimage[deptask] += " do_trustme_bootpart "
 
 
-IMAGE_CMD_trustmeimage () {
+do_build_trustmeimage () {
 
 	if [ -z "${TRUSTME_BOOTPART_DIR}" ];then
 		bbfatal_log "Cannot get bitbake variable \"TRUSTME_BOOTPART_DIR\""
@@ -205,7 +154,7 @@ IMAGE_CMD_trustmeimage () {
 
 	if ! [ -f "${deploy_dir_container}/trustx-configs/device.conf" ];then
 		# TODO create image for manual setup
-		bbfatal_log "It seems that no containers were built. At least one container is needed. Exiting..."
+		bbfatal_log "It seems that no containers were built in directory ${deploy_dir_container}. At least one container is needed. Exiting..."
 	fi
 
 	cp -f "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
@@ -329,28 +278,50 @@ IMAGE_CMD_trustmeimage () {
 	fi
 
 	bbnote "Creating partition table:"
-	parted -s "${TRUSTME_IMAGE}" unit B --align none mklabel gpt
-	sgdisk --move-second-header "${TRUSTME_IMAGE}"
+	bbwarn "Building image using ${TRUSTME_PARTTABLE_TYPE} partition table"
+	parted -s "${TRUSTME_IMAGE}" unit B --align none mklabel ${TRUSTME_PARTTABLE_TYPE}
+	bbwarn "created label"
+
+	if [ "${TRUSTME_PARTTABLE_TYPE}" = "gpt" ];then
+		bbwarn "Moving second header on ${TRUSTME_PARTTABLE_TYPE} image"
+		sgdisk --move-second-header "${TRUSTME_IMAGE}"
+	fi
 
 	# Create boot partition
-	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart boot ${TRUSTME_BOOTPART_FS} "${start_bootpart}B" "${end_bootpart}B"
-	parted -s ${TRUSTME_IMAGE} set 1 legacy_boot on
-	parted -s ${TRUSTME_IMAGE} set 1 msftdata  on
-	parted -s ${TRUSTME_IMAGE} set 1 boot off
-	parted -s ${TRUSTME_IMAGE} set 1 esp off
+	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart primary ${TRUSTME_BOOTPART_FS} "${start_bootpart}B" "${end_bootpart}B"
+	sync
 	partprobe
 	bbnote "Created boot partition"
 
 	parted -s ${TRUSTME_IMAGE} unit B --align none print
 
 	# Create data partition
-	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart trustme "${TRUSTME_BOOTPART_FS}" "${start_datapart}B" "${end_datapart}B"
-	parted -s ${TRUSTME_IMAGE} set 2 legacy_boot off
-	parted -s ${TRUSTME_IMAGE} set 2 msftdata  off
-	parted -s ${TRUSTME_IMAGE} set 2 boot off
-	parted -s ${TRUSTME_IMAGE} set 2 esp off
-	
+	parted -s ${TRUSTME_IMAGE} unit B --align none mkpart primary "${TRUSTME_BOOTPART_FS}" "${start_datapart}B" "${end_datapart}B"
+	sync
+	partprobe
 	bbnote "Created data partition"
+
+	if [ "${TRUSTME_PARTTABLE_TYPE}" = "gpt" ];then
+		parted -s ${TRUSTME_IMAGE} name 1 boot
+		parted -s ${TRUSTME_IMAGE} set 1 legacy_boot on
+		parted -s ${TRUSTME_IMAGE} set 1 msftdata  on
+		parted -s ${TRUSTME_IMAGE} set 1 boot off
+		parted -s ${TRUSTME_IMAGE} set 1 esp off
+		sync
+		partprobe
+
+
+		parted -s ${TRUSTME_IMAGE} name 2 trustme
+		parted -s ${TRUSTME_IMAGE} set 2 legacy_boot off
+		parted -s ${TRUSTME_IMAGE} set 2 msftdata  off
+		parted -s ${TRUSTME_IMAGE} set 2 boot off
+		parted -s ${TRUSTME_IMAGE} set 2 esp off
+		sync
+		partprobe
+
+		bbnote "Done setting Set partiion names and flags"
+	fi
+
 
 	bbnote "Copying filesystems to partitions"
 	bbdebug 1 "Sizes:\nimg_size: ${img_size}\nimg_size_targetblocks: ${img_size_targetblocks}\nstart_datapart=${start_datapart}\n end_datapart: ${end_datapart}\nstart_bootpart=${start_bootpart}\n end_bootpart: ${end_bootpart}\nbootimg_size_bytes: ${bootimg_size_bytes}\ndataimg_size_bytes: ${dataimg_size_bytes}"

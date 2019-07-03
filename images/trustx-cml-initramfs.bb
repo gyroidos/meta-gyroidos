@@ -69,6 +69,8 @@ update_inittab () {
     mknod -m 622 ${IMAGE_ROOTFS}/dev/tty12 c 4 1
 }
 
+#TODO modsigning option in image fstype?
+
 update_modules_dep () {
 	sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
 }
