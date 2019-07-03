@@ -39,8 +39,10 @@ do_installer_bootpart () {
 
 	rm -fr ${TRUSTME_BOOTPART_DIR}
 
+	machine_replaced=$(echo "${MACHINE}" | tr "_" "-")
+
 	bbnote "Signing kernel binary"
-	kernelbin="${DEPLOY_DIR_IMAGE}/installer-kernel/bzImage-initramfs-${MACHINE}.bin"
+	kernelbin="${DEPLOY_DIR_IMAGE}/installer-kernel/bzImage-initramfs-${machine_replaced}.bin"
 	if [ -L "${kernelbin}" ]; then
 		link=`readlink "${kernelbin}"`
 		rm -f ${link}.signed ${kernelbin}.signed
@@ -51,12 +53,11 @@ do_installer_bootpart () {
 
 	bbnote "Copying boot partition files to ${TRUSTME_BOOTPART_DIR}"
 
-	machine=$(echo "${MACHINE}" | tr "_" "-")
 	bbdebug 1 "Boot machine: $machine"
 
 	rm -fr "${TRUSTME_BOOTPART_DIR}"
 	install -d "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/"
-	cp --dereference "${DEPLOY_DIR_IMAGE}/installer-kernel/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
+	cp --dereference "${DEPLOY_DIR_IMAGE}/installer-kernel/bzImage-initramfs-${machine_replaced}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
 }
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
@@ -89,7 +90,7 @@ do_image_trustmeinstaller[depends] = " \
     dosfstools-native:do_populate_sysroot \
     btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
-    virtual/kernel:do_shared_workdir \
+    virtual/kernel:do_deploy \
 "
 
 IMAGE_CMD_trustmeinstaller[deptask] += " do_installer_bootpart "
@@ -155,7 +156,7 @@ IMAGE_CMD_trustmeinstaller () {
 	rm -fr ${TRUSTME_IMAGE_TMP}
 	rm -f "${TRUSTME_IMAGE}"
 
-	machine=$(echo "${MACHINE}" | tr "-" "_")
+	machine_replaced=$(echo "${MACHINE}" | tr "-" "_")
 
 	bbnote "Starting to create trustme image"
 	# create temporary directories
@@ -202,7 +203,7 @@ IMAGE_CMD_trustmeinstaller () {
 	install -d "${rootfs_datadir}/trustme_boot/EFI/BOOT"
 
 	cp -r "${DEPLOY_DIR_IMAGE}/tmp_trustmeimage/tmp_data" "${rootfs_datadir}/trustme_data"
-	cp -r --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-trustx-corei7-64.bin.signed" "${rootfs_datadir}/trustme_boot/EFI/BOOT/BOOTX64.EFI"
+	cp -r --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${machine_replaced}.bin.signed" "${rootfs_datadir}/trustme_boot/EFI/BOOT/BOOTX64.EFI"
 	cp "${TOPDIR}/../trustme/build/yocto/install_trustme.sh" "${rootfs_datadir}/"
 
 	# copy modules to data partition directory
