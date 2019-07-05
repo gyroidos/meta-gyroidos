@@ -1,8 +1,8 @@
 SUMMARY = "Debian archive keyring"
 DESCRIPTION = "Use the debian package for keyring"
 LICENSE = "GPLv2"
-RC_URI[md5sum] = "51cb7f8ee1686228cd570c9b748d19ec"
-SRC_URI[sha256sum] = "3dc37cb40fb4fe69559096624295e3c6730658786f4e64349413c58d4f1d2927"
+SRC_URI[md5sum] = "ca03ec9a7a146210df4923193520f79c"
+SRC_URI[sha256sum] = "9cefd8917f3d97a999c136aa87f04a3024408b5bc1de470de7d6dfa5e4bd4361"
 
 SRC_URI = "http://ftp.de.debian.org/debian/pool/main/d/${PN}/${PN}_${PV}_all.deb"
 
