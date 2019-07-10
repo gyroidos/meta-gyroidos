@@ -24,6 +24,7 @@ do_sign_guestos_append () {
 
 ROOTFS_POSTPROCESS_COMMAND_append = " update_inittab; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
+ROOTFS_POSTPROCESS_COMMAND_append = " update_network_interfaces; "
 
 update_inittab () {
     sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
@@ -34,4 +35,12 @@ update_inittab () {
 
 update_hostname () {
     echo "trustx-core" > ${IMAGE_ROOTFS}/etc/hostname
+}
+
+update_network_interfaces () {
+    cat >> ${IMAGE_ROOTFS}/etc/network/interfaces <<EOF
+
+auto eth0
+iface eth0 inet dhcp
+EOF
 }
