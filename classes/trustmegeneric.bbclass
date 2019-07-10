@@ -32,18 +32,14 @@ TRUSTME_ROOTFS_ALIGN="4096"
 
 TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
 
-do_image_trustmeimage[depends] = " \
+TRUSTME_GENERIC_DEPENDS = " \
     parted-native:do_populate_sysroot \
     mtools-native:do_populate_sysroot \
     dosfstools-native:do_populate_sysroot \
     btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
-    trustx-cml-initramfs:do_image_complete \
     virtual/kernel:do_shared_workdir \
 "
-
-
-do_build_trustmeimage[deptask] += " do_trustme_bootpart "
 
 
 do_build_trustmeimage () {
@@ -183,6 +179,11 @@ do_build_trustmeimage () {
 	bbnote "Updating modules dependencies for kernel $kernelabiversion"
 	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
 	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
+
+	# copy trustme files to image deploy dir
+	mkdir -p "${TRUSTME_IMAGE_OUT}/files/trustme_datapartition"
+
+	cp -afr "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
 
 	# Create boot partition and mark it as bootable
 	bootpart_size_targetblocks="$(du --block-size=${TRUSTME_TARGET_ALIGN} -s ${TRUSTME_BOOTPART_DIR} | awk '{print $1}')"

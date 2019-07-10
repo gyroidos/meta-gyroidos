@@ -1,6 +1,4 @@
-inherit image_types
-inherit kernel-artifact-names
-
+inherit trustmegeneric
 #
 # Create an partitioned trustme image that can be dd'ed to the boot medium
 #
@@ -21,10 +19,7 @@ TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
 
 TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
 
-
-
-
-do_trustme_bootpart[depends] += " \
+do_image_trustmex86[depends] += " \
     virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
     parted-native:do_populate_sysroot \
@@ -33,13 +28,14 @@ do_trustme_bootpart[depends] += " \
     btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
     trustx-cml-initramfs:do_image_complete \
-    virtual/kernel:do_shared_workdir \
+    virtual/kernel:do_deploy \
 "
 
 
+do_image_trustmex86[depends] += " ${TRUSTME_GENERIC_DEPENDS} "
 
 
-do_trustme_bootpart () {
+do_uefi_bootpart () {
 	rm -fr ${TRUSTME_BOOTPART_DIR}
 
 	if [ -z "${DEPLOY_DIR_IMAGE}" ];then
@@ -76,7 +72,11 @@ do_trustme_bootpart () {
 }
 
 
+IMAGE_CMD_trustmex86 () {
+	bbwarn "Using standard trustme partition"
+	do_uefi_bootpart
+	do_build_trustmeimage
+}
 
-
-
-addtask do_trustme_bootpart before do_image_trustmeimage
+#addtask do_uefi_bootpart before IMAGE_CMD_trustmex86
+#addtask do_build_trustmeimage after do_uefi_bootpart
