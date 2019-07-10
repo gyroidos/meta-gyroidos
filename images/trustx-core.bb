@@ -21,3 +21,17 @@ do_sign_guestos_append () {
     cp ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/device.conf ${CONFIGS_OUT}
     sed -i '/c0os:*/c\c0os: \"${PN}os\"' ${CONFIGS_OUT}/device.conf
 }
+
+ROOTFS_POSTPROCESS_COMMAND_append = " update_inittab; "
+ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
+
+update_inittab () {
+    sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
+    #echo "1::respawn:${base_sbindir}/mingetty --autologin root tty1" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "1:12345:respawn:${base_sbindir}/getty 38400 tty1" >> ${IMAGE_ROOTFS}/etc/inittab
+
+}
+
+update_hostname () {
+    echo "trustx-core" > ${IMAGE_ROOTFS}/etc/hostname
+}

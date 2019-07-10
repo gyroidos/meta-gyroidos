@@ -1,5 +1,16 @@
 #!/bin/sh
 
+clear
+
+cat /etc/init_ascii
+
+echo "-- cml init log on tty11 [ready]"
+echo "-- waiting for c0 to start ..."
+
+exec > /dev/tty11
+exec 2>&1
+
+
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 mkdir -p /proc
@@ -8,6 +19,9 @@ mkdir -p /sys
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs none /dev
+
+# do not log kernel messages to console
+echo 1 > /proc/sys/kernel/printk
 
 mkdir -p /dev/shm
 mkdir -p /run
@@ -25,7 +39,6 @@ mount -a
 sleep 5
 
 mount --bind /mnt/modules /lib/modules
-
 mount --bind /mnt/userdata /data
 
 mkdir -p /data/logs
@@ -65,6 +78,7 @@ if [ ! -f /data/cml/tokens/device.cert ]; then
 	echo "--- Provisioning/Installing Mode ---" > /etc/motd
 	echo "Starting Security Helpder Daemon (scd) in Provisioning Mode"
 	scd
+	echo "--- Provisioning/Installing Mode on tty12 [ready]" > /dev/console
 else
 	echo "Starting Security Helpder Daemon (scd)"
 	scd &
@@ -78,8 +92,10 @@ else
 
 	echo "Starting Compartment Manger Daemon (cmld)"
 	cmld &
+	echo "-- cml debug console on tty12 [ready]" > /dev/console
 fi
 
 udevadm control --exit
 
-exec /sbin/init
+
+exec /sbin/init > /dev/tt11 2>&1

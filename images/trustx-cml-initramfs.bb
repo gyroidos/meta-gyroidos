@@ -74,8 +74,13 @@ update_modules_dep () {
 	sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
 }
 
+update_hostname () {
+    echo "trustx-cml" > ${IMAGE_ROOTFS}/etc/hostname
+}
+
 ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
+ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
 ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_inittab ; ", "",d)}'
