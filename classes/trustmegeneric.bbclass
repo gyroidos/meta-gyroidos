@@ -36,9 +36,10 @@ TRUSTME_GENERIC_DEPENDS = " \
     parted-native:do_populate_sysroot \
     mtools-native:do_populate_sysroot \
     dosfstools-native:do_populate_sysroot \
-    btrfs-tools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
-    virtual/kernel:do_shared_workdir \
+    trustx-cml-initramfs:do_image_complete \
+    virtual/kernel:do_deploy \
+	linux-firmware:do_package_write_ipk \
 "
 
 
@@ -110,6 +111,7 @@ do_build_trustmeimage () {
 	install -d "${TRUSTME_IMAGE_OUT}"
 	install -d "${TRUSTME_BOOTPART_DIR}"
 	tmp_modules="${TRUSTME_IMAGE_TMP}/tmp_modules"
+	tmp_firmware="${TRUSTME_IMAGE_TMP}/tmp_firmware"
 	tmp_datapart="${TRUSTME_IMAGE_TMP}/tmp_data"
 	rootfs_datadir="${tmp_datapart}/userdata/"
 	tmpdir="${TOPDIR}/tmp_container"
@@ -124,6 +126,8 @@ do_build_trustmeimage () {
 	install -d "${trustme_fsdir}"
 	rm -fr "${tmp_modules}/"
 	install -d "${tmp_modules}/"
+	rm -fr "${tmp_firmware}/"
+	install -d "${tmp_firmware}/"
 
 	install -d "${rootfs_datadir}/cml/tokens"
 	install -d "${rootfs_datadir}/cml/containers_templates"
@@ -180,9 +184,21 @@ do_build_trustmeimage () {
 	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
 	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
 
-	# copy trustme files to image deploy dir
-	mkdir -p "${TRUSTME_IMAGE_OUT}/files/trustme_datapartition"
 
+	# copy firmware to data partition directory
+	package_name="$(ls ${DEPLOY_DIR_IPK}/all/ | grep 'linux-firmware_')"
+
+	if [ -z package_name ]; then
+		bbfatal "Unable to locate linux-firmware ipk. was target linux-firmware built?"
+	fi
+
+	cp "${DEPLOY_DIR_IPK}/all/$package_name" "${tmp_firmware}/firmware.ipk"
+	cd "${tmp_firmware}"
+	ar x firmware.ipk
+	tar -xf data.tar.xz
+	cp -r "${tmp_firmware}/lib/firmware" "${tmp_datapart}"
+
+	# copy trustme files to image deploy dir
 	cp -afr "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
 
 	# Create boot partition and mark it as bootable
@@ -279,12 +295,12 @@ do_build_trustmeimage () {
 	fi
 
 	bbnote "Creating partition table:"
-	bbwarn "Building image using ${TRUSTME_PARTTABLE_TYPE} partition table"
+	bbnote  "Building image using ${TRUSTME_PARTTABLE_TYPE} partition table"
 	parted -s "${TRUSTME_IMAGE}" unit B --align none mklabel ${TRUSTME_PARTTABLE_TYPE}
-	bbwarn "created label"
+	bbnote  "created label"
 
 	if [ "${TRUSTME_PARTTABLE_TYPE}" = "gpt" ];then
-		bbwarn "Moving second header on ${TRUSTME_PARTTABLE_TYPE} image"
+		bbnote  "Moving second header on ${TRUSTME_PARTTABLE_TYPE} image"
 		sgdisk --move-second-header "${TRUSTME_IMAGE}"
 	fi
 

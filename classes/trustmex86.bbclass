@@ -20,15 +20,7 @@ TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
 TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
 
 do_image_trustmex86[depends] += " \
-    virtual/kernel:do_deploy \
     sbsigntool-native:do_populate_sysroot \
-    parted-native:do_populate_sysroot \
-    mtools-native:do_populate_sysroot \
-    dosfstools-native:do_populate_sysroot \
-    btrfs-tools-native:do_populate_sysroot \
-    gptfdisk-native:do_populate_sysroot \
-    trustx-cml-initramfs:do_image_complete \
-    virtual/kernel:do_deploy \
 "
 
 
@@ -68,12 +60,14 @@ do_uefi_bootpart () {
 	bbdebug 1 "Boot machine: $machine"
 
 	install -d "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/"
+	install -d "${TRUSTME_IMAGE_OUT}"
 	cp --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_BOOTPART_DIR}/EFI/BOOT/BOOTX64.EFI"
+	cp --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${machine}.bin.signed" "${TRUSTME_IMAGE_OUT}/cml-kernel.signed"
 }
 
 
 IMAGE_CMD_trustmex86 () {
-	bbwarn "Using standard trustme partition"
+	bbnote  "Using standard trustme partition"
 	do_uefi_bootpart
 	do_build_trustmeimage
 }
