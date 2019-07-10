@@ -5,7 +5,7 @@ include images/trustx-signing.inc
 PACKAGE_INSTALL = "\
 	busybox \
 	service-static \
-	openssl \
+	openssl-bin \
 	converter \
 	lighttpd \
 	control \
