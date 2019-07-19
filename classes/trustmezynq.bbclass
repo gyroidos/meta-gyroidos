@@ -10,15 +10,13 @@ SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage"
-TRUSTME_PARTTABLE_TYPE="msdos"
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
-TRUSTME_CONTAINER_ARCH="qemuarm64"
 
 TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
 
-TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
+TRUSTME_DEFAULTCONFIG="trustx-core.conf"
 
 
 do_image_trustmezynq[depends] = " \
@@ -26,7 +24,7 @@ do_image_trustmezynq[depends] = " \
 "
 
 
-do_image_trustmex86[depends] += " ${TRUSTME_GENERIC_DEPENDS} "
+do_image_trustmezynq[depends] += " ${TRUSTME_GENERIC_DEPENDS} "
 
 do_zynq_bootpart () {
 

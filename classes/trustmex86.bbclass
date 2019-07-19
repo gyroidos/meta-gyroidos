@@ -13,11 +13,10 @@ TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage"
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
-TRUSTME_CONTAINER_ARCH="qemux86-64"
 
 TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
 
-TRUSTME_DEFAULTCONFIG?="trustx-core.conf"
+TRUSTME_DEFAULTCONFIG="trustx-core.conf"
 
 do_image_trustmex86[depends] += " \
     sbsigntool-native:do_populate_sysroot \

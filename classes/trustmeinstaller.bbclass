@@ -15,7 +15,6 @@ INSTALLER_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_installerimage"
 
 INSTALLER_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/installer_bootpart"
 INSTALLER_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
-TRUSTME_CONTAINER_ARCH="qemux86-64"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
 
 INSTALLER_IMAGE="${INSTALLER_IMAGE_OUT}/trustmeimage.img"
@@ -78,7 +77,6 @@ INSTALLER_TARGET_SECTOR_SIZE="4096"
 
 INSTALLER_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
 INSTALLER_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
-TRUSTME_CONTAINER_ARCH="qemux86-64"
 
 INSTALLER_IMAGE="${INSTALLER_IMAGE_OUT}/trustmeinstaller.img"
 INSTALLER_BOOTPART_EXTRA_FACTOR="1.2"
@@ -179,7 +177,7 @@ IMAGE_CMD_trustmeinstaller () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_ARCH}" | tr "_" "-")"
+	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_MACHINE}" | tr "_" "-")"
 
 	src="${TOPDIR}/../trustme/build/"
 	config_creator_dir="${src}/config_creator"

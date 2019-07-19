@@ -15,11 +15,10 @@ TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage"
 TRUSTME_TARGET_ALIGN="4096"
 TRUSTME_TARGET_SECTOR_SIZE="4096"
 TRUSTME_SECTOR_SIZE="4096"
-TRUSTME_PARTTABLE_TYPE?="gpt"
+TRUSTME_PARTTABLE_TYPE??="gpt"
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
-TRUSTME_CONTAINER_ARCH="qemux86-64"
 
 TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
 TRUSTME_DATAPART_EXTRA_FACTOR="1.2"
@@ -134,7 +133,8 @@ do_build_trustmeimage () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_ARCH}" | tr "_" "-")"
+	containermachine="${TRUSTME_CONTAINER_MACHINE}"
+	deploy_dir_container="${tmpdir}/deploy/images/$(echo $containermachine | tr "_" "-")"
 
 	src="${TOPDIR}/../trustme/build/"
 	config_creator_dir="${src}/config_creator"
@@ -157,13 +157,13 @@ do_build_trustmeimage () {
 		bbfatal_log "It seems that no containers were built in directory ${deploy_dir_container}. At least one container is needed. Exiting..."
 	fi
 
-	cp -f "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
+	cp "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
 
-	cp -far "${deploy_dir_container}/trustx-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
+	cp -ar "${deploy_dir_container}/trustx-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
 
-	cp -f "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
+	cp "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
 
-	cp -f "${test_cert_dir}/gen_rootca.cert" "${rootfs_datadir}/cml/tokens/"
+	cp "${test_cert_dir}/gen_rootca.cert" "${rootfs_datadir}/cml/tokens/"
 
 	mkdir -p "${deploy_dir_container}"
 
@@ -171,10 +171,10 @@ do_build_trustmeimage () {
 
 	mkdir -p "${rootfs_datadir}/cml/containers/"
 
-	cp -afr "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
+	cp -ar "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
 
 	# copy modules to data partition directory
-	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
+	cp -L "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
 	ls -l "${tmp_modules}"
 	tar -C "${tmp_modules}/" -xf "${tmp_modules}/modules.tgz"
 	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
@@ -182,7 +182,7 @@ do_build_trustmeimage () {
 	rm -f "${tmp_modules}/modules.tgz"
 	bbnote "Updating modules dependencies for kernel $kernelabiversion"
 	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
-	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
+	cp -r "${tmp_modules}/lib/modules" "${tmp_datapart}"
 
 
 	# copy firmware to data partition directory
@@ -199,7 +199,7 @@ do_build_trustmeimage () {
 	cp -r "${tmp_firmware}/lib/firmware" "${tmp_datapart}"
 
 	# copy trustme files to image deploy dir
-	cp -afr "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
+	cp -ar "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
 
 	# Create boot partition and mark it as bootable
 	bootpart_size_targetblocks="$(du --block-size=${TRUSTME_TARGET_ALIGN} -s ${TRUSTME_BOOTPART_DIR} | awk '{print $1}')"
