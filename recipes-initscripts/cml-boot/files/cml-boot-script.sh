@@ -78,22 +78,23 @@ if [ ! -f /data/cml/tokens/device.cert ]; then
 	echo "--- Provisioning/Installing Mode ---" > /etc/motd
 	echo "Starting Security Helpder Daemon (scd) in Provisioning Mode"
 	scd
-	echo "--- Provisioning/Installing Mode on tty12 [ready]" > /dev/console
-else
-	echo "Starting Security Helpder Daemon (scd)"
-	scd &
-	if [ ! -S /run/socket/cml-scd-control ]; then
-		echo "Waiting for scd's control interface"
-	fi
-	while [ ! -S /run/socket/cml-scd-control ]; do
-		echo -n "."
-		sleep 1
-	done
-
-	echo "Starting Compartment Manger Daemon (cmld)"
-	cmld &
-	echo "-- cml debug console on tty12 [ready]" > /dev/console
+	echo "--- Provisioning/Installing Mode ---" > /dev/console
 fi
+
+echo "Starting Security Helpder Daemon (scd)"
+scd &
+if [ ! -S /run/socket/cml-scd-control ]; then
+	echo "Waiting for scd's control interface"
+fi
+while [ ! -S /run/socket/cml-scd-control ]; do
+	echo -n "."
+	sleep 1
+done
+
+echo "Starting Compartment Manger Daemon (cmld)"
+cmld &
+echo "-- cml debug console on tty12 [ready]" > /dev/console
+
 
 udevadm control --exit
 
