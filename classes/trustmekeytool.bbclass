@@ -55,6 +55,7 @@ IMAGE_CMD_trustmekeytool () {
 
 	cp --dereference ${TEST_CERT_DIR}/DB.esl ${TRUSTME_KEYTOOL_BOOTPART}/keys/
 	cp --dereference ${TEST_CERT_DIR}/KEK.esl ${TRUSTME_KEYTOOL_BOOTPART}/keys/
+	cp --dereference ${TEST_CERT_DIR}/PK.cer ${TRUSTME_KEYTOOL_BOOTPART}/keys/
 	cp --dereference ${TEST_CERT_DIR}/PK.auth ${TRUSTME_KEYTOOL_BOOTPART}/keys/
 	bbdebug 1 "Boot machine: $machine"
 
