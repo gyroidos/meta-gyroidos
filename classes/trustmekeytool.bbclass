@@ -100,6 +100,6 @@ IMAGE_CMD_trustmekeytool () {
 	bbnote "Copying boot filesystem to partition"
 	dd if="$trustme_bootfs" of="${TRUSTME_KEYTOOL_IMAGE}" bs=4096 count=$bootfs_size_4k seek="34" conv=notrunc,fsync iflag=sync oflag=sync status=progress
 	/bin/sync
-	partlayout="$(parted ${TRUSTME_KEYTOOL_IMAGE} unit B --align none print 2>1)"
+	partlayout="$(parted ${TRUSTME_KEYTOOL_IMAGE} unit B --align none print 2>&1)"
 	bbdebug 1 "${partlayout}"
 }

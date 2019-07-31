@@ -2,6 +2,11 @@ require recipes-core/images/core-image-minimal.bb
 
 include images/trustx-signing.inc
 
+# Workaround for ICECC bug causing missing include dir errors
+# uncomment to disable warnings
+# TARGET_CFLAGS += " -w "
+# BUILD_CFLAGS += " -w "
+
 IMAGE_FSTYPES = "squashfs ext4"
 
 IMAGE_FEATURES_append = " allow-empty-password"

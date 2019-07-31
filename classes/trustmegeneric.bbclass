@@ -15,7 +15,7 @@ TRUSTME_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage"
 TRUSTME_TARGET_ALIGN="4096"
 TRUSTME_TARGET_SECTOR_SIZE="4096"
 TRUSTME_SECTOR_SIZE="4096"
-TRUSTME_PARTTABLE_TYPE??="gpt"
+TRUSTME_PARTTABLE_TYPE?="gpt"
 
 TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_bootpart"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
@@ -133,8 +133,8 @@ do_build_trustmeimage () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	containermachine="${TRUSTME_CONTAINER_MACHINE}"
-	deploy_dir_container="${tmpdir}/deploy/images/$(echo $containermachine | tr "_" "-")"
+	containerarch="${TRUSTME_CONTAINER_ARCH_${MACHINE}}"
+	deploy_dir_container="${tmpdir}/deploy/images/$(echo $containerarch | tr "_" "-")"
 
 	src="${TOPDIR}/../trustme/build/"
 	config_creator_dir="${src}/config_creator"
@@ -157,13 +157,13 @@ do_build_trustmeimage () {
 		bbfatal_log "It seems that no containers were built in directory ${deploy_dir_container}. At least one container is needed. Exiting..."
 	fi
 
-	cp "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
+	cp -f "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
 
-	cp -ar "${deploy_dir_container}/trustx-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
+	cp -far "${deploy_dir_container}/trustx-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
 
-	cp "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
+	cp -f "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
 
-	cp "${test_cert_dir}/gen_rootca.cert" "${rootfs_datadir}/cml/tokens/"
+	cp -f "${test_cert_dir}/gen_rootca.cert" "${rootfs_datadir}/cml/tokens/"
 
 	mkdir -p "${deploy_dir_container}"
 
@@ -171,10 +171,10 @@ do_build_trustmeimage () {
 
 	mkdir -p "${rootfs_datadir}/cml/containers/"
 
-	cp -ar "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
+	cp -afr "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
 
 	# copy modules to data partition directory
-	cp -L "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
+	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
 	ls -l "${tmp_modules}"
 	tar -C "${tmp_modules}/" -xf "${tmp_modules}/modules.tgz"
 	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
@@ -182,7 +182,7 @@ do_build_trustmeimage () {
 	rm -f "${tmp_modules}/modules.tgz"
 	bbnote "Updating modules dependencies for kernel $kernelabiversion"
 	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
-	cp -r "${tmp_modules}/lib/modules" "${tmp_datapart}"
+	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
 
 
 	# copy firmware to data partition directory
@@ -199,7 +199,7 @@ do_build_trustmeimage () {
 	cp -r "${tmp_firmware}/lib/firmware" "${tmp_datapart}"
 
 	# copy trustme files to image deploy dir
-	cp -ar "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
+	cp -afr "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
 
 	# Create boot partition and mark it as bootable
 	bootpart_size_targetblocks="$(du --block-size=${TRUSTME_TARGET_ALIGN} -s ${TRUSTME_BOOTPART_DIR} | awk '{print $1}')"
@@ -346,7 +346,7 @@ do_build_trustmeimage () {
 	bbnote "Copying boot filesystem to partition"
 	dd if=${trustme_bootfs} of=${TRUSTME_IMAGE} bs=${TRUSTME_TARGET_ALIGN} count=${bootimg_size_targetblocks} seek=${start_bootpart_targetblocks} conv=notrunc,fsync iflag=sync oflag=sync status=progress
 	/bin/sync
-	partlayout="$(parted ${TRUSTME_IMAGE} unit B --align none print 2>1)"
+	partlayout="$(parted ${TRUSTME_IMAGE} unit B --align none print 2>&1)"
 	bbdebug 1 "${partlayout}"
 
 	#sgdisk --print ${TRUSTME_IMAGE}
@@ -358,7 +358,7 @@ do_build_trustmeimage () {
 	/bin/sync
 	dd if=${trustme_datafs} of=${TRUSTME_IMAGE} bs=${TRUSTME_TARGET_ALIGN} count=${dataimg_size_targetblocks} seek=${start_datapart_targetblocks} conv=notrunc,fsync iflag=sync oflag=sync status=progress
 
-	partlayout="$(parted ${TRUSTME_IMAGE} unit B --align none print 2>1)"
+	partlayout="$(parted ${TRUSTME_IMAGE} unit B --align none print 2>&1)"
 	bbnote "Final partition layout:\n${partlayout}"
 
 	checkfs="$(cmp ${trustme_datafs} ${TRUSTME_IMAGE} --bytes=${dataimg_size_bytes} --ignore-initial=0:$(expr ${start_datapart_targetblocks} '*' ${TRUSTME_TARGET_ALIGN}))"
