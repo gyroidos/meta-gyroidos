@@ -15,6 +15,7 @@ INSTALLER_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_installerimage"
 
 INSTALLER_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/installer_bootpart"
 INSTALLER_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
+TRUSTME_CONTAINER_ARCH="qemux86-64"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
 
 INSTALLER_IMAGE="${INSTALLER_IMAGE_OUT}/trustmeimage.img"
@@ -177,7 +178,7 @@ IMAGE_CMD_trustmeinstaller () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_MACHINE}" | tr "_" "-")"
+	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_ARCH}" | tr "_" "-")"
 
 	src="${TOPDIR}/../trustme/build/"
 	config_creator_dir="${src}/config_creator"
@@ -335,7 +336,7 @@ IMAGE_CMD_trustmeinstaller () {
 	bbnote "Copying boot filesystem to partition"
 	dd if=${trustme_bootfs} of=${INSTALLER_IMAGE} bs=${INSTALLER_TARGET_ALIGN} count=${bootimg_size_targetblocks} seek=${start_bootpart_targetblocks} conv=notrunc,fsync iflag=sync oflag=sync status=progress
 	/bin/sync
-	partlayout="$(parted ${INSTALLER_IMAGE} unit B --align none print 2>1)"
+	partlayout="$(parted ${INSTALLER_IMAGE} unit B --align none print 2>&1)"
 	bbdebug 1 "${partlayout}"
 
 	#sgdisk --print ${INSTALLER_IMAGE}
@@ -347,7 +348,7 @@ IMAGE_CMD_trustmeinstaller () {
 	/bin/sync
 	dd if=${trustme_datafs} of=${INSTALLER_IMAGE} bs=${INSTALLER_TARGET_ALIGN} count=${dataimg_size_targetblocks} seek=${start_datapart_targetblocks} conv=notrunc,fsync iflag=sync oflag=sync status=progress
 
-	partlayout="$(parted ${INSTALLER_IMAGE} unit B --align none print 2>1)"
+	partlayout="$(parted ${INSTALLER_IMAGE} unit B --align none print 2>&1)"
 	bbnote "Final partition layout:\n${partlayout}"
 
 	checkfs="$(cmp ${trustme_datafs} ${INSTALLER_IMAGE} --bytes=${dataimg_size_bytes} --ignore-initial=0:$(expr ${start_datapart_targetblocks} '*' ${INSTALLER_TARGET_ALIGN}))"
