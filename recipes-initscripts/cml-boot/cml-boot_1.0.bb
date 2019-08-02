@@ -17,10 +17,11 @@ S = "${WORKDIR}"
 
 do_install() {
 	echo "#!/bin/sh" >> ${D}/init
+	echo "# Machine ${MACHINE}" >> ${D}/init
 	if [ "${MACHINE}" = "trustx-corei7-64" ];then
-		echo "LOGTTY="tty11" >> ${D}/init
+		echo "LOGTTY=\"tty11\"" >> ${D}/init
 	elif [ "${MACHINE}" = "zcu104-zynqmp" ];then
-		echo "LOGTTY="ttyPS0" >> ${D}/init
+		echo "LOGTTY=\"ttyPS0\"" >> ${D}/init
 	fi
 
 	cat ${WORKDIR}/cml-boot-script.stub >> ${D}/init
