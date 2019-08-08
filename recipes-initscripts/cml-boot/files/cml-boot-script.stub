@@ -97,4 +97,5 @@ fi
 udevadm control --exit
 
 
+rm -f /usr/share/X11/xorg.conf.d/90-evdev.conf
 exec /sbin/init > /dev/$LOGTTY 2>&1

@@ -59,6 +59,12 @@ do_build_trustmeimage () {
 		exit 1
 	fi
 
+	if [ -z "${DEPLOY_DIR_IPK}" ];then
+		bbfatal_log "Cannot get bitbake variable \"DEPLOY_DIR_IPK\""
+		exit 1
+	fi
+
+
 	if [ -z "${MACHINE_ARCH}" ];then
 		bbfatal_log "Cannot get bitbake variable \"MACHINE_ARCH\""
 		exit 1
@@ -99,6 +105,12 @@ do_build_trustmeimage () {
 		exit 1
 	fi
 
+if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
+		bbfatal_log "Cannot get bitbake variable \"TRUSTME_CONTAINER_ARCH_${MACHINE}\""
+		exit 1
+	fi
+
+
 
 	rm -fr ${TRUSTME_IMAGE_TMP}
 	rm -f "${TRUSTME_IMAGE}"
@@ -125,6 +137,9 @@ do_build_trustmeimage () {
 	install -d "${trustme_fsdir}"
 	rm -fr "${tmp_modules}/"
 	install -d "${tmp_modules}/"
+	rm -fr "${tmp_firmware}/"
+	install -d "${tmp_firmware}/"
+
 	rm -fr "${tmp_firmware}/"
 	install -d "${tmp_firmware}/"
 
@@ -183,7 +198,6 @@ do_build_trustmeimage () {
 	bbnote "Updating modules dependencies for kernel $kernelabiversion"
 	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
 	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
-
 
 	# copy firmware to data partition directory
 	package_name="$(ls ${DEPLOY_DIR_IPK}/all/ | grep 'linux-firmware_')"

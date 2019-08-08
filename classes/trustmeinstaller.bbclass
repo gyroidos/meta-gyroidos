@@ -15,7 +15,6 @@ INSTALLER_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_installerimage"
 
 INSTALLER_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/installer_bootpart"
 INSTALLER_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
-TRUSTME_CONTAINER_ARCH="qemux86-64"
 TRUSTME_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
 
 INSTALLER_IMAGE="${INSTALLER_IMAGE_OUT}/trustmeimage.img"
@@ -75,6 +74,8 @@ INSTALLER_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
 INSTALLER_IMAGE_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeinstaller"
 INSTALLER_TARGET_ALIGN="4096"
 INSTALLER_TARGET_SECTOR_SIZE="4096"
+TRUSTME_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
+TRUSTME_INSTALLER_TMP="${DEPLOY_DIR_IMAGE}/tmp_trustmeinstaller"
 
 INSTALLER_BOOTPART_DIR="${DEPLOY_DIR_IMAGE}/trustme_installerbootpart"
 INSTALLER_IMAGE_OUT="${DEPLOY_DIR_IMAGE}/trustme_image"
@@ -115,6 +116,12 @@ IMAGE_CMD_trustmeinstaller () {
 		exit 1
 	fi
 
+	if [ -z "${DEPLOY_DIR_IPK}" ];then
+		bbfatal_log "Cannot get bitbake variable \"DEPLOY_DIR_IPK\""
+		exit 1
+	fi
+
+
 	if [ -z "${MACHINE_ARCH}" ];then
 		bbfatal_log "Cannot get bitbake variable \"MACHINE_ARCH\""
 		exit 1
@@ -152,23 +159,33 @@ IMAGE_CMD_trustmeinstaller () {
 
 	rm -f "${INSTALLER_IMAGE}"
 
+	if [ -z "${TRUSTME_INSTALLER_TMP}" ];then
+		bbfatal_log "Cannot get bitbake variable \"TRUSTME_INSTALLER_TMP\""
+		exit 1
+	fi
+
+	cmldata="${DEPLOY_DIR_IMAGE}/tmp_trustmeimage/tmp_data"
+
+	rm -fr ${TRUSTME_INSTALLER_TMP}
+
 	machine_replaced=$(echo "${MACHINE}" | tr "_" "-")
 
 	bbnote "Starting to create trustme image"
+
 	# create temporary directories
-	install -d "${INSTALLER_IMAGE_OUT}"
-	install -d "${INSTALLER_BOOTPART_DIR}"
-	tmp_modules="${INSTALLER_IMAGE_TMP}/tmp_modules"
-	tmp_datapart="${INSTALLER_IMAGE_TMP}/tmp_data"
+	install -d "${TRUSTME_IMAGE_OUT}"
+	install -d "${TRUSTME_BOOTPART_DIR}"
+	tmp_modules="${TRUSTME_INSTALLER_TMP}/tmp_modules"
+	tmp_firmware="${TRUSTME_INSTALLER_TMP}/tmp_firmware"
+	tmp_datapart="${TRUSTME_INSTALLER_TMP}/tmp_data"
 	rootfs_datadir="${tmp_datapart}/userdata/"
 	tmpdir="${TOPDIR}/tmp_container"
-	trustme_fsdir="${INSTALLER_IMAGE_TMP}/filesystems"
+	trustme_fsdir="${TRUSTME_INSTALLER_TMP}/filesystems"
 	trustme_bootfs="$trustme_fsdir/trustme_bootfs"
 	trustme_datafs="$trustme_fsdir/trustme_datafs"
 
-	# TODO warn user?
-	rm -fr "${INSTALLER_IMAGE_TMP}"
-	install -d "${INSTALLER_IMAGE_TMP}"
+	rm -fr "${TRUSTME_INSTALLER_TMP}"
+	install -d "${TRUSTME_INSTALLER_TMP}"
 	rm -fr "${rootfs_datadir}"
 	install -d "${rootfs_datadir}"
 	rm -fr "${trustme_fsdir}"
@@ -176,9 +193,14 @@ IMAGE_CMD_trustmeinstaller () {
 	rm -fr "${tmp_modules}/"
 	install -d "${tmp_modules}/"
 
+	rm -fr "${tmp_firmware}/"
+	install -d "${tmp_firmware}/"
+
+
+
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_ARCH}" | tr "_" "-")"
+	deploy_dir_container="${tmpdir}/deploy/images/$(echo "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" | tr "_" "-")"
 
 	src="${TOPDIR}/../trustme/build/"
 	config_creator_dir="${src}/config_creator"
@@ -193,25 +215,15 @@ IMAGE_CMD_trustmeinstaller () {
 		exit 1
 	fi
 
-	# copy files to tmp data directory
+	# copy files created by trustx-cml recipe to installer data directory
 	bbnote "Preparing files for data partition"
 
-	install -d "${rootfs_datadir}/trustme_boot/EFI/BOOT"
+	install -d "${rootfs_datadir}/trustme_boot/EFI/BOOT/"
 
-	cp -r "${DEPLOY_DIR_IMAGE}/tmp_trustmeimage/tmp_data" "${rootfs_datadir}/trustme_data"
-	cp -r "${TRUSTME_IMAGE_OUT}/cml-kernel.signed" "${rootfs_datadir}/trustme_boot/EFI/BOOT/BOOTX64.EFI"
+	cp -r "$cmldata" "${rootfs_datadir}/trustme_data"
+	cp -r --dereference "${DEPLOY_DIR_IMAGE}/cml-kernel/bzImage-initramfs-${machine_replaced}.bin.signed" "${rootfs_datadir}/trustme_boot/EFI/BOOT/BOOTX64.EFI"
 	cp "${TOPDIR}/../trustme/build/yocto/install_trustme.sh" "${rootfs_datadir}/"
 
-	# copy modules to data partition directory
-	cp -fL "${DEPLOY_DIR_IMAGE}/installer-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
-	ls -l "${tmp_modules}"
-	tar -C "${tmp_modules}/" -xf "${tmp_modules}/modules.tgz"
-	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
-	#kernelabiversion="${KERNELVERSION}"
-	rm -f "${tmp_modules}/modules.tgz"
-	bbnote "Updating modules dependencies for kernel $kernelabiversion"
-	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
-	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
 
 	# Create boot partition and mark it as bootable
 	bootpart_size_targetblocks="$(du --block-size=${INSTALLER_TARGET_ALIGN} -s ${INSTALLER_BOOTPART_DIR} | awk '{print $1}')"
@@ -252,7 +264,7 @@ IMAGE_CMD_trustmeinstaller () {
 	/bin/sync
 	bbdebug 1 "Creating ext4 fs of size ${datapart_size_targetblocks} blocks, ${datapart_size_bytes} bytes on file $trustme_datafs"
 	#mkfs.btrfs --byte-count "${datapart_size_bytes}" --label trustme --rootdir "$tmp_datapart" "$trustme_datafs"
-	mkfs.ext4 -b ${INSTALLER_TARGET_ALIGN} -d "$tmp_datapart" -L trustme "$trustme_datafs" "${datapart_size_targetblocks}"
+	mkfs.ext4 -b ${INSTALLER_TARGET_ALIGN} -d "$tmp_datapart" -L trustmeinstaller "$trustme_datafs" "${datapart_size_targetblocks}"
 	chmod 644 "$trustme_datafs"
 	#btrfsck "$trustme_datafs"
 

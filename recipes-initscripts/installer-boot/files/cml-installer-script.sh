@@ -2,6 +2,8 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
+echo "-----------------trustm3 installer------------------"
+
 mkdir -p /proc
 mkdir -p /sys
 
@@ -25,7 +27,7 @@ mount -a
 sleep 5
 
 mount --bind /mnt/modules /lib/modules
-
+mount --bind /mnt/firmware /lib/firmware
 mount --bind /mnt/userdata /data
 
 mkdir -p /data/logs
