@@ -251,7 +251,7 @@ IMAGE_CMD_trustmeinstaller () {
 	# creating boot filesystem
 	bbnote "Creating boot filesystem ${trustme_bootfs}"
 	rm -f "$trustme_bootfs"
-	mkdosfs -n efi -C "$trustme_bootfs" "$bootpart_size_1k"
+	mkdosfs -n boot -C "$trustme_bootfs" "$bootpart_size_1k"
 
 	MTOOLS_SKIP_CHECK=1 mcopy -i "$trustme_bootfs" -s ${INSTALLER_BOOTPART_DIR}/* ::/
 	chmod 644 "$trustme_bootfs"
