@@ -12,7 +12,6 @@ PACKAGE_INSTALL = "\
 	service-static \
 	control \
 	scd \
-	strace \
 	iptables \
 	ibmtss2 \
 	tpm2d \
@@ -22,7 +21,6 @@ PACKAGE_INSTALL = "\
 	e2fsprogs-mke2fs \
 	e2fsprogs-e2fsck \
 	btrfs-tools \
-	kvmtool \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	cml-boot \
 "
@@ -33,6 +31,11 @@ PACKAGE_INSTALL += "\
 	parted \
 	util-linux-sfdisk \
 "
+
+#PACKAGE_INSTALL += "\
+#	strace \
+#	kvmtool \
+#"
 
 IMAGE_LINUGUAS = " "
 
