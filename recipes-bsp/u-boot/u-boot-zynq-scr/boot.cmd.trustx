@@ -1,2 +1,3 @@
+setenv bootargs earlycon console=@@KERNEL_CONSOLE@@,115200 clk_ignore_unused loglevel=@@KERNEL_LOGLEVEL@@
 fatload mmc 0 ${kernel_addr_r} @@KERNEL_IMAGETYPE@@
 bootm ${kernel_addr_r}

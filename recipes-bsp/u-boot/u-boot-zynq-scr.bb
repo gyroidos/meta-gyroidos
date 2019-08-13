@@ -8,8 +8,9 @@ inherit deploy nopackages
 
 INHIBIT_DEFAULT_DEPS = "1"
 
-DEVICE_TREE_NAME ?= "system.dtb"
 KERNEL_BOOTCMD ?= "bootm"
+KERNEL_CONSOLE = "tty0"
+KERNEL_LOGLEVEL ?= "8"
 
 BOOTMODE ?= "trustx"
 
@@ -25,6 +26,8 @@ UBOOTSCR_BASE_NAME[vardepsexclude] = "DATETIME"
 do_compile() {
     sed -e 's/@@KERNEL_IMAGETYPE@@/${KERNEL_IMAGETYPE}/' \
         -e 's/@@KERNEL_BOOTCMD@@/${KERNEL_BOOTCMD}/' \
+        -e 's/@@KERNEL_CONSOLE@@/${KERNEL_CONSOLE}/' \
+        -e 's/@@KERNEL_LOGLEVEL@@/${KERNEL_LOGLEVEL}/' \
         "${WORKDIR}/boot.cmd.${BOOTMODE}" > "${WORKDIR}/boot.cmd"
     mkimage -A arm -T script -C none -n "Boot script" -d "${WORKDIR}/boot.cmd" boot.scr
 }
