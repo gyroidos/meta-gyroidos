@@ -1,1 +1,0 @@
-/home/wruck/yocto/ws-githubfork/out-yocto/cmld_git.bbappend
