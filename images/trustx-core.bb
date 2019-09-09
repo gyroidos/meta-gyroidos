@@ -13,6 +13,7 @@ IMAGE_FEATURES_append = " allow-empty-password"
 IMAGE_FEATURES_append = " empty-root-password"
 IMAGE_FEATURES_append = " ssh-server-dropbear"
 IMAGE_INSTALL_append = " control"
+IMAGE_INSTALL_append = " openvswitch"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
