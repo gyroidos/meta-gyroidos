@@ -1,6 +1,8 @@
 inherit image
 inherit trustmezynq
 inherit trustmex86
+inherit trustmerpi
+
 LICENSE = "GPLv2"
 
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
