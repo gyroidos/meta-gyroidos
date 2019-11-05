@@ -14,6 +14,7 @@ IMAGE_FEATURES_append = " empty-root-password"
 IMAGE_FEATURES_append = " ssh-server-dropbear"
 IMAGE_INSTALL_append = " control"
 IMAGE_INSTALL_append = " openvswitch"
+IMAGE_INSTALL_append = " bridge-utils"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
