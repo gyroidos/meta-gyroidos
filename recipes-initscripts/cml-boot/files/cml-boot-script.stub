@@ -48,6 +48,7 @@ udevadm settle
 
 modprobe loop
 modprobe btrfs
+modprobe vport-gre
 
 if [ -e "/dev/disk/by-label/containers" ]; then
 	echo "Found dedicated filesystem for containers, mounting it!"
