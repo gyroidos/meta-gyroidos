@@ -5,6 +5,7 @@ inherit kernel-artifact-names
 # Create an partitioned trustme image that can be dd'ed to the boot medium
 #
 
+DEPENDS_append = " dosfstools-native mtools-native parted-native gptfdisk-native "
 
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
