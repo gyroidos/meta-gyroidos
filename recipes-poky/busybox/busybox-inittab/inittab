@@ -1,0 +1,17 @@
+# This is run first except when booting in single-user mode.
+
+# We assume mount's are done in init script by cml-boot
+
+::sysinit:/etc/init.d/rcS
+
+# Stuff to do before rebooting
+::ctrlaltdel:/sbin/reboot
+::shutdown:/etc/init.d/rcK
+::shutdown:/sbin/swapoff -a
+::shutdown:/bin/umount -a -r
+
+# Stuff to do when restarting the init process
+::restart:/sbin/init
+
+# set hostname
+null::sysinit:/bin/busybox hostname -F /etc/hostname

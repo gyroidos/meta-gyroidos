@@ -53,18 +53,6 @@ IMAGE_ROOTFS_SIZE = "4096"
 
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 
-update_fstab () {
-
-    mkdir -p ${IMAGE_ROOTFS}/data
-    cat >> ${IMAGE_ROOTFS}/etc/fstab <<EOF
-
-tmpfs /tmp tmpfs defaults 0 0
-
-/dev/disk/by-label/boot /boot vfat umask=0077 0 1
-/dev/disk/by-label/trustme /mnt ext4 defaults 0 0
-EOF
-}
-
 update_inittab () {
     echo "tty12::respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
 
@@ -83,7 +71,6 @@ update_hostname () {
     echo "trustx-cml" > ${IMAGE_ROOTFS}/etc/hostname
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " update_fstab; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
 
