@@ -5,7 +5,6 @@ inherit kernel-artifact-names
 # Create an partitioned trustme image that can be dd'ed to the boot medium
 #
 
-DEPENDS_append = " dosfstools-native mtools-native parted-native gptfdisk-native "
 
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
@@ -198,16 +197,20 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
 
 	# copy firmware to data partition directory
-	package_name="$(ls ${DEPLOY_DIR_IPK}/all/ | grep 'linux-firmware_')"
+	bbnote "Copying linux-firmware"
+	package_names="$(ls ${DEPLOY_DIR_IPK}/all/ | grep 'linux-firmware')"
 
-	if [ -z package_name ]; then
+	if [ -z package_names ]; then
 		bbfatal "Unable to locate linux-firmware ipk. was target linux-firmware built?"
 	fi
 
-	cp "${DEPLOY_DIR_IPK}/all/$package_name" "${tmp_firmware}/firmware.ipk"
-	cd "${tmp_firmware}"
-	ar x firmware.ipk
-	tar -xf data.tar.xz
+	for package in $package_names
+	do
+		cp "${DEPLOY_DIR_IPK}/all/$package" "${tmp_firmware}/firmware.ipk"
+		cd "${tmp_firmware}"
+		ar x firmware.ipk
+		tar -xf data.tar.xz
+	done
 	cp -r "${tmp_firmware}/lib/firmware" "${tmp_datapart}"
 
 	# copy trustme files to image deploy dir

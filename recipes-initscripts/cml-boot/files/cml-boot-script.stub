@@ -12,6 +12,7 @@ exec 2>&1
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
+mkdir -p /lib/firmware
 mkdir -p /proc
 mkdir -p /sys
 mkdir -p /run
