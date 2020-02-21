@@ -1,10 +1,10 @@
 DECRIPTION = "Minimal initramfs-based root file system for CML"
 
 PACKAGE_INSTALL = "\
-	packagegroup-core-boot \
 	${VIRTUAL-RUNTIME_base-utils} \
 	udev \
 	base-passwd \
+	base-files \
 	shadow \
 	mingetty \
 	libselinux \
@@ -71,8 +71,13 @@ update_hostname () {
     echo "trustx-cml" > ${IMAGE_ROOTFS}/etc/hostname
 }
 
+cleanup_boot () {
+	rm ${IMAGE_ROOTFS}/boot/*
+}
+
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
 ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
+ROOTFS_POSTPROCESS_COMMAND_append = " cleanup_boot; "
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
 ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_inittab ; ", "",d)}'
