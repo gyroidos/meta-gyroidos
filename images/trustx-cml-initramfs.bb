@@ -72,7 +72,7 @@ update_hostname () {
 }
 
 cleanup_boot () {
-	rm ${IMAGE_ROOTFS}/boot/*
+	rm -f ${IMAGE_ROOTFS}/boot/*
 }
 
 ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
