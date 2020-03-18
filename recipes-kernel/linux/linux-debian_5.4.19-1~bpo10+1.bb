@@ -3,15 +3,15 @@ require recipes-kernel/linux/linux-yocto.inc
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=bbea815ee2795b2f4230826c0c6b8814"
 
-SRC_URI = "https://ftp.de.debian.org/debian/pool/main/l/linux/linux-source-4.19_${PV}_all.deb"
+SRC_URI = "https://ftp.de.debian.org/debian/pool/main/l/linux/linux-source-5.4_${PV}_all.deb"
 
-SRC_URI[md5sum] = "2e3542c9738a9fb871f30c534f25321e"
-SRC_URI[sha256sum] = "40b47a82621a11751c43692c13ed301283366b2b23a14c331058175ac6dd87ea"
+SRC_URI[md5sum] = "c6d004cb00f7f7e54398b3a307e20936"
+SRC_URI[sha256sum] = "7affb5d47deb69150fb63d7837dbb635009e1ca3ba558c7f8fea6ea4dde7fa85"
 
 LINUX_VERSION ?= "${PV}"
 LINUX_VERSION_EXTENSION ?= "-debian"
 
-SOURCE_DIR = "linux-source-4.19"
+SOURCE_DIR = "linux-source-5.4"
 SOURCE_TARBALL = "usr/src/${SOURCE_DIR}.tar.xz"
 
 SRCREV="${AUTOREV}"
