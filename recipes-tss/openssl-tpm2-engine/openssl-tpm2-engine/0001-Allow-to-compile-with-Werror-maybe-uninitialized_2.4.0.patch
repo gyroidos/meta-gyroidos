@@ -1,0 +1,53 @@
+From 2bbbcf9514125346119d32d0fedcb587b196a687 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Wed, 11 Mar 2020 08:33:23 +0100
+Subject: [PATCH] Allow to compile with -Werror=maybe-uninitialized
+
+---
+ create_tpm2_key.c  | 2 +-
+ seal_tpm2_data.c   | 2 +-
+ unseal_tpm2_data.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/create_tpm2_key.c b/create_tpm2_key.c
+index 8e1a81f..2fdb418 100644
+--- a/create_tpm2_key.c
++++ b/create_tpm2_key.c
+@@ -121,7 +121,7 @@ TPM_RC tpm2_ObjectPublic_GetName(TPM2B_NAME *name,
+ 	TPM_RC rc = 0;
+ 	uint16_t written = 0;
+ 	TPMT_HA digest;
+-	uint32_t sizeInBytes;
++	uint32_t sizeInBytes = 0;
+ 	uint8_t buffer[MAX_RESPONSE_SIZE];
+ 
+ 	/* marshal the TPMT_PUBLIC */
+diff --git a/seal_tpm2_data.c b/seal_tpm2_data.c
+index a04f878..d75ff3c 100644
+--- a/seal_tpm2_data.c
++++ b/seal_tpm2_data.c
+@@ -95,7 +95,7 @@ int main(int argc, char **argv)
+ 	TPM_RC rc;
+ 	TSS_CONTEXT *tssContext;
+ 	const char *dir;
+-	const char *reason;
++	const char *reason = NULL;
+ 	TPMT_HA digest;
+ 	uint32_t sizeInBytes;
+ 	TPM_HANDLE authHandle;
+diff --git a/unseal_tpm2_data.c b/unseal_tpm2_data.c
+index 51f1246..3dbbe8d 100644
+--- a/unseal_tpm2_data.c
++++ b/unseal_tpm2_data.c
+@@ -76,7 +76,7 @@ int main(int argc, char **argv)
+ 	char *filename;
+ 	TPM_RC rc;
+ 	TSS_CONTEXT *tssContext;
+-	const char *reason;
++	const char *reason = NULL;
+ 	Unseal_In uin;
+ 	Unseal_Out uout;
+ 	uint32_t parent, session;
+-- 
+2.20.1
+
