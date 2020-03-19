@@ -1,0 +1,66 @@
+From 9ca8ca4744d06135200c87885061763d5c9b373c Mon Sep 17 00:00:00 2001
+From: Christian Brauner <christian.brauner@ubuntu.com>
+Date: Wed, 23 Oct 2019 14:23:50 +0200
+Subject: [PATCH 17/21] UBUNTU: SAUCE: shiftfs: drop CAP_SYS_RESOURCE from
+ effective capabilities
+
+BugLink: https://bugs.launchpad.net/bugs/1849483
+
+Currently shiftfs allows to exceed project quota and reserved space on
+e.g. ext2. See [1] and especially [2] for a bug report. This is very
+much not what we want. Quotas and reserverd space settings set on the
+host need to respected. The cause for this issue is overriding the
+credentials with the superblock creator's credentials whenever we
+perform operations such as fallocate() or writes while retaining
+CAP_SYS_RESOURCE.
+
+The fix is to drop CAP_SYS_RESOURCE from the effective capability set
+after we have made a copy of the superblock creator's credential at
+superblock creation time. This very likely gives us more security than
+we had before and the regression potential seems limited. I would like
+to try this apporach first before coming up with something potentially
+more sophisticated. I don't see why CAP_SYS_RESOURCE should become a
+limiting factor in most use-cases.
+
+[1]: https://github.com/lxc/lxd/issues/6333
+[2]: https://github.com/lxc/lxd/issues/6333#issuecomment-545154838
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+Acked-by: Connor Kuehl <connor.kuehl@canonical.com>
+Acked-by: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Seth Forshee <seth.forshee@canonical.com>
+---
+ fs/shiftfs.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/fs/shiftfs.c b/fs/shiftfs.c
+index 6a2b5e3d0d53..0d6ce377b07c 100644
+--- a/fs/shiftfs.c
++++ b/fs/shiftfs.c
+@@ -1958,6 +1958,7 @@ static int shiftfs_fill_super(struct super_block *sb, void *raw_data,
+ 	sb->s_flags |= SB_POSIXACL;
+ 
+ 	if (sbinfo->mark) {
++		struct cred *cred_tmp;
+ 		struct super_block *lower_sb = path.mnt->mnt_sb;
+ 
+ 		/* to mark a mount point, must root wrt lower s_user_ns */
+@@ -2012,11 +2013,14 @@ static int shiftfs_fill_super(struct super_block *sb, void *raw_data,
+ 			sbinfo->passthrough_mark = sbinfo->passthrough;
+ 		}
+ 
+-		sbinfo->creator_cred = prepare_creds();
+-		if (!sbinfo->creator_cred) {
++		cred_tmp = prepare_creds();
++		if (!cred_tmp) {
+ 			err = -ENOMEM;
+ 			goto out_put_path;
+ 		}
++		/* Don't override disk quota limits or use reserved space. */
++		cap_lower(cred_tmp->cap_effective, CAP_SYS_RESOURCE);
++		sbinfo->creator_cred = cred_tmp;
+ 	} else {
+ 		/*
+ 		 * This leg executes if we're admin capable in the namespace,
+-- 
+2.20.1
+

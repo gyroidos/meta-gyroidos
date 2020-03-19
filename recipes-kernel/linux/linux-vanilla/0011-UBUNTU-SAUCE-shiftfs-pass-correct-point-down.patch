@@ -1,0 +1,34 @@
+From 8283e969f507ee4de57d7dc4468b6758c70d9e16 Mon Sep 17 00:00:00 2001
+From: Christian Brauner <christian@brauner.io>
+Date: Fri, 19 Jul 2019 17:50:47 +0200
+Subject: [PATCH 11/21] UBUNTU: SAUCE: shiftfs: pass correct point down
+
+BugLink: https://bugs.launchpad.net/bugs/1837231
+
+This used to pass an unsigned long to copy_from_user() instead of a
+void __user * pointer. This will produce warning with a sufficiently
+advanced compiler.
+
+Cc: Seth Forshee <seth.forshee@canonical.com>
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+Signed-off-by: Seth Forshee <seth.forshee@canonical.com>
+---
+ fs/shiftfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/shiftfs.c b/fs/shiftfs.c
+index addaa6e21e57..9006201c243d 100644
+--- a/fs/shiftfs.c
++++ b/fs/shiftfs.c
+@@ -1529,7 +1529,7 @@ static bool in_ioctl_whitelist(int flag, unsigned long arg)
+ 	case BTRFS_IOC_SUBVOL_GETFLAGS:
+ 		return true;
+ 	case BTRFS_IOC_SUBVOL_SETFLAGS:
+-		if (copy_from_user(&flags, arg, sizeof(flags)))
++		if (copy_from_user(&flags, argp, sizeof(flags)))
+ 			return false;
+ 
+ 		if (flags & ~BTRFS_SUBVOL_RDONLY)
+-- 
+2.20.1
+
