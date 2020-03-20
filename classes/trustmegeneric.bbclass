@@ -247,10 +247,8 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 	dd if=/dev/zero of="$trustme_datafs" conv=notrunc,fsync iflag=sync oflag=sync bs=${TRUSTME_TARGET_ALIGN} count=$datapart_size_targetblocks
 	/bin/sync
 	bbdebug 1 "Creating ext4 fs of size ${datapart_size_targetblocks} blocks, ${datapart_size_bytes} bytes on file $trustme_datafs"
-	#mkfs.btrfs --byte-count "${datapart_size_bytes}" --label trustme --rootdir "$tmp_datapart" "$trustme_datafs"
 	mkfs.ext4 -b ${TRUSTME_TARGET_ALIGN} -d "$tmp_datapart" -L trustme "$trustme_datafs" "${datapart_size_targetblocks}"
 	chmod 644 "$trustme_datafs"
-	#btrfsck "$trustme_datafs"
 
 	/bin/sync
 
