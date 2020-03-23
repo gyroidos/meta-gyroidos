@@ -21,7 +21,7 @@ SRC_URI += "\
 	file://0020-UBUNTU-SAUCE-shiftfs-Correct-id-translation-for-lowe.patch \
 	file://0021-UBUNTU-SAUCE-shiftfs-prevent-lower-dentries-from-goi.patch \
 	file://0001-shiftfs-allow-mounting-of-other-shiftfs-on-shiftfs.patch \
-	file://lockdown.cfg \
+	file://0000_lockdown.cfg \
 "
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-vanilla:"
