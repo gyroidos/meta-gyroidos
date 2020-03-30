@@ -36,8 +36,8 @@ TRUSTME_GENERIC_DEPENDS = " \
     dosfstools-native:do_populate_sysroot \
     gptfdisk-native:do_populate_sysroot \
     trustx-cml-initramfs:do_image_complete \
+    trustx-cml-firmware:do_image_complete \
     virtual/kernel:do_deploy \
-	linux-firmware:do_package_write_ipk \
 "
 
 
@@ -179,32 +179,11 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 	fi
 
 	# copy modules to data partition directory
-	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.tgz" "${tmp_modules}/modules.tgz"
-	ls -l "${tmp_modules}"
-	tar -C "${tmp_modules}/" -xf "${tmp_modules}/modules.tgz"
-	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
-	#kernelabiversion="${KERNELVERSION}"
-	rm -f "${tmp_modules}/modules.tgz"
-	bbnote "Updating modules dependencies for kernel $kernelabiversion"
-	sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
-	cp -fr "${tmp_modules}/lib/modules" "${tmp_datapart}"
+	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.squashfs" "${tmp_datapart}/modules.img"
 
 	# copy firmware to data partition directory
 	bbnote "Copying linux-firmware"
-	package_names="$(ls ${DEPLOY_DIR_IPK}/all/ | grep 'linux-firmware')"
-
-	if [ -z package_names ]; then
-		bbfatal "Unable to locate linux-firmware ipk. was target linux-firmware built?"
-	fi
-
-	for package in $package_names
-	do
-		cp "${DEPLOY_DIR_IPK}/all/$package" "${tmp_firmware}/firmware.ipk"
-		cd "${tmp_firmware}"
-		ar x firmware.ipk
-		tar -xf data.tar.xz
-	done
-	cp -r "${tmp_firmware}/lib/firmware" "${tmp_datapart}"
+	cp -fL "${DEPLOY_DIR_IMAGE}/trustx-cml-firmware-${MACHINE}.squashfs" "${tmp_datapart}/firmware.img"
 
 	# copy trustme files to image deploy dir
 	cp -afr "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"

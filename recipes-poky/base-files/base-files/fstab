@@ -12,8 +12,8 @@ tmpfs                /tmp                 tmpfs      defaults              0  0
 LABEL=boot           /boot                vfat       umask=0077            0  1
 LABEL=trustme        /mnt                 ext4       nosuid,nodev,noexec   0  0
 
-/mnt/modules         /lib/modules         none       bind,nosuid,nodev,noexec 0  0
-/mnt/firmware        /lib/firmware        none       bind,nosuid,nodev,noexec 0  0
+/mnt/modules.img     /lib/modules         squashfs   loop,nosuid,nodev,noexec 0  0
+/mnt/firmware.img    /lib/firmware        squashfs   loop,nosuid,nodev,noexec 0  0
 /mnt/userdata        /data                none       bind,nosuid,nodev,noexec 0  0
 
 LABEL=containers     /data/cml/containers btrfs      nosuid,nodev,noexec,nofail 0  0
