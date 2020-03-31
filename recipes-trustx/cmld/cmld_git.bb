@@ -56,8 +56,6 @@ do_install () {
     install -m 0755 ${S}common/libcommon_full.a ${D}${libdir}/
     install -d 0755 ${D}${includedir}/common
     install -m 0644 ${S}common/*.h ${D}${includedir}/common
-    mkdir -p ${DEPLOY_DIR_IMAGE}/proto
-    cp ${S}daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
 }
 
 RDEPENDS_scd += "cmld openssl"
