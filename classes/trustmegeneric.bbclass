@@ -156,7 +156,7 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 	provisioning_dir="${src}/device_provisioning"
 	enrollment_dir="${provisioning_dir}/oss_enrollment"
 	test_cert_dir="${TOPDIR}/test_certificates"
-
+	cfg_overlay_dir="${src}/config_overlay"
 
 	if ! [ -d "${test_cert_dir}" ];then
 		bbfatal_log "Test PKI not generated at ${test_cert_dir}\nIs trustx-cml-userdata built?"
@@ -166,17 +166,19 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 	# copy files to temp data directory
 	bbnote "Preparing files for data partition"
 
-	if ! [ -f "${deploy_dir_container}/trustx-configs/device.conf" ];then
+	cp -f "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
+	mkdir -p "${rootfs_datadir}/cml/operatingsystems/"
+	mkdir -p "${rootfs_datadir}/cml/containers/"
+
+	if ! [ -d "${DEPLOY_DIR_IMAGE}/trustx-guests" ];then # no guests have been built
 		bbnote "It seems that no containers were built in directory ${deploy_dir_container}. You will have to provide at least c0 manually!"
+		cp ${cfg_overlay_dir}/${TRUSTME_HARDWARE}/device.conf "${rootfs_datadir}/cml/"
 	else
-		cp -f "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
 		cp -far "${deploy_dir_container}/trustx-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
-		cp -f "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
-		mkdir -p "${deploy_dir_container}"
-		mkdir -p "${rootfs_datadir}/cml/operatingsystems/"
-		mkdir -p "${rootfs_datadir}/cml/containers/"
 		cp -afr "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
+		cp -f "${deploy_dir_container}/trustx-configs/device.conf" "${rootfs_datadir}/cml/"
 	fi
+
 
 	# copy modules to data partition directory
 	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.squashfs" "${tmp_datapart}/modules.img"
