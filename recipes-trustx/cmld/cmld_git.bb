@@ -23,7 +23,7 @@ INSANE_SKIP_tpm2d = "ldflags"
 INSANE_SKIP_control = "ldflags"
 INSANE_SKIP_rattestation = "ldflags"
 
-DEPENDS = "protobuf-c-native protobuf-c libselinux protobuf-c-text libcap e2fsprogs openssl ibmtss2"
+DEPENDS = "protobuf-c-native protobuf-c libselinux protobuf-c-text libcap e2fsprogs openssl ibmtss2 sc-hsm-cardservice"
 
 EXTRA_OEMAKE = "TRUSTME_HARDWARE=${TRUSTME_HARDWARE}"
 
