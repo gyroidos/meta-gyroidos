@@ -15,6 +15,8 @@ IMAGE_FEATURES_append = " ssh-server-dropbear"
 IMAGE_INSTALL_append = " control"
 IMAGE_INSTALL_append = " openvswitch"
 IMAGE_INSTALL_append = " bridge-utils"
+IMAGE_INSTALL_append = " iproute2"
+IMAGE_INSTALL_append = " iptables"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
