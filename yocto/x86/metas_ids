@@ -7,5 +7,5 @@ meta-openembedded/meta-filesystems
 meta-virtualization
 meta-selinux
 meta-java
-meta-trustx
 meta-trustx-intel
+meta-trustx
