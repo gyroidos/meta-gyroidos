@@ -23,6 +23,7 @@ PACKAGE_INSTALL = "\
 	btrfs-tools \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	cml-boot \
+	iproute2 \
 "
 
 PACKAGE_INSTALL += "\
@@ -64,7 +65,12 @@ update_inittab () {
 #TODO modsigning option in image fstype?
 
 update_modules_dep () {
-	sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
+	if [ -d "${IMAGE_ROOTFS}/lib/modules" ];then
+		sh -c 'cd "${IMAGE_ROOTFS}" && depmod --basedir "${IMAGE_ROOTFS}" --config "${IMAGE_ROOTFS}/etc/depmod.d" ${KERNELVERSION}'
+	else
+		bbwarn "no /lib/modules directory in initramfs - is this intended?"
+		mkdir -p "${IMAGE_ROOTFS}/lib/modules"
+	fi
 }
 
 update_hostname () {
