@@ -1,8 +1,15 @@
-DEPENDS += "squashfs-tools-native"
+SRC_URI += " \
+	file://module_signing.cfg \
+	file://trustx.cfg \
+"
+FILESEXTRAPATHS_prepend := "${THISDIR}/generic:"
+
+DEPENDS += "squashfs-tools-native openssl-native"
 
 MODULE_IMAGE_SUFFIX = "squashfs"
 
 kernel_do_deploy_append() {
+	bbwarn "kernel do deploy"
 	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
 		kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 		bbnote "Updating modules dependencies for kernel $kernelabiversion"

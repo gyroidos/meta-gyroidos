@@ -1,4 +1,3 @@
-inherit kernel
 require recipes-kernel/linux/linux-yocto.inc
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=bbea815ee2795b2f4230826c0c6b8814"
@@ -13,6 +12,7 @@ LINUX_VERSION_EXTENSION ?= "-debian"
 
 SOURCE_DIR = "linux-source-5.4"
 SOURCE_TARBALL = "usr/src/${SOURCE_DIR}.tar.xz"
+#EXTERNALSRC = "1"
 
 SRCREV="${AUTOREV}"
 

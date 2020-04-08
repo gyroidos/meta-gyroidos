@@ -172,8 +172,8 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 
 	if [ -d "${TOPDIR}/../custom_containers" ];then # custom container provided in ${TOPDIR}/../custom_container
 		bbnote "Installing custom container and configs to image: ${TOPDIR}/../custom_containers"
-		cp -far "${TOPDIR}/../custom_containers/00000000-0000-0000-0000-00000000.conf" "${rootfs_datadir}/cml/containers_templates/"
-		cp -afr "${TOPDIR}/../custom_containers/*os*" "${rootfs_datadir}/cml/operatingsystems"
+		cp -far "${TOPDIR}/../custom_containers/00000000-0000-0000-0000-000000000000.conf" "${rootfs_datadir}/cml/containers_templates/"
+		find "${TOPDIR}/../custom_containers/" -name '*os*' -exec cp -afr {} "${rootfs_datadir}/cml/operatingsystems" \;
 		cp -f "${TOPDIR}/../custom_containers/device.conf" "${rootfs_datadir}/cml/"
 	elif [ -d "${deploy_dir_container}/trustx-guests" ];then # container built in default location
 		bbnote "Installing containers from default location ${deploy_dir_container}/trustx-guests"
