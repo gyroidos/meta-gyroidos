@@ -21,6 +21,7 @@ SRC_URI += "\
 	file://0020-UBUNTU-SAUCE-shiftfs-Correct-id-translation-for-lowe.patch \
 	file://0021-UBUNTU-SAUCE-shiftfs-prevent-lower-dentries-from-goi.patch \
 	file://0001-shiftfs-allow-mounting-of-other-shiftfs-on-shiftfs.patch \
+	file://0001-l2tp-Allow-management-of-tunnels-and-session-in-user.patch \
 	file://0000_lockdown.cfg \
 "
 
