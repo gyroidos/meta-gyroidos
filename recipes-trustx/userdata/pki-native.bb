@@ -15,6 +15,8 @@ DEPENDS = "openssl-native"
 inherit native
 
 do_compile() {
+	#TODO Find cleaner way to do this
+	# random string to ignore SSTATE_MIRROR
     if [ ! -f ${TEST_CERT_DIR}.generating ]; then
         touch ${TEST_CERT_DIR}.generating
         bash ${PROVISIONING_DIR}/gen_dev_certs.sh ${TEST_CERT_DIR}
