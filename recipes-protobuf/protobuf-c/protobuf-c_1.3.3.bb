@@ -18,9 +18,8 @@ RDEPENDS_${PN}-dev += "${PN}-compiler"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=cb901168715f4782a2b06c3ddaefa558"
 SRC_URI = "https://github.com/protobuf-c/protobuf-c/releases/download/v${PV}/${BPN}-${PV}.tar.gz"
 
-SRC_URI[md5sum] = "eee5a28fbf2dd0298c108a18cecd3a03"
-SRC_URI[sha256sum] = "51472d3a191d6d7b425e32b612e477c06f73fe23e07f6a6a839b11808e9d2267"
-
+SRC_URI[md5sum] = "dabc05a5f11c21b96d8d6db4153f5343"
+SRC_URI[sha256sum] = "22956606ef50c60de1fabc13a78fbc50830a0447d780467d3c519f84ad527e78"
 
 inherit autotools pkgconfig
 
