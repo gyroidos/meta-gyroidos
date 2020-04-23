@@ -8,6 +8,8 @@ DEPENDS += "squashfs-tools-native openssl-native"
 
 MODULE_IMAGE_SUFFIX = "squashfs"
 
+EXTRA_OEMAKE += " INSTALL_MOD_STRIP=1"
+
 kernel_do_deploy_append() {
 	bbwarn "kernel do deploy"
 	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
