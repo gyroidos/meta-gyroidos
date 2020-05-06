@@ -17,6 +17,7 @@ IMAGE_INSTALL_append = " openvswitch"
 IMAGE_INSTALL_append = " bridge-utils"
 IMAGE_INSTALL_append = " iproute2"
 IMAGE_INSTALL_append = " iptables"
+IMAGE_INSTALL_append = " util-linux"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
@@ -39,6 +40,17 @@ update_inittab () {
     sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
     #echo "1::respawn:${base_sbindir}/mingetty --autologin root tty1" >> ${IMAGE_ROOTFS}/etc/inittab
     echo "1:12345:respawn:${base_sbindir}/getty 38400 tty1" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "2:12345:respawn:${base_sbindir}/getty 38400 tty2" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "3:12345:respawn:${base_sbindir}/getty 38400 tty3" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "4:12345:respawn:${base_sbindir}/getty 38400 tty4" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "5:12345:respawn:${base_sbindir}/getty 38400 tty5" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "6:12345:respawn:${base_sbindir}/getty 38400 tty6" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "7:12345:respawn:${base_sbindir}/getty 38400 tty7" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "8:12345:respawn:${base_sbindir}/getty 38400 tty8" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "9:12345:respawn:${base_sbindir}/getty 38400 tty9" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "10:12345:respawn:${base_sbindir}/getty 38400 tty10" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "11:12345:respawn:${base_sbindir}/getty 38400 tty11" >> ${IMAGE_ROOTFS}/etc/inittab
+    echo "12:12345:respawn:${base_sbindir}/getty 38400 tty12" >> ${IMAGE_ROOTFS}/etc/inittab
 
 }
 
