@@ -187,6 +187,16 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 
 
 	# copy modules to data partition directory
+	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
+	if [ -d "${DEPLOY_DIR_IMAGE}/cml-kernel/modules/lib/modules/${kernelabiversion}" ]; then
+		rm -rf "${tmp_modules}/lib/modules"
+		mkdir -p "${tmp_modules}/lib"
+		unsquashfs -d "${tmp_modules}/lib/modules" "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.squashfs"
+		cp -rf ${DEPLOY_DIR_IMAGE}/cml-kernel/modules/lib/modules/${kernelabiversion}/* "${tmp_modules}/lib/modules/${kernelabiversion}/"
+		bbnote "Updating modules dependencies for kernel $kernelabiversion"
+		sh -c "cd \"${tmp_modules}\" && depmod --basedir \"${tmp_modules}\" ${kernelabiversion}"
+		mksquashfs "${tmp_modules}/lib/modules" "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.squashfs" -noappend
+	fi
 	cp -fL "${DEPLOY_DIR_IMAGE}/cml-kernel/modules-${MODULE_TARBALL_LINK_NAME}.squashfs" "${tmp_datapart}/modules.img"
 
 	# copy firmware to data partition directory
