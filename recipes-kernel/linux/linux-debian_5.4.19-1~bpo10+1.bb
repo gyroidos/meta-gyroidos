@@ -12,7 +12,7 @@ LINUX_VERSION_EXTENSION ?= "-debian"
 
 SOURCE_DIR = "linux-source-5.4"
 SOURCE_TARBALL = "usr/src/${SOURCE_DIR}.tar.xz"
-#EXTERNALSRC = "1"
+EXTERNALSRC = "1"
 
 SRCREV="${AUTOREV}"
 
