@@ -15,11 +15,11 @@ HOMEPAGE = "https://github.com/CardContact/sc-hsm-embedded"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://COPYING;md5=55b854a477953696452f698a3af5de1c"
 
-SRC_URI = "git://git@github.com/ceppleaisec/sc-hsm-embedded.git;protocol=ssh;branch=cardservice_dev"
+SRC_URI = "git://git@github.com/trustm3/sc-hsm-embedded.git;protocol=ssh;branch=build_cardservice_w/keygen"
 
 # Modify these as desired
 PV = "hsm+git${SRCPV}"
-SRCREV = "${AUTOREV}"
+SRCREV = "0166df1db5f30d14cec5f2b27a0a24658bcaadf3"
 
 S = "${WORKDIR}/git"
 
