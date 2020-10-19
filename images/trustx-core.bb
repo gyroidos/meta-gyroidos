@@ -18,6 +18,11 @@ IMAGE_INSTALL_append = " bridge-utils"
 IMAGE_INSTALL_append = " iproute2"
 IMAGE_INSTALL_append = " iptables"
 IMAGE_INSTALL_append = " util-linux"
+IMAGE_INSTALL_append = " bridge-utils"
+IMAGE_INSTALL_append = " usbutils"
+IMAGE_INSTALL_append = " tcpdump"
+IMAGE_INSTALL_append = " util-linux"
+IMAGE_INSTALL_append = " binutils"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
@@ -61,7 +66,7 @@ update_hostname () {
 update_network_interfaces () {
     cat >> ${IMAGE_ROOTFS}/etc/network/interfaces <<EOF
 
-auto eth0
-iface eth0 inet dhcp
+auto cmleth0
+iface cmleth0 inet dhcp
 EOF
 }

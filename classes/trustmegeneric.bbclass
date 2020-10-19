@@ -208,7 +208,7 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 
 	# Create boot partition and mark it as bootable
 	bootpart_size_targetblocks="$(du --block-size=${TRUSTME_TARGET_ALIGN} -s ${TRUSTME_BOOTPART_DIR} | awk '{print $1}')"
-	bootpart_size_targetblocks="$(python -c "print(str($bootpart_size_targetblocks + ($bootpart_size_targetblocks * ${TRUSTME_BOOTPART_EXTRA_FACTOR}))[:-2])")"
+	bootpart_size_targetblocks="$(python -c "from math import ceil; print(str(ceil($bootpart_size_targetblocks + ($bootpart_size_targetblocks * ${TRUSTME_BOOTPART_EXTRA_FACTOR})))[:-2])")"
 	bootpart_size_bytes="$(expr $bootpart_size_targetblocks '*' ${TRUSTME_TARGET_ALIGN})"
 	# append space to bootpart if TRUSTME_TARGET_ALIGN < 1024 (mkdisfs block size)
 	if ! [ "$(expr $bootpart_size_bytes '%' 1024)"="0" ]; then
@@ -222,7 +222,7 @@ if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
 	bootpart_size_1k="$(expr $bootpart_size_bytes '/' 1024)"
 
 	datapart_size_targetblocks="$(du --block-size=${TRUSTME_TARGET_ALIGN} -s ${tmp_datapart} | awk '{print $1}')"
-	datapart_size_targetblocks="$(python -c "print(str($datapart_size_targetblocks + ($datapart_size_targetblocks * ${TRUSTME_BOOTPART_EXTRA_FACTOR}))[:-2])")"
+	datapart_size_targetblocks="$(python -c "from math import ceil; print(str(ceil($datapart_size_targetblocks + ($datapart_size_targetblocks * ${TRUSTME_DATAPART_EXTRA_FACTOR})))[:-2])")"
 	datapart_size_bytes="$(expr $datapart_size_targetblocks '*' ${TRUSTME_TARGET_ALIGN})"
 	datafolder_size="$(expr $datapart_size_targetblocks '*' ${TRUSTME_TARGET_ALIGN})"
 	bbnote "Data files size: $datafolder_size bytes"
