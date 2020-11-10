@@ -2,7 +2,7 @@ require recipes-kernel/linux/linux-yocto.inc
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=bbea815ee2795b2f4230826c0c6b8814"
 
-SRC_URI = "https://ftp.de.debian.org/debian/pool/main/l/linux/linux-source-5.4_${PV}_all.deb"
+SRC_URI = "https://snapshot.debian.org/archive/debian/20200317T045347Z/pool/main/l/linux/linux-source-5.4_${PV}_all.deb"
 
 SRC_URI[md5sum] = "c6d004cb00f7f7e54398b3a307e20936"
 SRC_URI[sha256sum] = "7affb5d47deb69150fb63d7837dbb635009e1ca3ba558c7f8fea6ea4dde7fa85"
