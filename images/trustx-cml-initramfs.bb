@@ -26,6 +26,7 @@ PACKAGE_INSTALL = "\
 	cml-boot \
 	iproute2 \
 	lxcfs \
+	pv \
 "
 
 PACKAGE_INSTALL += "\
