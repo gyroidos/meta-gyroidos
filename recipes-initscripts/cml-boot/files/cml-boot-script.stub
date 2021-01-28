@@ -39,6 +39,60 @@ udevadm trigger --type=devices --action=add
 sleep 2
 udevadm settle
 
+if [ -e "/dev/tpm0" ]; then
+	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/trustme))
+	BOOT_HDD=$(basename $(readlink /dev/disk/by-label/boot))
+
+	# check if crypto hdd is unencrypted during setup
+	if [ "${CRYPTO_HDD}" == "" ]; then
+		CRYPTO_HDD=${BOOT_HDD::-1}2
+	else
+		echo "${CRYPTO_HDD} is not encrypted. Will do otf."
+		do_otf="do"
+	fi
+
+	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d) for disk encryption of ${CRYPTO_HDD}"
+	tpm2d -n &
+
+	if [ ! -S /run/socket/cml-tpm2d-control ]; then
+		echo "Waiting for tpm2d's control interface"
+	fi
+	while [ ! -S /run/socket/cml-tpm2d-control ]; do
+		echo -n "."
+		sleep 1
+	done
+
+	# here optionally it could be asked for a password
+	tpm2_control dmcrypt_setup /dev/${CRYPTO_HDD}
+	tpm2_control exit
+
+	while [ ! -e /dev/mapper/${CRYPTO_HDD} ]; do
+		echo Waiting for /dev/mapper/${CRYPTO_HDD}
+		sleep 1
+	done
+
+	udevadm trigger --type=devices --action=add
+	udevadm settle
+
+	# if crypto hdd is unencrypted, initially encrypt it here
+	if [ "$do_otf" == "do" ]; then
+		size=$(fdisk -l /dev/${CRYPTO_HDD} | head -n1 | awk '{print $5}')
+		echo "Doing on-the-fly encryption of ${CRYPTO_HDD} size=${size} (see ${LOGTTY}) ... " > /dev/console
+		dd if=/dev/${CRYPTO_HDD} | pv -s ${size} | dd of=/dev/mapper/${CRYPTO_HDD} bs=512
+		if [ $? -ne 0 ]; then
+			echo "\nFATAL: Encryption failed! Restart System Setup!" > /dev/console
+			exit 1;
+		fi
+		echo "[OK]" /dev/console
+	fi
+
+	mount /dev/mapper/${CRYPTO_HDD} /mnt
+	if [ $? -ne 0 ]; then
+		echo "ERROR: Encryption failed! Reboot System and retry!" > /dev/console
+		exit 1;
+	fi
+fi
+
 mount -a
 
 mkdir -p /data/logs
