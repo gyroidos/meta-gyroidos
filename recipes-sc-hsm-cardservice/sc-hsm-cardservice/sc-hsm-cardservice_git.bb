@@ -18,8 +18,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=55b854a477953696452f698a3af5de1c"
 SRC_URI = "git://github.com/trustm3/sc-hsm-embedded.git;protocol=https;branch=build_cardservice_lib"
 
 # Modify these as desired
-PV = "2.11+git${SRCPV}"
-SRCREV = "0fff635c3cb5cdf1e6d9b437108a233d8c6e291b"
+PV = "2.10+git${SRCPV}"
+SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 
