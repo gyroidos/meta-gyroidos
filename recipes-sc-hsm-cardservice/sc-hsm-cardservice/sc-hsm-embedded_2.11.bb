@@ -9,19 +9,27 @@
 # represented as "Unknown" below, you will need to check them yourself:
 #   COPYING
 SUMMARY = "Light-weight PKCS#11 library for using the SmartCard-HSM"
-DESCRIPTION = "This module has been initially developed to support the integration of a SmartCard-HSM in embedded systems with a little footprint. Rather than using a PC/SC daemon to manage attached card readers and token, the smaller Card Terminal API (CT-API) can be used."
+DESCRIPTION = "This module has been initially developed to support the \
+integration of a SmartCard-HSM in embedded systems with a little footprint. \
+Rather than using a PC/SC daemon to manage attached card readers and token, \
+the smaller Card Terminal API (CT-API) can be used."
+
 HOMEPAGE = "https://github.com/CardContact/sc-hsm-embedded"
 # SECTION = ""
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://COPYING;md5=55b854a477953696452f698a3af5de1c"
 
-SRC_URI = "git://github.com/trustm3/sc-hsm-embedded.git;protocol=https;branch=build_cardservice_lib"
+SRC_URI = " https://github.com/CardContact/sc-hsm-embedded/archive/V${PV}.tar.gz "
 
-# Modify these as desired
-PV = "2.10+git${SRCPV}"
-SRCREV = "${AUTOREV}"
+SRC_URI[md5sum] = "ed3d9c715da5f6e20efce7b375dacdd0"
+SRC_URI[sha256sum] = "3a9a3a1247c43e075e1aab75e84cf910ea8a73b04c7339f579e0dfbce62917dd"
 
-S = "${WORKDIR}/git"
+SRC_URI_append = " \
+	file://0001-build-a-cardservice-library.patch;patch=1 \
+	file://0002-Fix-includes-for-MUSL-builds.patch;patch=1 \
+"
+
+S = "${WORKDIR}/${BPN}-${PV}"
 
 # force *.so into main package (see https://www.yoctoproject.org/pipermail/yocto/2017-August/037581.html)
 # to resolve "do_package_qa: QA Issue: -dev package contains non-symlink .so" error
@@ -39,4 +47,4 @@ DEPENDS = "openssl librepo libusb1"
 inherit pkgconfig autotools
 
 # Specify any options you want to pass to the configure script using EXTRA_OECONF:
-EXTRA_OECONF = "--enable-ctapi --enable-debug"
+EXTRA_OECONF = "--enable-ctapi"
