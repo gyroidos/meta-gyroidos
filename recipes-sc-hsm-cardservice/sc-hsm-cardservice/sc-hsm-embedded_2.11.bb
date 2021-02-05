@@ -19,17 +19,14 @@ HOMEPAGE = "https://github.com/CardContact/sc-hsm-embedded"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://COPYING;md5=55b854a477953696452f698a3af5de1c"
 
-SRC_URI = " https://github.com/CardContact/sc-hsm-embedded/archive/V${PV}.tar.gz "
-
-SRC_URI[md5sum] = "ed3d9c715da5f6e20efce7b375dacdd0"
-SRC_URI[sha256sum] = "3a9a3a1247c43e075e1aab75e84cf910ea8a73b04c7339f579e0dfbce62917dd"
+SRC_URI = " git://github.com/CardContact/sc-hsm-embedded.git;protocol=https;tag=V2.11"
 
 SRC_URI_append = " \
 	file://0001-build-a-cardservice-library.patch;patch=1 \
 	file://0002-Fix-includes-for-MUSL-builds.patch;patch=1 \
 "
 
-S = "${WORKDIR}/${BPN}-${PV}"
+S = "${WORKDIR}/git"
 
 # force *.so into main package (see https://www.yoctoproject.org/pipermail/yocto/2017-August/037581.html)
 # to resolve "do_package_qa: QA Issue: -dev package contains non-symlink .so" error
