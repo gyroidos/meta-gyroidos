@@ -126,7 +126,8 @@ mkdir -p /var/volatile/tmp
 for suffix in conf sig cert; do
 	if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix" ]; then
 		cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.$suffix /data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix
-fi
+	fi
+done
 
 if [ -e "/dev/tpm0" ]; then
 	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d)"
