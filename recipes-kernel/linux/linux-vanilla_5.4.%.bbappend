@@ -63,7 +63,6 @@ SRC_URI += "\
 	file://5.4/0040-selftests-timens-handle-a-case-when-alarm-clocks-are.patch \
 	file://5.4/0041-futex-Adjust-absolute-futex-timeouts-with-per-time-n.patch \
 	file://5.4/0042-selftests-timens-Add-a-test-for-futex.patch \
-	file://5.4/0001-integrity-ima-Provide-modsig-in-measurement-list-in-.patch \
 "
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
