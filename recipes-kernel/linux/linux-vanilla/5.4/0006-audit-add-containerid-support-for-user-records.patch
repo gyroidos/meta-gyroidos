@@ -1,7 +1,7 @@
-From 9e7ca6f01d990d0afffe33cd4e71991c654c3206 Mon Sep 17 00:00:00 2001
+From 430b4a57fc0b2e714eee00886f63b6f731656e46 Mon Sep 17 00:00:00 2001
 From: Richard Guy Briggs <rgb@redhat.com>
 Date: Wed, 1 Aug 2018 17:05:37 -0400
-Subject: [PATCH 10/17] audit: add containerid support for user records
+Subject: [PATCH 06/12] audit: add containerid support for user records
 
 Add audit container identifier auxiliary record to user event standalone
 records.
@@ -10,14 +10,14 @@ Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
 Acked-by: Neil Horman <nhorman@tuxdriver.com>
 Reviewed-by: Ondrej Mosnacek <omosnace@redhat.com>
 ---
- kernel/audit.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ kernel/audit.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/kernel/audit.c b/kernel/audit.c
-index a2f382c37682..f3566d60e0d0 100644
+index 64d968020a64..b8a507cb2cd2 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1176,12 +1176,6 @@ static void audit_log_common_recv_msg(struct audit_context *context,
+@@ -1334,12 +1334,6 @@ static void audit_log_common_recv_msg(struct audit_context *context,
  	audit_log_task_context(*ab);
  }
  
@@ -30,29 +30,29 @@ index a2f382c37682..f3566d60e0d0 100644
  int is_audit_feature_set(int i)
  {
  	return af.features & AUDIT_FEATURE_TO_MASK(i);
-@@ -1444,13 +1438,16 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 
+@@ -1608,6 +1602,7 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
  		err = audit_filter(msg_type, AUDIT_FILTER_USER);
  		if (err == 1) { /* match or error */
+ 			char *str = data;
 +			struct audit_context *context;
-+
+ 
  			err = 0;
  			if (msg_type == AUDIT_USER_TTY) {
- 				err = tty_audit_push();
+@@ -1615,7 +1610,8 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
  				if (err)
  					break;
  			}
 -			audit_log_user_recv_msg(&ab, msg_type);
 +			context = audit_alloc_local(GFP_KERNEL);
 +			audit_log_common_recv_msg(context, &ab, msg_type);
- 			if (msg_type != AUDIT_USER_TTY)
- 				audit_log_format(ab, " msg='%.*s'",
- 						 AUDIT_MESSAGE_TEXT_MAX,
-@@ -1466,6 +1463,8 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 				audit_log_n_untrustedstring(ab, data, size);
+ 			if (msg_type != AUDIT_USER_TTY) {
+ 				/* ensure NULL termination */
+ 				str[data_len - 1] = '\0';
+@@ -1629,6 +1625,8 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+ 				audit_log_n_untrustedstring(ab, str, data_len);
  			}
  			audit_log_end(ab);
-+			audit_log_container_id(context, audit_get_contid(current));
++			audit_log_container_id_ctx(context);
 +			audit_free_context(context);
  		}
  		break;

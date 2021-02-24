@@ -1,0 +1,72 @@
+From e88580213b7fbdd6150d3837c1a26003c2ea03af Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Wed, 24 Feb 2021 14:37:33 +0100
+Subject: [PATCH 12/12] audit: remove unused iouring functions
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Backport to Linux v5.4 does not need the iouring functions.
+
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ include/linux/audit.h |  2 --
+ kernel/audit.c        | 18 ------------------
+ 2 files changed, 20 deletions(-)
+
+diff --git a/include/linux/audit.h b/include/linux/audit.h
+index 05439920603f..c28abc4d2b7a 100644
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -180,12 +180,10 @@ extern int audit_rule_change(int type, int seq, void *data, size_t datasz);
+ extern int audit_list_rules_send(struct sk_buff *request_skb, int seq);
+ 
+ extern int audit_set_loginuid(kuid_t loginuid);
+-extern void audit_set_loginuid_iouring(kuid_t loginuid);
+ 
+ extern kuid_t audit_get_loginuid(struct task_struct *tsk);
+ 
+ extern unsigned int audit_get_sessionid(struct task_struct *tsk);
+-extern void audit_set_sessionid_iouring(unsigned int sessionid);
+ 
+ extern int audit_get_contid_proc(char *tmpbuf, int TMPBUFLEN,
+ 				 struct task_struct *task);
+diff --git a/kernel/audit.c b/kernel/audit.c
+index cb0ac8a9517c..3afa3f64584b 100644
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -267,15 +267,6 @@ inline kuid_t audit_get_loginuid(struct task_struct *tsk)
+ 	return info->loginuid;
+ }
+ 
+-inline void audit_set_loginuid_iouring(kuid_t loginuid)
+-{
+-	struct audit_task_info *info = current->audit;
+-
+-	if (!info)
+-		return;
+-	info->loginuid = loginuid;
+-}
+-
+ inline unsigned int audit_get_sessionid(struct task_struct *tsk)
+ {
+ 	struct audit_task_info *info = tsk->audit;
+@@ -285,15 +276,6 @@ inline unsigned int audit_get_sessionid(struct task_struct *tsk)
+ 	return info->sessionid;
+ }
+ 
+-inline void audit_set_sessionid_iouring(unsigned int sessionid)
+-{
+-	struct audit_task_info *info = current->audit;
+-
+-	if (!info)
+-		return;
+-	info->sessionid = sessionid;
+-}
+-
+ static inline u64 audit_get_contid(struct task_struct *tsk)
+ {
+ 	struct audit_task_info *info = tsk->audit;
+-- 
+2.20.1
+

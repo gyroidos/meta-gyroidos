@@ -1,7 +1,7 @@
-From 2d16df560890a9701b341394f5bc5819ba74f6fa Mon Sep 17 00:00:00 2001
+From 11012b7b75d948998784b511ef502c59d23de1b2 Mon Sep 17 00:00:00 2001
 From: Richard Guy Briggs <rgb@redhat.com>
 Date: Fri, 28 Jun 2019 17:47:03 -0400
-Subject: [PATCH 13/17] audit: contid check descendancy and nesting
+Subject: [PATCH 09/12] audit: contid check descendancy and nesting
 
 Require the target task to be a descendant of the container
 orchestrator/engine.
@@ -19,13 +19,13 @@ remove the duplication and pull the function into kernel/core/sched.c
 Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
 ---
  include/linux/sched.h    |  3 +++
- kernel/audit.c           | 44 ++++++++++++++++++++++++++++++++--------
- kernel/sched/core.c      | 33 ++++++++++++++++++++++++++++++
- security/yama/yama_lsm.c | 33 ------------------------------
- 4 files changed, 72 insertions(+), 41 deletions(-)
+ kernel/audit.c           | 26 +++++++++++++++++++++++---
+ kernel/sched/core.c      | 33 +++++++++++++++++++++++++++++++++
+ security/yama/yama_lsm.c | 33 ---------------------------------
+ 4 files changed, 59 insertions(+), 36 deletions(-)
 
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 73bcd090bebe..97329694d20e 100644
+index 073868a46fab..4782b9693c26 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -1992,4 +1992,7 @@ int sched_trace_rq_cpu(struct rq *rq);
@@ -37,80 +37,65 @@ index 73bcd090bebe..97329694d20e 100644
 +
  #endif
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 81e76a806cfc..dff2f7b2fda3 100644
+index 3e24df8b5820..d74de5e33b63 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -2574,6 +2574,13 @@ int audit_signal_info(int sig, struct task_struct *t)
+@@ -470,11 +470,13 @@ void audit_free(struct task_struct *tsk)
+ 	rcu_read_lock();
+ 	cont = _audit_contobj_get_bytask(tsk);
+ 	rcu_read_unlock();
+-	spin_lock_irqsave(&_audit_contobj_list_lock, flags);
+ 	if (ns) {
+ 		audit_netns_contid_del(ns->net_ns, cont);
++		spin_lock_irqsave(&_audit_contobj_list_lock, flags);
+ 		_audit_contobj_put(cont);
++		spin_unlock_irqrestore(&_audit_contobj_list_lock, flags);
+ 	}
++	spin_lock_irqsave(&_audit_contobj_list_lock, flags);
+ 	_audit_contobj_put(cont);
+ 	spin_unlock_irqrestore(&_audit_contobj_list_lock, flags);
+ 	audit_free_syscall(tsk);
+@@ -2865,6 +2867,21 @@ int audit_signal_info(int sig, struct task_struct *t)
  	return audit_signal_info_syscall(t);
  }
  
-+static bool audit_contid_isowner(struct task_struct *tsk)
++static bool audit_contid_isnesting(struct task_struct *tsk)
 +{
-+	if (tsk->audit && tsk->audit->cont)
-+		return current == tsk->audit->cont->owner;
-+	return false;
++	bool isowner = false;
++	bool ownerisparent = false;
++	struct audit_task_info *info = tsk->audit;
++
++	rcu_read_lock();
++	if (info && info->cont) {
++		isowner = current == info->cont->owner;
++		ownerisparent = task_is_descendant(info->cont->owner, current);
++	}
++	rcu_read_unlock();
++	return !isowner && ownerisparent;
 +}
 +
  /*
   * audit_set_contid - set current task's audit contid
-  * @task: target task
-@@ -2602,22 +2609,43 @@ int audit_set_contid(struct task_struct *task, u64 contid)
- 	oldcontid = audit_get_contid(task);
- 	read_lock(&tasklist_lock);
- 	/* Don't allow the contid to be unset */
--	if (!audit_contid_valid(contid))
-+	if (!audit_contid_valid(contid)) {
- 		rc = -EINVAL;
-+		goto unlock;
-+	}
- 	/* Don't allow the contid to be set to the same value again */
--	else if (contid == oldcontid) {
-+	if (contid == oldcontid) {
- 		rc = -EADDRINUSE;
-+		goto unlock;
-+	}
- 	/* if we don't have caps, reject */
--	else if (!capable(CAP_AUDIT_CONTROL))
-+	if (!capable(CAP_AUDIT_CONTROL)) {
- 		rc = -EPERM;
--	/* if task has children or is not single-threaded, deny */
--	else if (!list_empty(&task->children))
-+		goto unlock;
-+	}
-+	/* if task has children, deny */
-+	if (!list_empty(&task->children)) {
+  * @tsk: target task
+@@ -2905,8 +2922,11 @@ int audit_set_contid(struct task_struct *tsk, u64 contid)
+ 		   !(thread_group_leader(tsk) && thread_group_empty(tsk))) {
+ 		/* if task has children or is not single-threaded, deny */
  		rc = -EBUSY;
--	else if (!(thread_group_leader(task) && thread_group_empty(task)))
-+		goto unlock;
-+	}
-+	/* if task is not single-threaded, deny */
-+	if (!(thread_group_leader(task) && thread_group_empty(task))) {
- 		rc = -EALREADY;
--	/* if contid is already set, deny */
--	else if (audit_contid_set(task))
-+		goto unlock;
-+	}
-+	/* if task is not descendant, block */
-+	if (task == current) {
-+		rc = -EBADSLT;
-+		goto unlock;
-+	}
-+	if (!task_is_descendant(current, task)) {
+-	} else if (info->cont) {
+-		/* if contid is already set, deny */
++	} else if (tsk == current || !task_is_descendant(current, tsk)) {
++		/* if task is not descendant, block */
 +		rc = -EXDEV;
-+		goto unlock;
-+	}
-+	/* only allow contid setting again if nesting */
-+	if (audit_contid_set(task) && audit_contid_isowner(task))
- 		rc = -ECHILD;
-+unlock:
- 	read_unlock(&tasklist_lock);
- 	if (!rc) {
- 		struct audit_contobj *oldcont = _audit_contobj(task);
++	} else if (info->cont && !audit_contid_isnesting(tsk)) {
++		/* only allow contid setting again if nesting */
+ 		rc = -EEXIST;
+ 	}
+ 	rcu_read_lock();
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 8dacda4b0362..00de1ffa390e 100644
+index 7841e738e38f..da01b8b1e168 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -7905,6 +7905,39 @@ void dump_cpu_task(int cpu)
+@@ -8016,6 +8016,39 @@ void dump_cpu_task(int cpu)
  	sched_show_task(cpu_curr(cpu));
  }
  

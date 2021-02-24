@@ -1,7 +1,7 @@
-From 4cdab3f538221cd844e7d242094e9a344a67e9bf Mon Sep 17 00:00:00 2001
+From 364ff7274dae526d854a9cd1d22b05d4e012f8fe Mon Sep 17 00:00:00 2001
 From: Richard Guy Briggs <rgb@redhat.com>
 Date: Tue, 20 Feb 2018 03:46:28 -0500
-Subject: [PATCH 09/17] audit: add support for non-syscall auxiliary records
+Subject: [PATCH 05/12] audit: add support for non-syscall auxiliary records
 
 Standalone audit records have the timestamp and serial number generated
 on the fly and as such are unique, making them standalone.  This new
@@ -10,6 +10,11 @@ be used only for a standalone record and its auxiliary record(s).  The
 context is discarded immediately after the local associated records are
 produced.
 
+A new flag, "local" was used rather than "in_syscall" since it would be
+overloading the original purpose and meaning.  Events using this
+function may not be triggered by a syscall but still need records
+linked by timestamp and serial.
+
 Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
 Acked-by: Serge Hallyn <serge@hallyn.com>
 Acked-by: Neil Horman <nhorman@tuxdriver.com>
@@ -17,14 +22,14 @@ Reviewed-by: Ondrej Mosnacek <omosnace@redhat.com>
 ---
  include/linux/audit.h |  8 ++++++++
  kernel/audit.h        |  1 +
- kernel/auditsc.c      | 35 ++++++++++++++++++++++++++++++-----
- 3 files changed, 39 insertions(+), 5 deletions(-)
+ kernel/auditsc.c      | 31 ++++++++++++++++++++++++++-----
+ 3 files changed, 35 insertions(+), 5 deletions(-)
 
 diff --git a/include/linux/audit.h b/include/linux/audit.h
-index a16027e69cb4..451342017038 100644
+index 63b80e30aef5..2c521ef14e24 100644
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
-@@ -320,6 +320,8 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
+@@ -279,6 +279,8 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
  
  /* These are defined in auditsc.c */
  				/* Public API */
@@ -33,7 +38,7 @@ index a16027e69cb4..451342017038 100644
  extern void __audit_syscall_entry(int major, unsigned long a0, unsigned long a1,
  				  unsigned long a2, unsigned long a3);
  extern void __audit_syscall_exit(int ret_success, long ret_value);
-@@ -572,6 +574,12 @@ static inline void audit_ntp_log(const struct audit_ntp_data *ad)
+@@ -521,6 +523,12 @@ static inline void audit_ntp_log(const struct audit_ntp_data *ad)
  extern int audit_n_rules;
  extern int audit_signals;
  #else /* CONFIG_AUDITSYSCALL */
@@ -47,7 +52,7 @@ index a16027e69cb4..451342017038 100644
  				       unsigned long a1, unsigned long a2,
  				       unsigned long a3)
 diff --git a/kernel/audit.h b/kernel/audit.h
-index de358ac61587..000ca7c89f6d 100644
+index 01056c126152..3de802f68960 100644
 --- a/kernel/audit.h
 +++ b/kernel/audit.h
 @@ -98,6 +98,7 @@ struct audit_proctitle {
@@ -59,10 +64,10 @@ index de358ac61587..000ca7c89f6d 100644
  	unsigned int	    serial;     /* serial number for record */
  	int		    major;      /* syscall number */
 diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index ac438fcff807..3138c88887c7 100644
+index b63aa90ebf56..197a0007e159 100644
 --- a/kernel/auditsc.c
 +++ b/kernel/auditsc.c
-@@ -890,11 +890,13 @@ static inline void audit_free_aux(struct audit_context *context)
+@@ -893,11 +893,12 @@ static inline void audit_free_aux(struct audit_context *context)
  	}
  }
  
@@ -73,12 +78,11 @@ index ac438fcff807..3138c88887c7 100644
  	struct audit_context *context;
  
 -	context = kzalloc(sizeof(*context), GFP_KERNEL);
-+	/* We can be called in atomic context via audit_tg() */
 +	context = kzalloc(sizeof(*context), gfpflags);
  	if (!context)
  		return NULL;
  	context->state = state;
-@@ -930,7 +932,8 @@ int audit_alloc_syscall(struct task_struct *tsk)
+@@ -933,7 +934,8 @@ int audit_alloc_syscall(struct task_struct *tsk)
  		return 0;
  	}
  
@@ -88,26 +92,23 @@ index ac438fcff807..3138c88887c7 100644
  		kfree(key);
  		audit_log_lost("out of memory in audit_alloc_syscall");
  		return -ENOMEM;
-@@ -942,8 +945,29 @@ int audit_alloc_syscall(struct task_struct *tsk)
+@@ -945,8 +947,26 @@ int audit_alloc_syscall(struct task_struct *tsk)
  	return 0;
  }
  
 -static inline void audit_free_context(struct audit_context *context)
 +struct audit_context *audit_alloc_local(gfp_t gfpflags)
  {
-+	struct audit_context *context = NULL;
++	struct audit_context *context;
 +
-+	if (!audit_ever_enabled)
-+		goto out; /* Return if not auditing. */
 +	context = audit_alloc_context(AUDIT_RECORD_CONTEXT, gfpflags);
 +	if (!context) {
 +		audit_log_lost("out of memory in audit_alloc_local");
-+		goto out;
++		return NULL;
 +	}
 +	context->serial = audit_serial();
 +	ktime_get_coarse_real_ts64(&context->ctime);
 +	context->local = true;
-+out:
 +	return context;
 +}
 +EXPORT_SYMBOL(audit_alloc_local);
@@ -119,7 +120,7 @@ index ac438fcff807..3138c88887c7 100644
  	audit_free_module(context);
  	audit_free_names(context);
  	unroll_tree_refs(context, NULL, 0);
-@@ -954,6 +978,7 @@ static inline void audit_free_context(struct audit_context *context)
+@@ -957,6 +977,7 @@ static inline void audit_free_context(struct audit_context *context)
  	audit_proctitle_free(context);
  	kfree(context);
  }
@@ -127,7 +128,7 @@ index ac438fcff807..3138c88887c7 100644
  
  static int audit_log_pid_context(struct audit_context *context, pid_t pid,
  				 kuid_t auid, kuid_t uid, unsigned int sessionid,
-@@ -2182,7 +2207,7 @@ EXPORT_SYMBOL_GPL(__audit_inode_child);
+@@ -2195,7 +2216,7 @@ EXPORT_SYMBOL_GPL(__audit_inode_child);
  int auditsc_get_stamp(struct audit_context *ctx,
  		       struct timespec64 *t, unsigned int *serial)
  {
