@@ -1,0 +1,199 @@
+From 2d16df560890a9701b341394f5bc5819ba74f6fa Mon Sep 17 00:00:00 2001
+From: Richard Guy Briggs <rgb@redhat.com>
+Date: Fri, 28 Jun 2019 17:47:03 -0400
+Subject: [PATCH 13/17] audit: contid check descendancy and nesting
+
+Require the target task to be a descendant of the container
+orchestrator/engine.
+
+You would only change the audit container ID from one set or inherited
+value to another if you were nesting containers.
+
+If changing the contid, the container orchestrator/engine must be a
+descendant and not same orchestrator as the one that set it so it is not
+possible to change the contid of another orchestrator's container.
+
+Since the task_is_descendant() function is used in YAMA and in audit,
+remove the duplication and pull the function into kernel/core/sched.c
+
+Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+---
+ include/linux/sched.h    |  3 +++
+ kernel/audit.c           | 44 ++++++++++++++++++++++++++++++++--------
+ kernel/sched/core.c      | 33 ++++++++++++++++++++++++++++++
+ security/yama/yama_lsm.c | 33 ------------------------------
+ 4 files changed, 72 insertions(+), 41 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 73bcd090bebe..97329694d20e 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1992,4 +1992,7 @@ int sched_trace_rq_cpu(struct rq *rq);
+ 
+ const struct cpumask *sched_trace_rd_span(struct root_domain *rd);
+ 
++extern int task_is_descendant(struct task_struct *parent,
++			      struct task_struct *child);
++
+ #endif
+diff --git a/kernel/audit.c b/kernel/audit.c
+index 81e76a806cfc..dff2f7b2fda3 100644
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -2574,6 +2574,13 @@ int audit_signal_info(int sig, struct task_struct *t)
+ 	return audit_signal_info_syscall(t);
+ }
+ 
++static bool audit_contid_isowner(struct task_struct *tsk)
++{
++	if (tsk->audit && tsk->audit->cont)
++		return current == tsk->audit->cont->owner;
++	return false;
++}
++
+ /*
+  * audit_set_contid - set current task's audit contid
+  * @task: target task
+@@ -2602,22 +2609,43 @@ int audit_set_contid(struct task_struct *task, u64 contid)
+ 	oldcontid = audit_get_contid(task);
+ 	read_lock(&tasklist_lock);
+ 	/* Don't allow the contid to be unset */
+-	if (!audit_contid_valid(contid))
++	if (!audit_contid_valid(contid)) {
+ 		rc = -EINVAL;
++		goto unlock;
++	}
+ 	/* Don't allow the contid to be set to the same value again */
+-	else if (contid == oldcontid) {
++	if (contid == oldcontid) {
+ 		rc = -EADDRINUSE;
++		goto unlock;
++	}
+ 	/* if we don't have caps, reject */
+-	else if (!capable(CAP_AUDIT_CONTROL))
++	if (!capable(CAP_AUDIT_CONTROL)) {
+ 		rc = -EPERM;
+-	/* if task has children or is not single-threaded, deny */
+-	else if (!list_empty(&task->children))
++		goto unlock;
++	}
++	/* if task has children, deny */
++	if (!list_empty(&task->children)) {
+ 		rc = -EBUSY;
+-	else if (!(thread_group_leader(task) && thread_group_empty(task)))
++		goto unlock;
++	}
++	/* if task is not single-threaded, deny */
++	if (!(thread_group_leader(task) && thread_group_empty(task))) {
+ 		rc = -EALREADY;
+-	/* if contid is already set, deny */
+-	else if (audit_contid_set(task))
++		goto unlock;
++	}
++	/* if task is not descendant, block */
++	if (task == current) {
++		rc = -EBADSLT;
++		goto unlock;
++	}
++	if (!task_is_descendant(current, task)) {
++		rc = -EXDEV;
++		goto unlock;
++	}
++	/* only allow contid setting again if nesting */
++	if (audit_contid_set(task) && audit_contid_isowner(task))
+ 		rc = -ECHILD;
++unlock:
+ 	read_unlock(&tasklist_lock);
+ 	if (!rc) {
+ 		struct audit_contobj *oldcont = _audit_contobj(task);
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 8dacda4b0362..00de1ffa390e 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -7905,6 +7905,39 @@ void dump_cpu_task(int cpu)
+ 	sched_show_task(cpu_curr(cpu));
+ }
+ 
++/*
++ * task_is_descendant - walk up a process family tree looking for a match
++ * @parent: the process to compare against while walking up from child
++ * @child: the process to start from while looking upwards for parent
++ *
++ * Returns 1 if child is a descendant of parent, 0 if not.
++ */
++int task_is_descendant(struct task_struct *parent,
++			      struct task_struct *child)
++{
++	int rc = 0;
++	struct task_struct *walker = child;
++
++	if (!parent || !child)
++		return 0;
++
++	rcu_read_lock();
++	if (!thread_group_leader(parent))
++		parent = rcu_dereference(parent->group_leader);
++	while (walker->pid > 0) {
++		if (!thread_group_leader(walker))
++			walker = rcu_dereference(walker->group_leader);
++		if (walker == parent) {
++			rc = 1;
++			break;
++		}
++		walker = rcu_dereference(walker->real_parent);
++	}
++	rcu_read_unlock();
++
++	return rc;
++}
++
+ /*
+  * Nice levels are multiplicative, with a gentle 10% change for every
+  * nice level changed. I.e. when a CPU-bound task goes from nice 0 to
+diff --git a/security/yama/yama_lsm.c b/security/yama/yama_lsm.c
+index 94dc346370b1..25eae205eae8 100644
+--- a/security/yama/yama_lsm.c
++++ b/security/yama/yama_lsm.c
+@@ -262,39 +262,6 @@ static int yama_task_prctl(int option, unsigned long arg2, unsigned long arg3,
+ 	return rc;
+ }
+ 
+-/**
+- * task_is_descendant - walk up a process family tree looking for a match
+- * @parent: the process to compare against while walking up from child
+- * @child: the process to start from while looking upwards for parent
+- *
+- * Returns 1 if child is a descendant of parent, 0 if not.
+- */
+-static int task_is_descendant(struct task_struct *parent,
+-			      struct task_struct *child)
+-{
+-	int rc = 0;
+-	struct task_struct *walker = child;
+-
+-	if (!parent || !child)
+-		return 0;
+-
+-	rcu_read_lock();
+-	if (!thread_group_leader(parent))
+-		parent = rcu_dereference(parent->group_leader);
+-	while (walker->pid > 0) {
+-		if (!thread_group_leader(walker))
+-			walker = rcu_dereference(walker->group_leader);
+-		if (walker == parent) {
+-			rc = 1;
+-			break;
+-		}
+-		walker = rcu_dereference(walker->real_parent);
+-	}
+-	rcu_read_unlock();
+-
+-	return rc;
+-}
+-
+ /**
+  * ptracer_exception_found - tracer registered as exception for this tracee
+  * @tracer: the task_struct of the process attempting ptrace
+-- 
+2.20.1
+
