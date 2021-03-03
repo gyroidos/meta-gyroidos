@@ -1,7 +1,7 @@
-From ac05c33317777feb4847c27d547bce330661a7cc Mon Sep 17 00:00:00 2001
+From 1dd6692f12958cb6132b997e8d072efc22868039 Mon Sep 17 00:00:00 2001
 From: Richard Guy Briggs <rgb@redhat.com>
 Date: Mon, 19 Feb 2018 10:26:46 -0500
-Subject: [PATCH 07/12] audit: add containerid filtering
+Subject: [PATCH 11/17] audit: add containerid filtering
 
 Implement audit container identifier filtering using the AUDIT_CONTID
 field name to send an 8-character string representing a u64 since the
@@ -27,14 +27,13 @@ Reviewed-by: Ondrej Mosnacek <omosnace@redhat.com>
 ---
  include/linux/audit.h      |  1 +
  include/uapi/linux/audit.h |  5 ++++-
- kernel/audit.c             |  5 +++++
- kernel/audit.h             |  3 +++
+ kernel/audit.h             |  1 +
  kernel/auditfilter.c       | 46 ++++++++++++++++++++++++++++++++++++++
- kernel/auditsc.c           |  3 +++
- 6 files changed, 62 insertions(+), 1 deletion(-)
+ kernel/auditsc.c           |  4 ++++
+ 5 files changed, 56 insertions(+), 1 deletion(-)
 
 diff --git a/include/linux/audit.h b/include/linux/audit.h
-index 2c521ef14e24..6d037cad2b9f 100644
+index 451342017038..d5b0bb8e9613 100644
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
 @@ -68,6 +68,7 @@ struct audit_field {
@@ -46,10 +45,10 @@ index 2c521ef14e24..6d037cad2b9f 100644
  		kgid_t			gid;
  		struct {
 diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
-index bf9976ea3260..29bcd7f458b8 100644
+index ab69cfd7e768..cbf131a9eb69 100644
 --- a/include/uapi/linux/audit.h
 +++ b/include/uapi/linux/audit.h
-@@ -270,6 +270,7 @@
+@@ -268,6 +268,7 @@
  #define AUDIT_LOGINUID_SET	24
  #define AUDIT_SESSIONID	25	/* Session ID */
  #define AUDIT_FSTYPE	26	/* FileSystem Type */
@@ -57,7 +56,7 @@ index bf9976ea3260..29bcd7f458b8 100644
  
  				/* These are ONLY useful when checking
  				 * at syscall exit time (AUDIT_AT_EXIT). */
-@@ -351,6 +352,7 @@ enum {
+@@ -349,6 +350,7 @@ enum {
  #define AUDIT_FEATURE_BITMAP_SESSIONID_FILTER	0x00000010
  #define AUDIT_FEATURE_BITMAP_LOST_RESET		0x00000020
  #define AUDIT_FEATURE_BITMAP_FILTER_FS		0x00000040
@@ -65,7 +64,7 @@ index bf9976ea3260..29bcd7f458b8 100644
  
  #define AUDIT_FEATURE_BITMAP_ALL (AUDIT_FEATURE_BITMAP_BACKLOG_LIMIT | \
  				  AUDIT_FEATURE_BITMAP_BACKLOG_WAIT_TIME | \
-@@ -358,7 +360,8 @@ enum {
+@@ -356,7 +358,8 @@ enum {
  				  AUDIT_FEATURE_BITMAP_EXCLUDE_EXTEND | \
  				  AUDIT_FEATURE_BITMAP_SESSIONID_FILTER | \
  				  AUDIT_FEATURE_BITMAP_LOST_RESET | \
@@ -75,35 +74,11 @@ index bf9976ea3260..29bcd7f458b8 100644
  
  /* deprecated: AUDIT_VERSION_* */
  #define AUDIT_VERSION_LATEST 		AUDIT_FEATURE_BITMAP_ALL
-diff --git a/kernel/audit.c b/kernel/audit.c
-index b8a507cb2cd2..6c97a5708341 100644
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -2431,6 +2431,11 @@ int audit_log_container_id_ctx(struct audit_context *context)
- 	return record;
- }
- 
-+int audit_contid_comparator(struct task_struct *tsk, u32 op, u64 right)
-+{
-+	return audit_comparator64(audit_get_contid(tsk), op, right);
-+}
-+
- void audit_log_key(struct audit_buffer *ab, char *key)
- {
- 	audit_log_format(ab, " key=");
 diff --git a/kernel/audit.h b/kernel/audit.h
-index 3de802f68960..a2ca9357e490 100644
+index 000ca7c89f6d..5e2f5c9820d8 100644
 --- a/kernel/audit.h
 +++ b/kernel/audit.h
-@@ -218,12 +218,15 @@ extern void *audit_contobj_get_bytask(struct task_struct *tsk);
- extern void audit_contobj_put(void **cont, int count);
- extern int audit_log_container_id(struct audit_context *context, void *cont);
- extern int audit_log_container_id_ctx(struct audit_context *context);
-+extern int audit_contid_comparator(struct task_struct *tsk, const u32 op,
-+				   const u64 right);
- 
- /* Indicates that audit should log the full pathname. */
- #define AUDIT_NAME_FULL -1
+@@ -225,6 +225,7 @@ static inline int audit_hash_contid(u64 contid)
  
  extern int audit_match_class(int class, unsigned syscall);
  extern int audit_comparator(const u32 left, const u32 op, const u32 right);
@@ -112,7 +87,7 @@ index 3de802f68960..a2ca9357e490 100644
  extern int audit_gid_comparator(kgid_t left, u32 op, kgid_t right);
  extern int parent_len(const char *path);
 diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index a10e2997aa6c..e98766d27167 100644
+index b0126e9c0743..9606f973fe33 100644
 --- a/kernel/auditfilter.c
 +++ b/kernel/auditfilter.c
 @@ -399,6 +399,7 @@ static int audit_field_valid(struct audit_entry *entry, struct audit_field *f)
@@ -123,22 +98,22 @@ index a10e2997aa6c..e98766d27167 100644
  		/* only equal and not equal valid ops */
  		if (f->op != Audit_not_equal && f->op != Audit_equal)
  			return -EINVAL;
-@@ -590,6 +591,14 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- 			entry->rule.buflen += f_val;
+@@ -586,6 +587,14 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
+ 			}
  			entry->rule.exe = audit_mark;
  			break;
 +		case AUDIT_CONTID:
-+			if (f_val != sizeof(u64))
++			if (f->val != sizeof(u64))
 +				goto exit_free;
-+			str = audit_unpack_string(&bufp, &remain, f_val);
++			str = audit_unpack_string(&bufp, &remain, f->val);
 +			if (IS_ERR(str))
 +				goto exit_free;
 +			f->val64 = ((u64 *)str)[0];
 +			break;
- 		default:
- 			f->val = f_val;
- 			break;
-@@ -675,6 +684,11 @@ static struct audit_rule_data *audit_krule_to_data(struct audit_krule *krule)
+ 		}
+ 	}
+ 
+@@ -668,6 +677,11 @@ static struct audit_rule_data *audit_krule_to_data(struct audit_krule *krule)
  			data->buflen += data->values[i] =
  				audit_pack_string(&bufp, audit_mark_path(krule->exe));
  			break;
@@ -150,7 +125,7 @@ index a10e2997aa6c..e98766d27167 100644
  		case AUDIT_LOGINUID_SET:
  			if (krule->pflags & AUDIT_LOGINUID_LEGACY && !f->val) {
  				data->fields[i] = AUDIT_LOGINUID;
-@@ -761,6 +775,10 @@ static int audit_compare_rule(struct audit_krule *a, struct audit_krule *b)
+@@ -754,6 +768,10 @@ static int audit_compare_rule(struct audit_krule *a, struct audit_krule *b)
  			if (!gid_eq(a->fields[i].gid, b->fields[i].gid))
  				return 1;
  			break;
@@ -161,7 +136,7 @@ index a10e2997aa6c..e98766d27167 100644
  		default:
  			if (a->fields[i].val != b->fields[i].val)
  				return 1;
-@@ -1216,6 +1234,30 @@ int audit_comparator(u32 left, u32 op, u32 right)
+@@ -1211,6 +1229,30 @@ int audit_comparator(u32 left, u32 op, u32 right)
  	}
  }
  
@@ -192,27 +167,28 @@ index a10e2997aa6c..e98766d27167 100644
  int audit_uid_comparator(kuid_t left, u32 op, kuid_t right)
  {
  	switch (op) {
-@@ -1350,6 +1392,10 @@ int audit_filter(int msgtype, unsigned int listtype)
+@@ -1345,6 +1387,10 @@ int audit_filter(int msgtype, unsigned int listtype)
  				result = audit_comparator(audit_loginuid_set(current),
  							  f->op, f->val);
  				break;
 +			case AUDIT_CONTID:
-+				result = audit_contid_comparator(current, f->op,
-+								 f->val64);
++				result = audit_comparator64(audit_get_contid(current),
++							    f->op, f->val64);
 +				break;
  			case AUDIT_MSGTYPE:
  				result = audit_comparator(msgtype, f->op, f->val);
  				break;
 diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 197a0007e159..b0a15eaab734 100644
+index 3138c88887c7..a658fe775b86 100644
 --- a/kernel/auditsc.c
 +++ b/kernel/auditsc.c
-@@ -629,6 +629,9 @@ static int audit_filter_rules(struct task_struct *tsk,
+@@ -629,6 +629,10 @@ static int audit_filter_rules(struct task_struct *tsk,
  				result = audit_comparator(ctx->sockaddr->ss_family,
  							  f->op, f->val);
  			break;
 +		case AUDIT_CONTID:
-+			result = audit_contid_comparator(tsk, f->op, f->val64);
++			result = audit_comparator64(audit_get_contid(tsk),
++						    f->op, f->val64);
 +			break;
  		case AUDIT_SUBJ_USER:
  		case AUDIT_SUBJ_ROLE:

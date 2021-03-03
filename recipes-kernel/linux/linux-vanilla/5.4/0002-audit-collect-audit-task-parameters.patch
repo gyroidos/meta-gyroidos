@@ -1,43 +1,56 @@
-From c137a49c5e23335e80a2a8c8c490c6d03f3a1217 Mon Sep 17 00:00:00 2001
+From 598bdde8b6d1949f27efdc78667c1ea8d7b7309b Mon Sep 17 00:00:00 2001
 From: Richard Guy Briggs <rgb@redhat.com>
-Date: Wed, 4 Nov 2020 18:05:44 -0500
-Subject: [PATCH 01/12] audit: collect audit task parameters
+Date: Wed, 25 Apr 2018 10:47:37 -0400
+Subject: [PATCH 02/17] audit: collect audit task parameters
 
 The audit-related parameters in struct task_struct should ideally be
-collected together and accessed through a standard audit API and the audit
-structures made opaque to other kernel subsystems.
+collected together and accessed through a standard audit API.
 
 Collect the existing loginuid, sessionid and audit_context together in a
-new opaque struct audit_task_info called "audit" in struct task_struct.
+new struct audit_task_info called "audit" in struct task_struct.
 
 Use kmem_cache to manage this pool of memory.
 Un-inline audit_free() to be able to always recover that memory.
 
-Please see the upstream github issues
+Please see the upstream github issue
 https://github.com/linux-audit/audit-kernel/issues/81
-https://github.com/linux-audit/audit-kernel/issues/90
 
 Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
----
-Acks removed due to significant code changes hiding audit task struct:
 Acked-by: Neil Horman <nhorman@tuxdriver.com>
 Reviewed-by: Ondrej Mosnacek <omosnace@redhat.com>
 ---
- include/linux/audit.h |  49 +++++---------
- include/linux/sched.h |   7 +-
- init/init_task.c      |   3 +-
- init/main.c           |   2 +
- kernel/audit.c        | 154 +++++++++++++++++++++++++++++++++++++++++-
- kernel/audit.h        |   7 ++
- kernel/auditsc.c      |  24 ++++---
- kernel/fork.c         |   1 -
- 8 files changed, 193 insertions(+), 54 deletions(-)
+ include/linux/audit.h | 49 ++++++++++++++++++-----------
+ include/linux/sched.h |  7 +----
+ init/init_task.c      |  3 +-
+ init/main.c           |  2 ++
+ kernel/audit.c        | 71 +++++++++++++++++++++++++++++++++++++++++--
+ kernel/audit.h        |  5 +++
+ kernel/auditsc.c      | 26 ++++++++--------
+ kernel/fork.c         |  1 -
+ 8 files changed, 124 insertions(+), 40 deletions(-)
 
 diff --git a/include/linux/audit.h b/include/linux/audit.h
-index aee3dc9eb378..abbc547bbd6f 100644
+index aee3dc9eb378..df50e8a46d9f 100644
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
-@@ -130,6 +130,9 @@ struct filename;
+@@ -94,6 +94,16 @@ struct audit_ntp_data {
+ struct audit_ntp_data {};
+ #endif
+ 
++struct audit_task_info {
++	kuid_t			loginuid;
++	unsigned int		sessionid;
++#ifdef CONFIG_AUDITSYSCALL
++	struct audit_context	*ctx;
++#endif
++};
++
++extern struct audit_task_info init_struct_audit;
++
+ extern int is_audit_feature_set(int which);
+ 
+ extern int __init audit_register_class(int class, unsigned *list);
+@@ -130,6 +140,9 @@ struct filename;
  #ifdef CONFIG_AUDIT
  /* These are defined in audit.c */
  				/* Public API */
@@ -47,27 +60,26 @@ index aee3dc9eb378..abbc547bbd6f 100644
  extern __printf(4, 5)
  void audit_log(struct audit_context *ctx, gfp_t gfp_mask, int type,
  	       const char *fmt, ...);
-@@ -169,22 +172,26 @@ extern int audit_rule_change(int type, int seq, void *data, size_t datasz);
- extern int audit_list_rules_send(struct sk_buff *request_skb, int seq);
+@@ -172,12 +185,16 @@ extern int audit_set_loginuid(kuid_t loginuid);
  
- extern int audit_set_loginuid(kuid_t loginuid);
-+extern void audit_set_loginuid_iouring(kuid_t loginuid);
- 
--static inline kuid_t audit_get_loginuid(struct task_struct *tsk)
--{
+ static inline kuid_t audit_get_loginuid(struct task_struct *tsk)
+ {
 -	return tsk->loginuid;
--}
-+extern kuid_t audit_get_loginuid(struct task_struct *tsk);
++	if (!tsk->audit)
++		return INVALID_UID;
++	return tsk->audit->loginuid;
+ }
  
--static inline unsigned int audit_get_sessionid(struct task_struct *tsk)
--{
+ static inline unsigned int audit_get_sessionid(struct task_struct *tsk)
+ {
 -	return tsk->sessionid;
--}
-+extern unsigned int audit_get_sessionid(struct task_struct *tsk);
-+extern void audit_set_sessionid_iouring(unsigned int sessionid);
++	if (!tsk->audit)
++		return AUDIT_SID_UNSET;
++	return tsk->audit->sessionid;
+ }
  
  extern u32 audit_enabled;
- 
+@@ -185,6 +202,14 @@ extern u32 audit_enabled;
  extern int audit_signal_info(int sig, struct task_struct *t);
  
  #else /* CONFIG_AUDIT */
@@ -82,7 +94,7 @@ index aee3dc9eb378..abbc547bbd6f 100644
  static inline __printf(4, 5)
  void audit_log(struct audit_context *ctx, gfp_t gfp_mask, int type,
  	       const char *fmt, ...)
-@@ -260,8 +267,6 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
+@@ -260,8 +285,6 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
  
  /* These are defined in auditsc.c */
  				/* Public API */
@@ -91,23 +103,24 @@ index aee3dc9eb378..abbc547bbd6f 100644
  extern void __audit_syscall_entry(int major, unsigned long a0, unsigned long a1,
  				  unsigned long a2, unsigned long a3);
  extern void __audit_syscall_exit(int ret_success, long ret_value);
-@@ -279,26 +284,14 @@ extern void audit_seccomp_actions_logged(const char *names,
- 					 const char *old_names, int res);
- extern void __audit_ptrace(struct task_struct *t);
+@@ -281,12 +304,14 @@ extern void __audit_ptrace(struct task_struct *t);
  
--static inline void audit_set_context(struct task_struct *task, struct audit_context *ctx)
--{
+ static inline void audit_set_context(struct task_struct *task, struct audit_context *ctx)
+ {
 -	task->audit_context = ctx;
--}
--
--static inline struct audit_context *audit_context(void)
--{
++	task->audit->ctx = ctx;
+ }
+ 
+ static inline struct audit_context *audit_context(void)
+ {
 -	return current->audit_context;
--}
-+extern struct audit_context *audit_context(void);
++	if (!current->audit)
++		return NULL;
++	return current->audit->ctx;
+ }
  
  static inline bool audit_dummy_context(void)
- {
+@@ -294,11 +319,7 @@ static inline bool audit_dummy_context(void)
  	void *p = audit_context();
  	return !p || *(int *)p;
  }
@@ -120,7 +133,7 @@ index aee3dc9eb378..abbc547bbd6f 100644
  static inline void audit_syscall_entry(int major, unsigned long a0,
  				       unsigned long a1, unsigned long a2,
  				       unsigned long a3)
-@@ -516,12 +509,6 @@ static inline void audit_ntp_log(const struct audit_ntp_data *ad)
+@@ -516,12 +537,6 @@ static inline void audit_ntp_log(const struct audit_ntp_data *ad)
  extern int audit_n_rules;
  extern int audit_signals;
  #else /* CONFIG_AUDITSYSCALL */
@@ -133,17 +146,8 @@ index aee3dc9eb378..abbc547bbd6f 100644
  static inline void audit_syscall_entry(int major, unsigned long a0,
  				       unsigned long a1, unsigned long a2,
  				       unsigned long a3)
-@@ -532,8 +519,6 @@ static inline bool audit_dummy_context(void)
- {
- 	return true;
- }
--static inline void audit_set_context(struct task_struct *task, struct audit_context *ctx)
--{ }
- static inline struct audit_context *audit_context(void)
- {
- 	return NULL;
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5710b80f8050..073868a46fab 100644
+index b968d736833b..73bcd090bebe 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -33,7 +33,6 @@
@@ -163,29 +167,29 @@ index 5710b80f8050..073868a46fab 100644
 -#endif
 -	kuid_t				loginuid;
 -	unsigned int			sessionid;
-+	void				*audit;
++	struct audit_task_info		*audit;
  #endif
  	struct seccomp			seccomp;
  
 diff --git a/init/init_task.c b/init/init_task.c
-index 5d8359c44564..5f32d8329930 100644
+index 9e5cbe5eab7b..5204578d6e7e 100644
 --- a/init/init_task.c
 +++ b/init/init_task.c
-@@ -123,8 +123,7 @@ struct task_struct init_task
+@@ -122,8 +122,7 @@ struct task_struct init_task
  	.thread_group	= LIST_HEAD_INIT(init_task.thread_group),
  	.thread_node	= LIST_HEAD_INIT(init_signals.thread_head),
  #ifdef CONFIG_AUDIT
 -	.loginuid	= INVALID_UID,
 -	.sessionid	= AUDIT_SID_UNSET,
-+	.audit		= NULL,
++	.audit		= &init_struct_audit,
  #endif
  #ifdef CONFIG_PERF_EVENTS
  	.perf_event_mutex = __MUTEX_INITIALIZER(init_task.perf_event_mutex),
 diff --git a/init/main.c b/init/main.c
-index fef9e610b74b..6bf738826581 100644
+index c0206c507eba..3ff08d366b7e 100644
 --- a/init/main.c
 +++ b/init/main.c
-@@ -94,6 +94,7 @@
+@@ -93,6 +93,7 @@
  #include <linux/rodata_test.h>
  #include <linux/jump_label.h>
  #include <linux/mem_encrypt.h>
@@ -202,21 +206,13 @@ index fef9e610b74b..6bf738826581 100644
  	delayacct_init();
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 05ae208ad442..bacaaec05542 100644
+index ff7cfc61f53d..cbf5015ba0f8 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -202,6 +202,148 @@ struct audit_reply {
+@@ -203,6 +203,73 @@ struct audit_reply {
  	struct sk_buff *skb;
  };
  
-+struct audit_task_info {
-+	kuid_t			loginuid;
-+	unsigned int		sessionid;
-+#ifdef CONFIG_AUDITSYSCALL
-+	struct audit_context	*ctx;
-+#endif
-+};
-+
 +static struct kmem_cache *audit_task_cache;
 +
 +void __init audit_task_init(void)
@@ -224,85 +220,6 @@ index 05ae208ad442..bacaaec05542 100644
 +	audit_task_cache = kmem_cache_create("audit_task",
 +					     sizeof(struct audit_task_info),
 +					     0, SLAB_PANIC, NULL);
-+}
-+
-+inline kuid_t audit_get_loginuid(struct task_struct *tsk)
-+{
-+	struct audit_task_info *info = tsk->audit;
-+
-+	if (!info)
-+		return INVALID_UID;
-+	return info->loginuid;
-+}
-+
-+inline void audit_set_loginuid_iouring(kuid_t loginuid)
-+{
-+	struct audit_task_info *info = current->audit;
-+
-+	if (!info)
-+		return;
-+	info->loginuid = loginuid;
-+}
-+
-+inline unsigned int audit_get_sessionid(struct task_struct *tsk)
-+{
-+	struct audit_task_info *info = tsk->audit;
-+
-+	if (!info)
-+		return AUDIT_SID_UNSET;
-+	return info->sessionid;
-+}
-+
-+inline void audit_set_sessionid_iouring(unsigned int sessionid)
-+{
-+	struct audit_task_info *info = current->audit;
-+
-+	if (!info)
-+		return;
-+	info->sessionid = sessionid;
-+}
-+
-+inline struct audit_context *_audit_context(struct task_struct *tsk)
-+{
-+	struct audit_task_info *info = tsk->audit;
-+
-+	if (!info)
-+		return NULL;
-+	return info->ctx;
-+}
-+
-+struct audit_context *audit_context(void)
-+{
-+	return _audit_context(current);
-+}
-+EXPORT_SYMBOL(audit_context);
-+
-+static void audit_alloc_task(struct task_struct *tsk)
-+{
-+	struct audit_task_info *info = tsk->audit;
-+
-+	if (info && !IS_ERR(info))
-+		return;
-+	info = kmem_cache_alloc(audit_task_cache, GFP_KERNEL);
-+	if (!info) {
-+		tsk->audit = ERR_PTR(-ENOMEM);
-+		return;
-+	}
-+	info->loginuid = audit_get_loginuid(current);
-+	info->sessionid = audit_get_sessionid(current);
-+	tsk->audit = info;
-+}
-+
-+void audit_set_context(struct task_struct *tsk, struct audit_context *ctx)
-+{
-+	struct audit_task_info *info;
-+
-+	audit_alloc_task(tsk);
-+	info = tsk->audit;
-+	if (!IS_ERR(info))
-+		info->ctx = ctx;
-+	else
-+		tsk->audit = NULL;
 +}
 +
 +/**
@@ -316,22 +233,33 @@ index 05ae208ad442..bacaaec05542 100644
 +int audit_alloc(struct task_struct *tsk)
 +{
 +	int ret = 0;
++	struct audit_task_info *info;
 +
-+	tsk->audit = NULL;
-+	audit_alloc_task(tsk);
-+	if (IS_ERR(tsk->audit)) {
-+		ret = PTR_ERR(tsk->audit);
-+		tsk->audit = NULL;
++	info = kmem_cache_alloc(audit_task_cache, GFP_KERNEL);
++	if (!info) {
++		ret = -ENOMEM;
 +		goto out;
 +	}
++	info->loginuid = audit_get_loginuid(current);
++	info->sessionid = audit_get_sessionid(current);
++	tsk->audit = info;
++
 +	ret = audit_alloc_syscall(tsk);
 +	if (ret) {
-+		kmem_cache_free(audit_task_cache, tsk->audit);
 +		tsk->audit = NULL;
++		kmem_cache_free(audit_task_cache, info);
 +	}
 +out:
 +	return ret;
 +}
++
++struct audit_task_info init_struct_audit = {
++	.loginuid = INVALID_UID,
++	.sessionid = AUDIT_SID_UNSET,
++#ifdef CONFIG_AUDITSYSCALL
++	.ctx = NULL,
++#endif
++};
 +
 +/**
 + * audit_free - free per-task audit info
@@ -347,6 +275,7 @@ index 05ae208ad442..bacaaec05542 100644
 +	/* Freeing the audit_task_info struct must be performed after
 +	 * audit_log_exit() due to need for loginuid and sessionid.
 +	 */
++	info = tsk->audit;
 +	tsk->audit = NULL;
 +	kmem_cache_free(audit_task_cache, info);
 +}
@@ -354,55 +283,31 @@ index 05ae208ad442..bacaaec05542 100644
  /**
   * auditd_test_task - Check to see if a given task is an audit daemon
   * @task: the task to check
-@@ -2251,6 +2393,7 @@ int audit_set_loginuid(kuid_t loginuid)
- 	unsigned int oldsessionid, sessionid = AUDIT_SID_UNSET;
- 	kuid_t oldloginuid;
- 	int rc;
-+	struct audit_task_info *info;
- 
- 	oldloginuid = audit_get_loginuid(current);
- 	oldsessionid = audit_get_sessionid(current);
-@@ -2258,6 +2401,12 @@ int audit_set_loginuid(kuid_t loginuid)
- 	rc = audit_set_loginuid_perm(loginuid);
- 	if (rc)
- 		goto out;
-+	audit_alloc_task(current);
-+	if (IS_ERR(current->audit)) {
-+		rc = PTR_ERR(current->audit);
-+		current->audit = NULL;
-+		goto out;
-+	}
- 
- 	/* are we setting or clearing? */
- 	if (uid_valid(loginuid)) {
-@@ -2266,8 +2415,9 @@ int audit_set_loginuid(kuid_t loginuid)
+@@ -2254,8 +2321,8 @@ int audit_set_loginuid(kuid_t loginuid)
  			sessionid = (unsigned int)atomic_inc_return(&session_id);
  	}
  
 -	current->sessionid = sessionid;
 -	current->loginuid = loginuid;
-+	info = current->audit;
-+	info->sessionid = sessionid;
-+	info->loginuid = loginuid;
++	current->audit->sessionid = sessionid;
++	current->audit->loginuid = loginuid;
  out:
  	audit_log_set_loginuid(oldloginuid, loginuid, oldsessionid, sessionid, rc);
  	return rc;
 diff --git a/kernel/audit.h b/kernel/audit.h
-index ddc22878433d..40f6b0e1fc4b 100644
+index 6fb7160412d4..7f623ef216e6 100644
 --- a/kernel/audit.h
 +++ b/kernel/audit.h
-@@ -251,6 +251,10 @@ extern void audit_put_tty(struct tty_struct *tty);
+@@ -251,6 +251,8 @@ extern void audit_put_tty(struct tty_struct *tty);
  extern unsigned int audit_serial(void);
  extern int auditsc_get_stamp(struct audit_context *ctx,
  			      struct timespec64 *t, unsigned int *serial);
-+extern void audit_set_context(struct task_struct *task, struct audit_context *ctx);
-+extern struct audit_context *_audit_context(struct task_struct *tsk);
 +extern int audit_alloc_syscall(struct task_struct *tsk);
 +extern void audit_free_syscall(struct task_struct *tsk);
  
  extern void audit_put_watch(struct audit_watch *watch);
  extern void audit_get_watch(struct audit_watch *watch);
-@@ -292,6 +296,9 @@ extern void audit_filter_inodes(struct task_struct *tsk,
+@@ -292,6 +294,9 @@ extern void audit_filter_inodes(struct task_struct *tsk,
  extern struct list_head *audit_killed_trees(void);
  #else /* CONFIG_AUDITSYSCALL */
  #define auditsc_get_stamp(c, t, s) 0
@@ -413,7 +318,7 @@ index ddc22878433d..40f6b0e1fc4b 100644
  #define audit_get_watch(w) {}
  #define audit_to_watch(k, p, l, o) (-EINVAL)
 diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 4effe01ebbe2..e52094f713f2 100644
+index 4effe01ebbe2..10679da36bb6 100644
 --- a/kernel/auditsc.c
 +++ b/kernel/auditsc.c
 @@ -903,23 +903,25 @@ static inline struct audit_context *audit_alloc_context(enum audit_state state)
@@ -457,7 +362,7 @@ index 4effe01ebbe2..e52094f713f2 100644
  		return -ENOMEM;
  	}
  	context->filterkey = key;
-@@ -1574,14 +1576,14 @@ static void audit_log_exit(void)
+@@ -1574,14 +1576,15 @@ static void audit_log_exit(void)
  }
  
  /**
@@ -472,15 +377,24 @@ index 4effe01ebbe2..e52094f713f2 100644
 +void audit_free_syscall(struct task_struct *tsk)
  {
 -	struct audit_context *context = tsk->audit_context;
-+	struct audit_context *context = _audit_context(tsk);
++	struct audit_task_info *info = tsk->audit;
++	struct audit_context *context = info->ctx;
  
  	if (!context)
  		return;
+@@ -1604,7 +1607,6 @@ void __audit_free(struct task_struct *tsk)
+ 		if (context->current_state == AUDIT_RECORD_CONTEXT)
+ 			audit_log_exit();
+ 	}
+-
+ 	audit_set_context(tsk, NULL);
+ 	audit_free_context(context);
+ }
 diff --git a/kernel/fork.c b/kernel/fork.c
-index f1681085ab89..cfdd4a7848af 100644
+index 755d8160e001..183784a4a6fd 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -1958,7 +1958,6 @@ static __latent_entropy struct task_struct *copy_process(
+@@ -1929,7 +1929,6 @@ static __latent_entropy struct task_struct *copy_process(
  	posix_cputimers_init(&p->posix_cputimers);
  
  	p->io_context = NULL;

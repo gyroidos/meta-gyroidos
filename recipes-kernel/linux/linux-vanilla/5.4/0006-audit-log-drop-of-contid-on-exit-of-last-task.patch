@@ -1,0 +1,74 @@
+From 45cf97ab03abcc80a7f467dbfa07e7a775b6d338 Mon Sep 17 00:00:00 2001
+From: Richard Guy Briggs <rgb@redhat.com>
+Date: Thu, 20 Jun 2019 14:13:28 -0400
+Subject: [PATCH 06/17] audit: log drop of contid on exit of last task
+
+Since we are tracking the life of each audit container indentifier, we
+can match the creation event with the destruction event.  Log the
+destruction of the audit container identifier when the last process in
+that container exits.
+
+Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+---
+ kernel/audit.c   | 17 +++++++++++++++++
+ kernel/audit.h   |  2 ++
+ kernel/auditsc.c |  2 ++
+ 3 files changed, 21 insertions(+)
+
+diff --git a/kernel/audit.c b/kernel/audit.c
+index 2cbb9e4e7f6a..96a2a99eabd7 100644
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -2501,6 +2501,23 @@ int audit_set_contid(struct task_struct *task, u64 contid)
+ 	return rc;
+ }
+ 
++void audit_log_container_drop(void)
++{
++	struct audit_buffer *ab;
++
++	if (!current->audit || !current->audit->cont ||
++	    refcount_read(&current->audit->cont->refcount) > 1)
++		return;
++	ab = audit_log_start(audit_context(), GFP_KERNEL, AUDIT_CONTAINER_OP);
++	if (!ab)
++		return;
++
++	audit_log_format(ab, "op=drop opid=%d contid=%llu old-contid=%llu",
++			 task_tgid_nr(current), audit_get_contid(current),
++			 audit_get_contid(current));
++	audit_log_end(ab);
++}
++
+ /**
+  * audit_log_end - end one audit record
+  * @ab: the audit_buffer
+diff --git a/kernel/audit.h b/kernel/audit.h
+index e4a31aa92dfe..162de8366b32 100644
+--- a/kernel/audit.h
++++ b/kernel/audit.h
+@@ -255,6 +255,8 @@ extern void audit_log_d_path_exe(struct audit_buffer *ab,
+ extern struct tty_struct *audit_get_tty(void);
+ extern void audit_put_tty(struct tty_struct *tty);
+ 
++extern void audit_log_container_drop(void);
++
+ /* audit watch/mark/tree functions */
+ #ifdef CONFIG_AUDITSYSCALL
+ extern unsigned int audit_serial(void);
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index 0e2d50533959..bd855794ad26 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -1568,6 +1568,8 @@ static void audit_log_exit(void)
+ 
+ 	audit_log_proctitle();
+ 
++	audit_log_container_drop();
++
+ 	/* Send end of event record to help user space know we are finished */
+ 	ab = audit_log_start(context, GFP_KERNEL, AUDIT_EOE);
+ 	if (ab)
+-- 
+2.20.1
+
