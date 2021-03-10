@@ -27,6 +27,7 @@ PACKAGE_INSTALL = "\
 	iproute2 \
 	lxcfs \
 	pv \
+	uid-wrapper \
 "
 
 PACKAGE_INSTALL += "\
