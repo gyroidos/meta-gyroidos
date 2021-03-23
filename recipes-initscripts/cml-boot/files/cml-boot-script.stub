@@ -50,6 +50,7 @@ sleep 2
 udevadm settle
 
 if [ -e "/dev/tpm0" ]; then
+	echo "$(blkid)"
 	echo "Waiting for '/dev/disk/by-label/boot' "
 	while [ ! -e /dev/disk/by-label/boot ] && [ ! -e /dev/disk/by-label/BOOT ];do
 		echo -n "."
@@ -58,6 +59,9 @@ if [ -e "/dev/tpm0" ]; then
 
 	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/trustme))
 	BOOT_HDD=$(basename $(readlink /dev/disk/by-label/boot))
+
+	echo "CRYPTO_HDD: $(CRYPTO_HDD)"
+	echo "BOOT_HDD: $(BOOT_HDD)"
 
 	if [ "${BOOT_HDD}" == "" ];then
 		BOOT_HDD=$(basename $(readlink /dev/disk/by-label/BOOT))
