@@ -126,7 +126,7 @@ fi
 mount -a
 
 mkdir -p /mnt/extdata
-mount LABEL=extdata -o nosuid,nodev,noexec,nofail /mnt/extdata
+mount LABEL=extdata -o nosuid,nodev,noexec /mnt/extdata
 if [ $? -eq 0 ]
 then
 	mkdir -p /mnt/extdata/workdir
