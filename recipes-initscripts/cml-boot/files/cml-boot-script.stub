@@ -171,18 +171,6 @@ for suffix in conf sig cert; do
 	fi
 done
 
-if [ -e "/dev/tpm0" ]; then
-	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d)"
-	tpm2d &
-
-	if [ ! -S /run/socket/cml-tpm2d-control ]; then
-		echo "Waiting for tpm2d's control interface"
-	fi
-	while [ ! -S /run/socket/cml-tpm2d-control ]; do
-		echo -n "."
-		sleep 2
-	done
-fi
 
 # if device.cert is not present, start scd to initialize device
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
@@ -206,5 +194,18 @@ done
 echo "Starting Compartment Manger Daemon (cmld)"
 cmld &
 echo "-- cml debug console on tty12 [ready]" > /dev/console
+
+if [ -e "/dev/tpm0" ]; then
+        echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d)"
+        tpm2d &
+
+        if [ ! -S /run/socket/cml-tpm2d-control ]; then
+                echo "Waiting for tpm2d's control interface"
+        fi
+        while [ ! -S /run/socket/cml-tpm2d-control ]; do
+                echo -n "."
+                sleep 2
+        done
+fi
 
 exec /sbin/init > /dev/$LOGTTY 2>&1
