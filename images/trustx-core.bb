@@ -11,7 +11,7 @@ IMAGE_FSTYPES = "squashfs ext4"
 
 IMAGE_FEATURES_append = " allow-empty-password"
 IMAGE_FEATURES_append = " empty-root-password"
-IMAGE_FEATURES_append = " ssh-server-dropbear"
+IMAGE_FEATURES_append = " ssh-server-openssh"
 IMAGE_INSTALL_append = " control"
 IMAGE_INSTALL_append = " openvswitch"
 IMAGE_INSTALL_append = " bridge-utils"
@@ -23,6 +23,7 @@ IMAGE_INSTALL_append = " usbutils"
 IMAGE_INSTALL_append = " tcpdump"
 IMAGE_INSTALL_append = " util-linux"
 IMAGE_INSTALL_append = " binutils"
+IMAGE_INSTALL_append = " shadow"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
