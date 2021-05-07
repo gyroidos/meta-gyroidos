@@ -12,7 +12,7 @@ CLEAN_GUEST_OUT ?= "1"
 
 TRUSTME_VERSION ?= "${@'${IMAGE_VERSION_SUFFIX}'.replace('-','')}"
 
-DEPENDS += " pki-native protobuf-native python-protobuf-native protobuf-c-native cmld"
+DEPENDS += " pki-native protobuf-native python-protobuf-native python3-protobuf-native protobuf-c-native cmld"
 
 OS_NAME ?= "${PN}os"
 
