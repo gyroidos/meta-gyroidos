@@ -15,10 +15,13 @@ PR = "r2"
 
 S = "${WORKDIR}"
 
+CML_START_MSG = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "-- cml debug console on tty12 [ready]", "-- cml in release mode [ready]",d)}'
+
 do_install() {
 	echo "#!/bin/sh" >> ${D}/init
 	echo "# Machine ${MACHINE}" >> ${D}/init
 	echo "LOGTTY=\"${TRUSTME_LOGTTY}\"" >> ${D}/init
+	echo "CML_START_MSG=\"${CML_START_MSG}\"" >> ${D}/init
 
 	cat ${WORKDIR}/cml-boot-script.stub >> ${D}/init
 
@@ -27,7 +30,7 @@ do_install() {
 	install -d ${D}/${sysconfdir}
 	install -m 0755 ${WORKDIR}/init_ascii ${D}${sysconfdir}/init_ascii
 	install -d ${D}/dev
-	# mknod -m 622 ${D}/dev/console c 5 1
+	mknod -m 622 ${D}/dev/console c 5 1
 	mknod -m 622 ${D}/dev/tty0 c 4 0
 	mknod -m 622 ${D}/dev/tty11 c 4 11
 }
