@@ -66,6 +66,11 @@ update_inittab () {
     mknod -m 622 ${IMAGE_ROOTFS}/dev/tty12 c 4 1
 }
 
+update_inittab_release () {
+    # clean out any serial consoles
+    sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
+}
+
 #TODO modsigning option in image fstype?
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 install_ima_cert () {
@@ -96,7 +101,7 @@ ROOTFS_POSTPROCESS_COMMAND_append = " cleanup_boot; "
 ROOTFS_POSTPROCESS_COMMAND_append = " install_ima_cert; "
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
-ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_inittab ; ", "",d)}'
+ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_inittab ; ", " update_inittab_release ; ",d)}'
 
 inherit extrausers
 EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -P root root; ", "",d)}'
