@@ -12,7 +12,7 @@ CLEAN_GUEST_OUT ?= "1"
 
 TRUSTME_VERSION ?= "${@'${IMAGE_VERSION_SUFFIX}'.replace('-','')}"
 
-DEPENDS += " pki-native python3-native python-native protobuf-native python-protobuf-native python3-protobuf-native protobuf-c-native cmld"
+DEPENDS += " pki-native python3-native protobuf-native python3-protobuf-native protobuf-c-native cmld"
 
 OS_NAME ?= "${PN}os"
 
@@ -34,7 +34,7 @@ do_sign_guestos () {
     fi
 
 
-    python ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
+    python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
             -b ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${OS_NAME}.conf -v ${trustme_version} \
             -c ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
             -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME}
