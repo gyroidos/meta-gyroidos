@@ -5,8 +5,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 SRC_URI = "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${PV}.tar.xz"
 
-SRC_URI[md5sum] = "4908707ed841923d8d1814130d5c380f"
-SRC_URI[sha256sum] = "e84e623ce8bb2446ec026b62eafa3b18480aa6fb6ae9c86cd8f18651324d4814"
+SRC_URI[md5sum] = "38ad744241074e0c02f3152364988785"
+SRC_URI[sha256sum] = "569122a39c6b325befb9ac1c07da0c53e6363b3baacd82081d131b06c1dc1415"
 
 LINUX_VERSION ?= "${PV}"
 LINUX_VERSION_EXTENSION ?= "-vanilla"
