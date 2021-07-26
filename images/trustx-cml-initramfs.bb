@@ -3,20 +3,14 @@ DECRIPTION = "Minimal initramfs-based root file system for CML"
 PACKAGE_INSTALL = "\
 	${VIRTUAL-RUNTIME_base-utils} \
 	udev \
-	base-passwd \
 	base-files \
-	shadow \
-	mingetty \
 	libselinux \
 	cmld \
 	service-static \
-	control \
 	scd \
 	iptables \
 	ibmtss2 \
 	tpm2d \
-	rattestation \
-	stunnel \
 	openssl-tpm2-engine \
 	sc-hsm-embedded \
 	e2fsprogs-mke2fs \
@@ -30,12 +24,22 @@ PACKAGE_INSTALL = "\
 	uid-wrapper \
 "
 
-PACKAGE_INSTALL += "\
+# For debug purpose image install additional packages if debug-tweaks is set in local.conf
+DEBUG_PACKAGES = "\
+	base-passwd \
+	shadow \
+	stunnel \
+	control \
+	mingetty \
+	rattestation \
 	openssl-bin \
 	gptfdisk \
 	parted \
 	util-linux-sfdisk \
 "
+
+PACKAGE_INSTALL_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "${DEBUG_PACKAGES}", "",d)}'
+
 
 #PACKAGE_INSTALL += "\
 #	strace \
