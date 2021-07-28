@@ -23,7 +23,7 @@ INSANE_SKIP_tpm2d = "ldflags"
 INSANE_SKIP_control = "ldflags"
 INSANE_SKIP_rattestation = "ldflags"
 
-DEPENDS = "protobuf-c-native protobuf-c libselinux protobuf-c-text libcap e2fsprogs openssl ibmtss2 sc-hsm-embedded"
+DEPENDS = "protobuf-c-native protobuf-c libselinux protobuf-c-text e2fsprogs openssl ibmtss2 sc-hsm-embedded"
 
 EXTRA_OEMAKE = "TRUSTME_HARDWARE=${TRUSTME_HARDWARE}"
 EXTRA_OEMAKE += "TRUSTME_SCHSM=${TRUSTME_SCHSM}"
@@ -37,7 +37,6 @@ do_configure () {
 do_compile () {
     oe_runmake -C daemon
     oe_runmake -C control
-    oe_runmake -C run
     oe_runmake -C scd
     oe_runmake -C tpm2d
     oe_runmake -C tpm2_control
@@ -50,7 +49,6 @@ do_install () {
     install -d ${D}${sysconfdir}/init.d
     install -m 0755 ${S}daemon/cmld ${D}${sbindir}/
     install -m 0755 ${S}control/control ${D}${sbindir}/
-    install -m 0755 ${S}run/run ${D}${sbindir}/
     install -m 0755 ${S}scd/scd ${D}${sbindir}/
     install -m 0755 ${S}tpm2d/tpm2d ${D}${sbindir}/
     install -m 0755 ${S}tpm2_control/tpm2_control ${D}${sbindir}/
