@@ -39,7 +39,7 @@ do_sign_guestos () {
             -c ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
             -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME}
     bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
-            ${TEST_CERT_DIR}/ssig.key ${TEST_CERT_DIR}/ssig.cert
+            ${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
 }
