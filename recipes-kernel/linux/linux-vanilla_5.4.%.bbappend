@@ -81,6 +81,8 @@ SRC_URI += "\
 	file://5.4/0016-audit-check-contid-count-per-netns-and-add-config-pa.patch \
 	file://5.4/0017-audit-add-capcontid-to-set-contid-outside-init_user_.patch \
 	file://5.4/0001-audit-allow-audit-in-userns.patch \
+	file://5.4/0001-dm-report-suspended-device-during-destroy.patch \
+	file://0001-dm-integrity-Generate-audit-events-for-integrity-vio.patch \
 "
 
 

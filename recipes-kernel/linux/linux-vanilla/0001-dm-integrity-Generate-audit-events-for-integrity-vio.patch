@@ -1,0 +1,291 @@
+From b1ee441aa5ca21a91b1f4e64151e94612bd94651 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Wed, 28 Jul 2021 17:35:23 +0200
+Subject: [PATCH] dm integrity: Generate audit events for integrity violations
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+dm-integrity signals integrity violations by returning I/O errors
+to user space. To identify integrity violations by a controlling
+instance, the kernel audit subsystem can be used to emit audit
+events to user space. We utilize this by introducing a new dm-audit
+submodule allowing to emit audit events on relevant io errors.
+Further, the construction of integrity device mappings are logged
+as audit events.
+
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ drivers/md/Makefile        |  4 ++
+ drivers/md/dm-audit.c      | 80 ++++++++++++++++++++++++++++++++++++++
+ drivers/md/dm-audit.h      | 33 ++++++++++++++++
+ drivers/md/dm-crypt.c      |  9 +++++
+ drivers/md/dm-integrity.c  | 13 ++++++-
+ include/uapi/linux/audit.h |  2 +
+ 6 files changed, 140 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/md/dm-audit.c
+ create mode 100644 drivers/md/dm-audit.h
+
+diff --git a/drivers/md/Makefile b/drivers/md/Makefile
+index 6d3e234dc46a..643a4f047032 100644
+--- a/drivers/md/Makefile
++++ b/drivers/md/Makefile
+@@ -75,6 +75,10 @@ obj-$(CONFIG_DM_ERA)		+= dm-era.o
+ obj-$(CONFIG_DM_CLONE)		+= dm-clone.o
+ obj-$(CONFIG_DM_LOG_WRITES)	+= dm-log-writes.o
+ obj-$(CONFIG_DM_INTEGRITY)	+= dm-integrity.o
++ifeq ($(CONFIG_DM_INTEGRITY),y)
++obj-y				+= dm-audit.o
++endif
++
+ obj-$(CONFIG_DM_ZONED)		+= dm-zoned.o
+ obj-$(CONFIG_DM_WRITECACHE)	+= dm-writecache.o
+ 
+diff --git a/drivers/md/dm-audit.c b/drivers/md/dm-audit.c
+new file mode 100644
+index 000000000000..be22a43c24e7
+--- /dev/null
++++ b/drivers/md/dm-audit.c
+@@ -0,0 +1,80 @@
++/*
++ * Creating audit events for dm-integrity device.
++ *
++ * Copyright (C) 2021 Fraunhofer AISEC. All rights reserved.
++ *
++ * Authors: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
++ */
++
++#include <linux/audit.h>
++#include <linux/device-mapper.h>
++#include <linux/bio.h>
++#include <linux/blkdev.h>
++
++#include "dm-audit.h"
++#include "dm-core.h"
++
++#ifdef CONFIG_AUDIT
++void dm_audit_log_ctr(const char *dm_msg_prefix, struct dm_target *ti,
++		      int result)
++{
++	struct audit_buffer *ab;
++	struct mapped_device *md = dm_table_get_md(ti->table);
++
++	if (audit_enabled == AUDIT_OFF)
++		return;
++
++	ab = audit_log_start(audit_context(), GFP_KERNEL, AUDIT_DM_INTEGRITY);
++	if (unlikely(!ab))
++		return;
++
++	audit_log_format(ab, "module=%s dev=%s op=ctr", dm_msg_prefix,
++			 dm_device_name(md));
++
++	if (!result)
++		audit_log_format(ab, " error_msg='%s'", ti->error);
++	audit_log_format(ab, " res=%d", result);
++	audit_log_end(ab);
++}
++
++void dm_audit_log_bio(const char *dm_msg_prefix, const char *op,
++		      struct bio *bio, sector_t sector, int result)
++{
++	struct audit_buffer *ab;
++
++	if (audit_enabled == AUDIT_OFF)
++		return;
++
++	ab = audit_log_start(audit_context(), GFP_KERNEL, AUDIT_DM_INTEGRITY);
++	if (unlikely(!ab))
++		return;
++
++	audit_log_format(ab, "module=%s dev=%d:%d op=%s", dm_msg_prefix,
++			 bio->bi_disk->major, bio->bi_disk->first_minor, op);
++
++	if (sector)
++		audit_log_format(ab, " sector=%llu",
++				 (unsigned long long)le64_to_cpu(sector));
++	audit_log_format(ab, " res=%d", result);
++	audit_log_end(ab);
++}
++
++void dm_audit_log_target(const char *dm_msg_prefix, const char *msg,
++			 struct dm_target *ti, int result)
++{
++	struct audit_buffer *ab;
++	struct mapped_device *md = dm_table_get_md(ti->table);
++
++	if (audit_enabled == AUDIT_OFF)
++		return;
++
++	ab = audit_log_start(audit_context(), GFP_KERNEL, AUDIT_DM_INTEGRITY);
++	if (unlikely(!ab))
++		return;
++
++	audit_log_format(ab, "module=%s dev=%s error_msg='%s' res=%d",
++			 dm_msg_prefix, dm_device_name(md), msg, result);
++
++	audit_log_end(ab);
++}
++#endif
+diff --git a/drivers/md/dm-audit.h b/drivers/md/dm-audit.h
+new file mode 100644
+index 000000000000..6b5cc1f21a15
+--- /dev/null
++++ b/drivers/md/dm-audit.h
+@@ -0,0 +1,33 @@
++/*
++ * Creating audit events for dm-integrity device.
++ *
++ * Copyright (C) 2021 Fraunhofer AISEC. All rights reserved.
++ *
++ * Authors: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
++ */
++
++#include <linux/device-mapper.h>
++
++#ifdef CONFIG_AUDIT
++void dm_audit_log_bio(const char *dm_msg_prefix, const char *op,
++		      struct bio *bio, sector_t sector, int result);
++void dm_audit_log_target(const char *dm_msg_prefix, const char *msg,
++			 struct dm_target *ti, int result);
++void dm_audit_log_ctr(const char *dm_msg_prefix, struct dm_target *ti,
++		      int result);
++#else
++static inline void dm_audit_log_bio(const char *dm_msg_prefix, const char *op,
++				    struct bio *bio, sector_t sector,
++				    int result);
++{
++}
++static inline void dm_audit_log_target(const char *dm_msg_prefix,
++				       const char *msg, struct dm_target *ti,
++				       int result);
++{
++}
++static inline void dm_audit_log_ctr(const char *dm_msg_prefix,
++				    struct dm_target *ti, int result)
++{
++}
++#endif
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index 70ae6f3aede9..c4b31ef25b9e 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -40,6 +40,8 @@
+ 
+ #include <linux/device-mapper.h>
+ 
++#include "dm-audit.h"
++
+ #define DM_MSG_PREFIX "crypt"
+ 
+ /*
+@@ -1121,6 +1123,7 @@ static bool crypt_integrity_hmac(struct crypt_config *cc)
+ 	return crypt_integrity_aead(cc) && cc->key_mac_size;
+ }
+ 
++
+ /* Get sg containing data */
+ static struct scatterlist *crypt_get_sg_data(struct crypt_config *cc,
+ 					     struct scatterlist *sg)
+@@ -1363,6 +1366,8 @@ static int crypt_convert_block_aead(struct crypt_config *cc,
+ 		char b[BDEVNAME_SIZE];
+ 		DMERR_LIMIT("%s: INTEGRITY AEAD ERROR, sector %llu", bio_devname(ctx->bio_in, b),
+ 			    (unsigned long long)le64_to_cpu(*sector));
++		dm_audit_log_bio(DM_MSG_PREFIX, "convert-block-aead",
++				 ctx->bio_in, *sector, 0);
+ 	}
+ 
+ 	if (!r && cc->iv_gen_ops && cc->iv_gen_ops->post)
+@@ -2174,6 +2179,8 @@ static void kcryptd_async_done(struct crypto_async_request *async_req,
+ 		char b[BDEVNAME_SIZE];
+ 		DMERR_LIMIT("%s: INTEGRITY AEAD ERROR, sector %llu", bio_devname(ctx->bio_in, b),
+ 			    (unsigned long long)le64_to_cpu(*org_sector_of_dmreq(cc, dmreq)));
++		dm_audit_log_bio(DM_MSG_PREFIX, "convert-block-aead",
++				 ctx->bio_in, *org_sector_of_dmreq(cc, dmreq), 0);
+ 		io->error = BLK_STS_PROTECTION;
+ 	} else if (error < 0)
+ 		io->error = BLK_STS_IOERR;
+@@ -3326,9 +3333,11 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 	ti->num_flush_bios = 1;
+ 	ti->limit_swap_bios = true;
+ 
++	dm_audit_log_ctr(DM_MSG_PREFIX, ti, 1);
+ 	return 0;
+ 
+ bad:
++	dm_audit_log_ctr(DM_MSG_PREFIX, ti, 0);
+ 	crypt_dtr(ti);
+ 	return ret;
+ }
+diff --git a/drivers/md/dm-integrity.c b/drivers/md/dm-integrity.c
+index 4c7da1c4e6cb..4a2b7a863929 100644
+--- a/drivers/md/dm-integrity.c
++++ b/drivers/md/dm-integrity.c
+@@ -23,6 +23,8 @@
+ #include <linux/async_tx.h>
+ #include <linux/dm-bufio.h>
+ 
++#include "dm-audit.h"
++
+ #define DM_MSG_PREFIX "integrity"
+ 
+ #define DEFAULT_INTERLEAVE_SECTORS	32768
+@@ -378,8 +380,10 @@ static void dm_integrity_io_error(struct dm_integrity_c *ic, const char *msg, in
+ {
+ 	if (err == -EILSEQ)
+ 		atomic64_inc(&ic->number_of_mismatches);
+-	if (!cmpxchg(&ic->failed, 0, err))
++	if (!cmpxchg(&ic->failed, 0, err)) {
+ 		DMERR("Error on %s: %d", msg, err);
++		dm_audit_log_target(DM_MSG_PREFIX, msg, ic->ti, err);
++	}
+ }
+ 
+ static int dm_integrity_failed(struct dm_integrity_c *ic)
+@@ -1681,6 +1685,9 @@ static void integrity_metadata(struct work_struct *w)
+ 						    (sector - ((r + ic->tag_size - 1) / ic->tag_size)));
+ 					r = -EILSEQ;
+ 					atomic64_inc(&ic->number_of_mismatches);
++					dm_audit_log_bio(DM_MSG_PREFIX, "metadata", bio,
++						     (sector - ((r + ic->tag_size - 1) / ic->tag_size)), 0);
++
+ 				}
+ 				if (likely(checksums != checksums_onstack))
+ 					kfree(checksums);
+@@ -1884,6 +1891,8 @@ static bool __journal_read_write(struct dm_integrity_io *dio, struct bio *bio,
+ 
+ 					integrity_sector_checksum(ic, logical_sector, mem + bv.bv_offset, checksums_onstack);
+ 					if (unlikely(memcmp(checksums_onstack, journal_entry_tag(ic, je), ic->tag_size))) {
++						dm_audit_log_bio(DM_MSG_PREFIX, "journal-read-write", bio,
++								 logical_sector, 0);
+ 						DMERR_LIMIT("Checksum failed when reading from journal, at sector 0x%llx",
+ 							    logical_sector);
+ 					}
+@@ -4363,9 +4372,11 @@ static int dm_integrity_ctr(struct dm_target *ti, unsigned argc, char **argv)
+ 	if (ic->discard)
+ 		ti->num_discard_bios = 1;
+ 
++	dm_audit_log_ctr(DM_MSG_PREFIX, ti, 1);
+ 	return 0;
+ 
+ bad:
++	dm_audit_log_ctr(DM_MSG_PREFIX, ti, 0);
+ 	dm_integrity_dtr(ti);
+ 	return r;
+ }
+diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
+index cd2d8279a5e4..a75c261b1d62 100644
+--- a/include/uapi/linux/audit.h
++++ b/include/uapi/linux/audit.h
+@@ -140,6 +140,8 @@
+ #define AUDIT_MAC_CALIPSO_ADD	1418	/* NetLabel: add CALIPSO DOI entry */
+ #define AUDIT_MAC_CALIPSO_DEL	1419	/* NetLabel: del CALIPSO DOI entry */
+ 
++#define AUDIT_DM_INTEGRITY	1600	/* Audit DM-integrity events */
++
+ #define AUDIT_FIRST_KERN_ANOM_MSG   1700
+ #define AUDIT_LAST_KERN_ANOM_MSG    1799
+ #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
+-- 
+2.20.1
+
