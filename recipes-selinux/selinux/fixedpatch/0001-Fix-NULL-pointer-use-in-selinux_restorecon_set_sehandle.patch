@@ -1,0 +1,30 @@
+From 08f5e30177218fae7ce9f5c8d6856690126b2b30 Mon Sep 17 00:00:00 2001
+From: Ji Qin <jiqin.ji@huawei.com>
+Date: Sun, 14 Jun 2020 21:20:23 -0400
+Subject: [PATCH] libselinux: Fix NULL pointer use in
+ selinux_restorecon_set_sehandle
+
+error occur when selinux_restorecon_default_handle return NULL in
+restorecon_init.
+
+fixes: https://github.com/SELinuxProject/selinux/issues/249
+
+Signed-off-by: Ji Qin <jiqin.ji@huawei.com>
+Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
+---
+ libselinux/src/selinux_restorecon.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/selinux_restorecon.c b/src/selinux_restorecon.c
+index d1ce830c5..6993be6fd 100644
+--- a/src/selinux_restorecon.c
++++ b/src/selinux_restorecon.c
+@@ -1154,6 +1154,8 @@ void selinux_restorecon_set_sehandle(struct selabel_handle *hndl)
+ 	size_t num_specfiles, fc_digest_len;
+ 
+ 	fc_sehandle = (struct selabel_handle *) hndl;
++	if (!fc_sehandle)
++		return;
+ 
+ 	/* Check if digest requested in selabel_open(3), if so use it. */
+ 	if (selabel_digest(fc_sehandle, &fc_digest, &fc_digest_len,
