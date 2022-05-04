@@ -18,6 +18,7 @@ PACKAGE_INSTALL = "\
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	cml-boot \
 	iproute2 \
+	iw \
 	lxcfs \
 	pv \
 	uid-wrapper \
