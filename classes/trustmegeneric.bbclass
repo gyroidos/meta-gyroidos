@@ -188,7 +188,7 @@ do_build_trustmeimage () {
 	# sign container configs
 	find "${rootfs_datadir}/cml/containers_templates" -name '*.conf' -exec bash \
 		${enrollment_dir}/config_creator/sign_config.sh {} \
-		${TEST_CERT_DIR}/ssig.key ${TEST_CERT_DIR}/ssig.cert \;
+		${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert \;
 
 	# copy modules to data partition directory
 	kernelabiversion="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
