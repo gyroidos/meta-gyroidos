@@ -207,6 +207,13 @@ do_build_trustmeimage () {
 	bbnote "Copying linux-firmware"
 	cp -fL "${DEPLOY_DIR_IMAGE}/trustx-cml-firmware-${MACHINE}.squashfs" "${tmp_datapart}/firmware.img"
 
+	# copy kernel update files to data partition directory
+	if ! [ -z "${UPDATE_FILES}" ];then
+		for update_file in ${UPDATE_FILES}; do
+			cp -fr "$update_file" "${rootfs_datadir}/cml/operatingsystems"
+		done
+	fi
+
 	# copy trustme files to image deploy dir
 	cp -afr "${tmp_datapart}/." "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
 
