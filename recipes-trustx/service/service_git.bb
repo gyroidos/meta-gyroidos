@@ -9,7 +9,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
-SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH}"
+SRC_URI = "git://github.com/gyroidos/cml.git;branch=${BRANCH}"
 SRC_URI_append = "\
 	file://ssig_pki_generator.conf \
 	file://openssl-dockerlocal-rootca.cnf \

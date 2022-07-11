@@ -8,10 +8,10 @@ PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
 # upstream repository comment out for development and use local fork below
-SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH}"
+SRC_URI = "git://github.com/gyroidos/cml.git;branch=${BRANCH}"
 
 # uncomment this an replay user/path to your local fork for development
-#SRC_URI = "git:///home/<user>/device_fraunhofer_common_cml/;protocol=file;branch=wip"
+#SRC_URI = "git:///home/<user>/cml/;protocol=file;branch=wip"
 
 S = "${WORKDIR}/git/"
 
