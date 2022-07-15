@@ -61,16 +61,18 @@ IMAGE_ROOTFS_SIZE = "4096"
 
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 
-update_inittab () {
+update_tabs () {
     echo "tty12::respawn:${base_sbindir}/mingetty --autologin root tty12" >> ${IMAGE_ROOTFS}/etc/inittab
 
     mkdir -p ${IMAGE_ROOTFS}/dev
     mknod -m 622 ${IMAGE_ROOTFS}/dev/tty12 c 4 12
 }
 
-update_inittab_release () {
+update_tabs_release () {
     # clean out any serial consoles
     sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
+
+    sed -i '/LABEL=containers/d' ${IMAGE_ROOTFS}/etc/fstab
 }
 
 #TODO modsigning option in image fstype?
@@ -103,7 +105,7 @@ ROOTFS_POSTPROCESS_COMMAND_append = " cleanup_boot; "
 ROOTFS_POSTPROCESS_COMMAND_append = " install_ima_cert; "
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
-ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_inittab ; ", " update_inittab_release ; ",d)}'
+ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_tabs_release ; ", " update_tabs ; ",d)}'
 
 inherit extrausers
 EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -P root root; ", "",d)}'
