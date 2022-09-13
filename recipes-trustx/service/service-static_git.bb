@@ -9,7 +9,7 @@ PV = "${PVBASE}+${SRCPV}"
 
 SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH};protocol=https"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 
 INSANE_SKIP:${PN} = "ldflags"
 
@@ -29,7 +29,7 @@ do_compile () {
 
 do_install () {
         :
-	install -d ${D}${base_sbindir}/
-	install -m 0755 ${S}service/cml-service-container ${D}${base_sbindir}/
-	install -m 0755 ${S}service/exec_cap_systime ${D}${base_sbindir}/
+	install -d ${D}/${base_sbindir}/
+	install -m 0755 ${S}/service/cml-service-container ${D}${base_sbindir}/
+	install -m 0755 ${S}/service/exec_cap_systime ${D}${base_sbindir}/
 }

@@ -17,7 +17,7 @@ SRC_URI:append = "\
 	file://openssl-dockerlocal-ssig.cnf \
 "
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 
 PACKAGES =+ "converter"
 
@@ -45,10 +45,10 @@ do_compile () {
 
 do_install () {
         :
-	install -d ${D}${base_sbindir}/
-	install -m 0755 ${S}service/cml-service-container ${D}${base_sbindir}/
-	install -d ${D}${bindir}/
-	install -m 0755 ${S}converter/converter ${D}${bindir}/
+	install -d ${D}/${base_sbindir}/
+	install -m 0755 ${S}/service/cml-service-container ${D}/${base_sbindir}/
+	install -d ${D}/${bindir}/
+	install -m 0755 ${S}/converter/converter ${D}${bindir}/
 
 	install -d ${D}/pki_generator
 	install -d ${D}/pki_generator/config_creator
@@ -60,7 +60,7 @@ do_install () {
 	install -m 0600 ${WORKDIR}/openssl-dockerlocal-ssig.cnf ${D}/pki_generator
 
 	mkdir -p ${DEPLOY_DIR_IMAGE}/proto
-	cp ${S}daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
+	cp ${S}/daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
 }
 
 RDEPENDS:converter += "bash openssl libtar zlib curl squashfs-tools libgcc"

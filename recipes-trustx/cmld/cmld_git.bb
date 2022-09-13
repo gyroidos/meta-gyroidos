@@ -13,7 +13,7 @@ SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BR
 # uncomment this an replay user/path to your local fork for development
 #SRC_URI = "git:///home/<user>/device_fraunhofer_common_cml/;protocol=file;branch=wip"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 
 PACKAGES =+ "control scd tpm2d rattestation"
 
@@ -45,18 +45,18 @@ do_compile () {
 }
 
 do_install () {
-    install -d ${D}${sbindir}/
-    install -d ${D}${sysconfdir}/init.d
-    install -m 0755 ${S}daemon/cmld ${D}${sbindir}/
-    install -m 0755 ${S}control/control ${D}${sbindir}/
-    install -m 0755 ${S}scd/scd ${D}${sbindir}/
-    install -m 0755 ${S}tpm2d/tpm2d ${D}${sbindir}/
-    install -m 0755 ${S}tpm2_control/tpm2_control ${D}${sbindir}/
-    install -m 0755 ${S}rattestation/rattestation ${D}${sbindir}/
-    install -d ${D}${libdir}
-    install -m 0755 ${S}common/libcommon_full.a ${D}${libdir}/
-    install -d 0755 ${D}${includedir}/common
-    install -m 0644 ${S}common/*.h ${D}${includedir}/common
+    install -d ${D}/${sbindir}/
+    install -d ${D}/${sysconfdir}/init.d
+    install -m 0755 ${S}/daemon/cmld ${D}/${sbindir}/
+    install -m 0755 ${S}/control/control ${D}/${sbindir}/
+    install -m 0755 ${S}/scd/scd ${D}/${sbindir}/
+    install -m 0755 ${S}/tpm2d/tpm2d ${D}/${sbindir}/
+    install -m 0755 ${S}/tpm2_control/tpm2_control ${D}/${sbindir}/
+    install -m 0755 ${S}/rattestation/rattestation ${D}/${sbindir}/
+    install -d ${D}/${libdir}
+    install -m 0755 ${S}/common/libcommon_full.a ${D}/${libdir}/
+    install -d 0755 ${D}/${includedir}/common
+    install -m 0644 ${S}/common/*.h ${D}/${includedir}/common
 }
 
 RDEPENDS:scd += "cmld openssl"
