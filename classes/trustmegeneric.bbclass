@@ -210,9 +210,15 @@ do_build_trustmeimage () {
 	cp -fL "${DEPLOY_DIR_IMAGE}/trustx-cml-firmware-${MACHINE}.squashfs" "${tmp_datapart}/firmware.img"
 
 	# copy kernel update files to data partition directory
+	bbnote "Copying kernel update files"
 	if ! [ -z "${UPDATE_FILES}" ];then
 		for update_file in ${UPDATE_FILES}; do
-			cp -fr "$update_file" "${rootfs_datadir}/cml/operatingsystems"
+			if [ -L $update_file ]; then
+				real_update_file=$(readlink -f $update_file)
+			else
+				real_update_file=$update_file
+			fi
+			cp -fr "$real_update_file" "${rootfs_datadir}/cml/operatingsystems"
 		done
 	fi
 
