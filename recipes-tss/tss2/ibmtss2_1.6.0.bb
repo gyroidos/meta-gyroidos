@@ -6,10 +6,10 @@ LICENSE = "BSD-3-Clause"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1e023f61454ac828b4aa1bc4293f7d5f"
 
-SRC_URI[md5sum] = "95068099d4a3aebd22632a0e8878b1d7"
-SRC_URI[sha256sum] = "70ca492040f795c1471ccea57cf4afcb852860ebc2b135ef9606287fe27a231d"
+SRC_URI[md5sum] = "43a3cca7d3909432f7887c981cbadd5c"
+SRC_URI[sha256sum] = "83bebb0d36ef9ced6cf3be2be9f0b4463a692d67254df31216271a916aaba851"
 
-SRC_URI = "${SOURCEFORGE_MIRROR}/ibmtpm20tss/ibmtss${PV}.tar.gz;downloadfilename=ibmtss-${PV}.tar.gz;subdir=${PN}"
+SRC_URI = "${SOURCEFORGE_MIRROR}/project/ibmtpm20tss/ibmtss${PV}.tar.gz;downloadfilename=ibmtss-${PV}.tar.gz;subdir=${PN}"
 
 DEPENDS += "openssl"
 
