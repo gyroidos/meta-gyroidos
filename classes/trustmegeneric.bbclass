@@ -40,6 +40,8 @@ TRUSTME_GENERIC_DEPENDS = " \
     virtual/kernel:do_deploy \
 "
 
+DEPENDS += "e2fsprogs-native bc-native"
+
 
 do_build_trustmeimage () {
 
