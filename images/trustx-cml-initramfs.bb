@@ -108,4 +108,5 @@ ROOTFS_POSTPROCESS_COMMAND:append = " install_ima_cert; "
 ROOTFS_POSTPROCESS_COMMAND:append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_tabs ; ", " update_tabs_release ; ",d)}'
 
 inherit extrausers
-EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -P root root; ", "",d)}'
+# password for root is 'root'
+EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -p '\$1\$1234\$XJI6P4bccABjEC1v6k64V1' root; ", "",d)}'
