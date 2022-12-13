@@ -7,7 +7,7 @@ ROOTFS_BOOTSTRAP_INSTALL = ""
 
 IMAGE_FSTYPES = "squashfs"
 
-IMAGE_FEATURES:remove += "package-management"
+IMAGE_FEATURES:remove = "package-management"
 
 inherit image
 

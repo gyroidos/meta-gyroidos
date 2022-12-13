@@ -55,7 +55,7 @@ export IMAGE_BASENAME = "trustx-cml-initramfs"
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 inherit image
 
-IMAGE_FEATURES:remove += "package-management"
+IMAGE_FEATURES:remove = "package-management"
 
 IMAGE_ROOTFS_SIZE = "4096"
 
