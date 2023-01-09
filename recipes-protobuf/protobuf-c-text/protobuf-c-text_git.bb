@@ -11,8 +11,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=c6a81c7d46ef4188c8bd511266895d5d"
 BRANCH = "master"
 
 SRCREV = "${AUTOREV}"
-#SRC_URI = "git://github.com/protobuf-c/protobuf-c-text.git;protocol=http"
-SRC_URI = "git://github.com/trustm3/external_protobuf-c-text.git;protocol=http;branch=${BRANCH}"
+#SRC_URI = "git://github.com/protobuf-c/protobuf-c-text.git;branch=master;protocol=https"
+SRC_URI = "git://github.com/trustm3/external_protobuf-c-text.git;branch=${BRANCH};protocol=https"
 
 inherit pkgconfig autotools-brokensep
 

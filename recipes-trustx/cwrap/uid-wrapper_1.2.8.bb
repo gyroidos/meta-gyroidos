@@ -5,7 +5,7 @@ PR = "r0"
 
 LIC_FILES_CHKSUM = "file://${WORKDIR}/git/LICENSE;md5=d32239bcb673463ab874e80d47fae504"
 
-SRC_URI = "git://git.samba.org/uid_wrapper.git;protocol=https;tag=uid_wrapper-${PV}"
+SRC_URI = "git://git.samba.org/uid_wrapper.git;protocol=https;tag=uid_wrapper-${PV};branch=master"
 
 S = "${WORKDIR}/git"
 

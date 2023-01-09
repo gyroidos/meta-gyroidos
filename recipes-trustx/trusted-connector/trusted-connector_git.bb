@@ -22,7 +22,7 @@ SRCREV = "${AUTOREV}"
 PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
-SRC_URI = "git://github.com/industrial-data-space/trusted-connector.git;branch=${BRANCH}"
+SRC_URI = "git://github.com/industrial-data-space/trusted-connector.git;branch=${BRANCH};protocol=https"
 SRC_URI:append = " file://start_connector.sh "
 
 S = "${WORKDIR}/git"
