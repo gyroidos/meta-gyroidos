@@ -47,7 +47,7 @@ PACKAGE_INSTALL:append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'de
 
 IMAGE_LINUGUAS = " "
 
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 
 IMAGE_FEATURES = ""
 

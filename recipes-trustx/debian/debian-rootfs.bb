@@ -1,7 +1,7 @@
 SUMMARY = "Debian rootfs"
 DESCRIPTION = "This package installs a debian skeleton rootfs using debootstrap"
 HOMEPAGE = ""
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 
 
 HOSTTOOLS += "debootstrap gpgv"

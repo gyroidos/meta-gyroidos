@@ -1,6 +1,6 @@
 DESCRIPTION = "This is a wrapper for the user, group and hosts NSS API."
 SECTION = "tools"
-LICENSE = "GPLv3"
+LICENSE = "GPL-3.0-only"
 PR = "r0"
 
 LIC_FILES_CHKSUM = "file://${WORKDIR}/git/LICENSE;md5=d32239bcb673463ab874e80d47fae504"

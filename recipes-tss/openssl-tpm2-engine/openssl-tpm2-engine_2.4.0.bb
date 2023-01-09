@@ -5,7 +5,7 @@ interfaces with the TSS API.  Because this application uses the TPM \
 cryptographically, it must be build with the IBM TSS."
 
 HOMEPAGE = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/openssl_tpm2_engine.git/"
-LICENSE = "LGPL-2.1"
+LICENSE = "LGPL-2.1-only"
 
 DEPENDS = "openssl ibmtss2"
 

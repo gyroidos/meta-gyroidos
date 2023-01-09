@@ -1,6 +1,6 @@
 SUMMARY = "Skeleton for installing a Debian based container."
 
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 
 include images/trustx-signing.inc
 

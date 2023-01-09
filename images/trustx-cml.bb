@@ -1,6 +1,6 @@
 inherit image
 
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 
