@@ -34,6 +34,6 @@ do_kernel_unpacksrc() {
 
 S = "${WORKDIR}/${SOURCE_DIR}"
 
-KBUILD_DEFCONFIG_genericx86-64 = "x86_64_defconfig" 
+KBUILD_DEFCONFIG:genericx86-64 = "x86_64_defconfig" 
 KCONFIG_MODE="--alldefconfig"
 

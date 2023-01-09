@@ -9,25 +9,25 @@ include images/trustx-signing.inc
 
 IMAGE_FSTYPES = "squashfs ext4"
 
-IMAGE_FEATURES_append = " allow-empty-password"
-IMAGE_FEATURES_append = " empty-root-password"
-IMAGE_FEATURES_append = " ssh-server-openssh"
-IMAGE_INSTALL_append = " control"
-IMAGE_INSTALL_append = " openvswitch"
-IMAGE_INSTALL_append = " bridge-utils"
-IMAGE_INSTALL_append = " iproute2"
-IMAGE_INSTALL_append = " iptables"
-IMAGE_INSTALL_append = " util-linux"
-IMAGE_INSTALL_append = " bridge-utils"
-IMAGE_INSTALL_append = " usbutils"
-IMAGE_INSTALL_append = " tcpdump"
-IMAGE_INSTALL_append = " util-linux"
-IMAGE_INSTALL_append = " binutils"
-IMAGE_INSTALL_append = " shadow"
+IMAGE_FEATURES:append = " allow-empty-password"
+IMAGE_FEATURES:append = " empty-root-password"
+IMAGE_FEATURES:append = " ssh-server-openssh"
+IMAGE_INSTALL:append = " control"
+IMAGE_INSTALL:append = " openvswitch"
+IMAGE_INSTALL:append = " bridge-utils"
+IMAGE_INSTALL:append = " iproute2"
+IMAGE_INSTALL:append = " iptables"
+IMAGE_INSTALL:append = " util-linux"
+IMAGE_INSTALL:append = " bridge-utils"
+IMAGE_INSTALL:append = " usbutils"
+IMAGE_INSTALL:append = " tcpdump"
+IMAGE_INSTALL:append = " util-linux"
+IMAGE_INSTALL:append = " binutils"
+IMAGE_INSTALL:append = " shadow"
 
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
-do_sign_guestos_append () {
+do_sign_guestos:append () {
     mkdir -p ${CONFIGS_OUT}
     mkdir -p ${CONFIGS_OUT}/container
 
@@ -39,9 +39,9 @@ do_sign_guestos_append () {
     sed -i '/c0os:*/c\c0os: \"${PN}os\"' ${CONFIGS_OUT}/device.conf
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " update_inittab; "
-ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
-ROOTFS_POSTPROCESS_COMMAND_append = " update_network_interfaces; "
+ROOTFS_POSTPROCESS_COMMAND:append = " update_inittab; "
+ROOTFS_POSTPROCESS_COMMAND:append = " update_hostname; "
+ROOTFS_POSTPROCESS_COMMAND:append = " update_network_interfaces; "
 
 update_inittab () {
     sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab

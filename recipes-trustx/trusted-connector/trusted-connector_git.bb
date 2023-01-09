@@ -14,7 +14,7 @@ avoid vendor lock-in. \
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=86d3f3a95c324c9479bd8986968f4327"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 BRANCH = "master"
 SRCREV = "${AUTOREV}"
@@ -23,11 +23,11 @@ PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
 SRC_URI = "git://github.com/industrial-data-space/trusted-connector.git;branch=${BRANCH}"
-SRC_URI_append = " file://start_connector.sh "
+SRC_URI:append = " file://start_connector.sh "
 
 S = "${WORKDIR}/git"
 
-RDEPENDS_${PN} += "openjre-8"
+RDEPENDS:${PN} += "openjre-8"
 
 do_compile() {
 	cd ${S}/ids-webconsole/src/main/resources/www
@@ -44,8 +44,8 @@ do_install() {
 }
 
 
-CONFFILES_${PN} += "${sysconfdir}/init.d/start_connector.sh"
-FILES_${PN} += "/root/* "
+CONFFILES:${PN} += "${sysconfdir}/init.d/start_connector.sh"
+FILES:${PN} += "/root/* "
 
 inherit update-rc.d
 INITSCRIPT_PARAMS = "start 90 5 ."

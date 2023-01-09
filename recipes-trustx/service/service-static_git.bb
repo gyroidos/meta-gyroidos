@@ -11,11 +11,11 @@ SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BR
 
 S = "${WORKDIR}/git/"
 
-INSANE_SKIP_${PN} = "ldflags"
+INSANE_SKIP:${PN} = "ldflags"
 
 DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text"
 
-FILES_${PN} += "${base_sbindir}"
+FILES:${PN} += "${base_sbindir}"
 INHIBIT_PACKAGE_STRIP = "1"
 
 do_configure () {

@@ -4,13 +4,13 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/git/COPYING;md5=b234ee4d69f5fce4486a80fdaf
 BRANCH = "dunfell"
 SRCREV = "${AUTOREV}"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
 SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH}"
-SRC_URI_append = "\
+SRC_URI:append = "\
 	file://ssig_pki_generator.conf \
 	file://openssl-dockerlocal-rootca.cnf \
 	file://openssl-dockerlocal-subca.cnf \
@@ -21,12 +21,12 @@ S = "${WORKDIR}/git/"
 
 PACKAGES =+ "converter"
 
-INSANE_SKIP_${PN} = "ldflags"
-INSANE_SKIP_converter = "ldflags"
+INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:converter = "ldflags"
 
 DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text libtar zlib openssl"
 
-FILES_${PN} += "${base_sbindir}"
+FILES:${PN} += "${base_sbindir}"
 INHIBIT_PACKAGE_STRIP = "1"
 
 SCRIPT_DIR = "${TOPDIR}/../trustme/build"
@@ -63,9 +63,9 @@ do_install () {
 	cp ${S}daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
 }
 
-RDEPENDS_converter += "bash openssl libtar zlib curl squashfs-tools libgcc"
+RDEPENDS:converter += "bash openssl libtar zlib curl squashfs-tools libgcc"
 
-FILES_converter = "\
+FILES:converter = "\
 	${bindir}/converter \
 	pki_generator/* \
 "

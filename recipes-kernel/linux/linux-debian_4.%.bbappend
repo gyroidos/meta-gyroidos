@@ -4,6 +4,6 @@ SRC_URI += "file://0001-shiftfs-uid-gid-shifting-bind-mount.patch \
             file://0001-shiftfs-allow-mounting-of-other-shiftfs-on-shiftfs.patch \
             "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-vanilla:"
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-debian:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-vanilla:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-debian:"
 

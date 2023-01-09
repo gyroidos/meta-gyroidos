@@ -19,6 +19,6 @@ COMPATIBLE_MACHINE = "${MACHINE}"
 
 S = "${WORKDIR}/linux-${PV}"
 
-KBUILD_DEFCONFIG_genericx86-64 = "x86_64_defconfig" 
+KBUILD_DEFCONFIG:genericx86-64 = "x86_64_defconfig" 
 KCONFIG_MODE="--alldefconfig"
 

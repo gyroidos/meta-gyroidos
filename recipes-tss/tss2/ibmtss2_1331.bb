@@ -15,11 +15,11 @@ DEPENDS += "openssl"
 
 S = "${WORKDIR}/${PN}/utils"
 
-INSANE_SKIP_${PN} = "ldflags"
-INSANE_SKIP_${PN}-dev = "ldflags"
+INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:${PN}-dev = "ldflags"
 
 FILES_SOLIBSDEV = ""
-INSANE_SKIP_${PN} += "dev-so"
+INSANE_SKIP:${PN} += "dev-so"
 
 LIBRARY_FLAGS = "\
 	-I. \
@@ -35,7 +35,7 @@ EXTRA_OEMAKE = "\
 	'CCLFLAGS = ${LIBRARY_FLAGS}' \
 "
 
-do_populate_lic_prepend() {
+do_populate_lic:prepend() {
     bb.build.exec_func('do_copy_lic', d)
 }
 
@@ -83,6 +83,6 @@ do_install() {
 	ln -s libibmtss.so libibmtss.so.1.1
 }
 
-FILES_${PN} += "${libdir}/*.so"
+FILES:${PN} += "${libdir}/*.so"
 
-FILES_${PN}-dev += "${includedir}"
+FILES:${PN}-dev += "${includedir}"

@@ -31,4 +31,4 @@ replace_mknod() {
     chmod 755 ${MKNOD_BIN}
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " replace_mknod; "
+ROOTFS_POSTPROCESS_COMMAND:append = " replace_mknod; "

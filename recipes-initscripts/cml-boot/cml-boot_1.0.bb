@@ -1,7 +1,7 @@
 SUMMARY = "init script to start trustx environment"
 LICENSE = "MIT"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/files:"
 
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
@@ -40,7 +40,7 @@ do_install() {
 	mknod -m 622 ${D}/dev/tty11 c 4 11
 }
 
-FILES_${PN} += " /init /dev ${sysconfdir}/init_ascii"
+FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii"
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"

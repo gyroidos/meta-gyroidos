@@ -7,7 +7,7 @@ ROOTFS_BOOTSTRAP_INSTALL = ""
 
 IMAGE_FSTYPES = "squashfs"
 
-IMAGE_FEATURES_remove += "package-management"
+IMAGE_FEATURES:remove += "package-management"
 
 inherit image
 
@@ -28,5 +28,5 @@ cleanup_root() {
 	rmdir ${IMAGE_ROOTFS}/lib
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " move_firmware; "
-IMAGE_PREPROCESS_COMMAND_append = " cleanup_root; "
+ROOTFS_POSTPROCESS_COMMAND:append = " move_firmware; "
+IMAGE_PREPROCESS_COMMAND:append = " cleanup_root; "

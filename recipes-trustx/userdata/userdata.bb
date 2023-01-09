@@ -27,4 +27,4 @@ do_install() {
   cp -r ${DEPLOY_DIR_IMAGE}/trustx-guests/* ${D}/cml/operatingsystems/
 }
 
-FILES_${PN} += "/cml/* "
+FILES:${PN} += "/cml/* "

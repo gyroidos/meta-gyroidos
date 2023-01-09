@@ -1,7 +1,7 @@
 SUMMARY = "init script to start deb container"
 LICENSE = "MIT"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 SRC_URI = "file://deb-boot-script.sh"
 
@@ -14,7 +14,7 @@ do_install() {
 	install -m 0755 ${WORKDIR}/deb-boot-script.sh ${D}${base_sbindir}/init
 }
 
-FILES_${PN} += "${base_sbindir}/init"
+FILES:${PN} += "${base_sbindir}/init"
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"

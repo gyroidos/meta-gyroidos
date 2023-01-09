@@ -24,5 +24,5 @@ SRC_URI += "file://4.19/0001-shiftfs-uid-gid-shifting-bind-mount.patch \
             file://0001-shiftfs-allow-mounting-of-other-shiftfs-on-shiftfs.patch \
             "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 

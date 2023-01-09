@@ -12,8 +12,8 @@ LICENSE = "BSD-2-Clause"
 DEPENDS = "protobuf-native protobuf"
 
 PACKAGE_BEFORE_PN = "${PN}-compiler"
-RDEPENDS_${PN}-compiler = "protobuf-compiler"
-RDEPENDS_${PN}-dev += "${PN}-compiler"
+RDEPENDS:${PN}-compiler = "protobuf-compiler"
+RDEPENDS:${PN}-dev += "${PN}-compiler"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=cb901168715f4782a2b06c3ddaefa558"
 SRC_URI = "https://github.com/protobuf-c/protobuf-c/releases/download/v${PV}/${BPN}-${PV}.tar.gz"
@@ -24,8 +24,8 @@ SRC_URI[sha256sum] = "51472d3a191d6d7b425e32b612e477c06f73fe23e07f6a6a839b11808e
 
 inherit autotools pkgconfig
 
-EXTRA_OECONF_append = "--enable-static=yes"
+EXTRA_OECONF:append = "--enable-static=yes"
 
-FILES_${PN}-compiler = "${bindir}"
+FILES:${PN}-compiler = "${bindir}"
 
 BBCLASSEXTEND = "native nativesdk"

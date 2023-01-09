@@ -12,14 +12,14 @@ SRC_URI[md5sum] = "a5ca8b71338099111171ecbacf2787ed"
 SRC_URI[sha256sum] = "8bc4dbd3b0bd14379766993b4d5fa34c5331c0c2cc253c4d30797249f6a0096d"
 
 DEPENDS += "fuse"
-RDEPENDS_${PN} += "fuse"
+RDEPENDS:${PN} += "fuse"
 
 CACHED_CONFIGUREVARS += "ac_cv_path_HELP2MAN='false // No help2man //'"
 EXTRA_OECONF += "--with-distro=unknown"
 
-do_install_append() {
+do_install:append() {
         rm -r ${D}/usr/share/lxc
         install -d ${D}/var/lib/${PN}
 }
 
-FILES_${PN} += "/var/lib/${PN}"
+FILES:${PN} += "/var/lib/${PN}"

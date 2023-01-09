@@ -27,4 +27,4 @@ populate_volatile () {
 	mkdir -p ${IMAGE_ROOTFS}/var/volatile/tmp
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " populate_volatile; "
+ROOTFS_POSTPROCESS_COMMAND:append = " populate_volatile; "

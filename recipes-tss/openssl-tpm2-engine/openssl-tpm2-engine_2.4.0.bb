@@ -9,7 +9,7 @@ LICENSE = "LGPL-2.1"
 
 DEPENDS = "openssl ibmtss2"
 
-RDEPENDS_${PN} += "openssl libgcc"
+RDEPENDS:${PN} += "openssl libgcc"
 
 EXTRA_OECONF = "--with-openssl=${RECIPE_SYSROOT}/usr"
 
@@ -30,18 +30,18 @@ SRC_URI[sha256sum] = "7de7d214e869be99485f717b31fbff98c579064a8e8bbb2bacfce4e395
 
 inherit autotools pkgconfig
 
-do_configure_prepend() {
+do_configure:prepend() {
 	touch ${S}/NEWS
 	touch ${S}/AUTHORS
 	touch ${S}/ChangeLog
 	cp ${S}/LICENSE ${S}/COPYING
 }
 
-do_install_append() {
+do_install:append() {
 	install -d ${D}${libdir}/engines-1.1
 	mv ${D}${libdir}/engines/libtpm2.so ${D}${libdir}/engines-1.1/tpm2.so
 	rm ${D}${libdir}/engines/tpm2.so
 }
 
-FILES_${PN} += "${libdir}/*"
-FILES_${PN} += "${bindir}/*"
+FILES:${PN} += "${libdir}/*"
+FILES:${PN} += "${bindir}/*"

@@ -19,5 +19,5 @@ do_install() {
 	cp -r ${WORKDIR}/usr ${D} 
 }
 
-FILES_${PN} = "/*"
+FILES:${PN} = "/*"
 

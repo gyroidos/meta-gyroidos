@@ -21,7 +21,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=55b854a477953696452f698a3af5de1c"
 
 SRC_URI = " git://github.com/CardContact/sc-hsm-embedded.git;protocol=https;tag=V2.11"
 
-SRC_URI_append = " \
+SRC_URI:append = " \
 	file://0001-build-a-cardservice-library.patch;patch=1 \
 	file://0002-Fix-includes-for-MUSL-builds.patch;patch=1 \
 "
@@ -32,7 +32,7 @@ S = "${WORKDIR}/git"
 # to resolve "do_package_qa: QA Issue: -dev package contains non-symlink .so" error
 # FIXME: find proper solution
 FILES_SOLIBSDEV = ""
-FILES_${PN} += "${libdir}/*.so"
+FILES:${PN} += "${libdir}/*.so"
 
 # NOTE: unable to map the following pkg-config dependencies: libcurl) libpcsclite libusb-1.0
 #       (this is based on recipes that have previously been built and packaged)

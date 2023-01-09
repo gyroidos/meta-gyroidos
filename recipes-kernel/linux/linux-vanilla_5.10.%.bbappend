@@ -4,4 +4,4 @@ SRC_URI += "\
 	file://5.10/0003-dm-crypt-log-aead-integrity-violations-to-audit-subs.patch \
 "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"

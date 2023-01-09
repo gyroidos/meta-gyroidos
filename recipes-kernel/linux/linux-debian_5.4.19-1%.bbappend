@@ -1,4 +1,4 @@
-SRC_URI_append = "\
+SRC_URI:append = "\
 	file://5.4/0001-dm-report-suspended-device-during-destroy.patch \
 	file://0001-l2tp-Allow-management-of-tunnels-and-session-in-user.patch \
 	file://5.4/0001-audit-Add-__rcu-annotation-to-RCU-pointer.patch \
@@ -21,6 +21,6 @@ SRC_URI_append = "\
 	file://lockdown.cfg \
 "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-vanilla:"
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-debian:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-vanilla:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-debian:"
 

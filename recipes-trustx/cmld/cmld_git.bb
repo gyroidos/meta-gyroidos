@@ -17,11 +17,11 @@ S = "${WORKDIR}/git/"
 
 PACKAGES =+ "control scd tpm2d rattestation"
 
-INSANE_SKIP_${PN} = "ldflags"
-INSANE_SKIP_scd = "ldflags"
-INSANE_SKIP_tpm2d = "ldflags"
-INSANE_SKIP_control = "ldflags"
-INSANE_SKIP_rattestation = "ldflags"
+INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:scd = "ldflags"
+INSANE_SKIP:tpm2d = "ldflags"
+INSANE_SKIP:control = "ldflags"
+INSANE_SKIP:rattestation = "ldflags"
 
 DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text e2fsprogs openssl ibmtss2 sc-hsm-embedded"
 
@@ -59,13 +59,13 @@ do_install () {
     install -m 0644 ${S}common/*.h ${D}${includedir}/common
 }
 
-RDEPENDS_scd += "cmld openssl"
-RDEPENDS_tpm2d += "cmld ibmtss2"
-RDEPENDS_control += "protobuf-c protobuf-c-text"
-RDEPENDS_rattestation += "openssl protobuf-c protobuf-c-text"
+RDEPENDS:scd += "cmld openssl"
+RDEPENDS:tpm2d += "cmld ibmtss2"
+RDEPENDS:control += "protobuf-c protobuf-c-text"
+RDEPENDS:rattestation += "openssl protobuf-c protobuf-c-text"
 
-FILES_scd = "${sbindir}/scd"
-FILES_control = "${sbindir}/control"
-FILES_tpm2d = "${sbindir}/tpm2*"
-FILES_rattestation = "${sbindir}/rattestation"
+FILES:scd = "${sbindir}/scd"
+FILES:control = "${sbindir}/control"
+FILES:tpm2d = "${sbindir}/tpm2*"
+FILES:rattestation = "${sbindir}/rattestation"
 

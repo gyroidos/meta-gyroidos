@@ -23,4 +23,4 @@ S = "${WORKDIR}/git"
 
 TARGET_CFLAGS += "-pedantic -Wall -Wextra -Werror -O2 -DHAVE_PROTOBUF_C_MESSAGE_CHECK"
 
-EXTRA_OECONF_append = "--enable-static=yes"
+EXTRA_OECONF:append = "--enable-static=yes"

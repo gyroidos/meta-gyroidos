@@ -30,5 +30,5 @@ do_install() {
   /usr/sbin/debootstrap --arch ${DEB_ARCH} stable ${D}
 }
 
-FILES_${PN} = "/*"
+FILES:${PN} = "/*"
 

@@ -37,7 +37,7 @@ DEBUG_PACKAGES = "\
 	util-linux-sfdisk \
 "
 
-PACKAGE_INSTALL_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "${DEBUG_PACKAGES}", "",d)}'
+PACKAGE_INSTALL:append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "${DEBUG_PACKAGES}", "",d)}'
 
 
 #PACKAGE_INSTALL += "\
@@ -55,7 +55,7 @@ export IMAGE_BASENAME = "trustx-cml-initramfs"
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 inherit image
 
-IMAGE_FEATURES_remove += "package-management"
+IMAGE_FEATURES:remove += "package-management"
 
 IMAGE_ROOTFS_SIZE = "4096"
 
@@ -99,13 +99,13 @@ cleanup_boot () {
 	rm -f ${IMAGE_ROOTFS}/boot/*
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append = " update_modules_dep; "
-ROOTFS_POSTPROCESS_COMMAND_append = " update_hostname; "
-ROOTFS_POSTPROCESS_COMMAND_append = " cleanup_boot; "
-ROOTFS_POSTPROCESS_COMMAND_append = " install_ima_cert; "
+ROOTFS_POSTPROCESS_COMMAND:append = " update_modules_dep; "
+ROOTFS_POSTPROCESS_COMMAND:append = " update_hostname; "
+ROOTFS_POSTPROCESS_COMMAND:append = " cleanup_boot; "
+ROOTFS_POSTPROCESS_COMMAND:append = " install_ima_cert; "
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
-ROOTFS_POSTPROCESS_COMMAND_append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_tabs ; ", " update_tabs_release ; ",d)}'
+ROOTFS_POSTPROCESS_COMMAND:append = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], " update_tabs ; ", " update_tabs_release ; ",d)}'
 
 inherit extrausers
 EXTRA_USERS_PARAMS = '${@bb.utils.contains_any("EXTRA_IMAGE_FEATURES", [ 'debug-tweaks' ], "usermod -P root root; ", "",d)}'
