@@ -19,7 +19,9 @@ HOMEPAGE = "https://github.com/CardContact/sc-hsm-embedded"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://COPYING;md5=55b854a477953696452f698a3af5de1c"
 
-SRC_URI = " git://github.com/CardContact/sc-hsm-embedded.git;protocol=https;tag=V2.11;branch=master"
+TAG := "${PV}"
+SRC_URI = " git://github.com/CardContact/sc-hsm-embedded.git;protocol=https;tag=V${TAG};branch=master"
+PV = "${TAG}+git${SRCPV}"
 
 SRC_URI:append = " \
 	file://0001-build-a-cardservice-library.patch;patch=1 \
