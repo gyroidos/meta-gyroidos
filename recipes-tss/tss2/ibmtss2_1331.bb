@@ -25,12 +25,12 @@ LIBRARY_FLAGS = "\
 	-I. \
 	-fPIC \
 	-DTPM_TPM20 \
-	-DTPM_TPM12 \
 	-DTPM_INTERFACE_TYPE_DEFAULT=\"dev\" \
 "
 
 # overwrite compiler and compiler flags in makefile
 EXTRA_OEMAKE = "\
+	'--makefile=makefiletpm20' \
 	'CC = ${CC}' \
 	'CCLFLAGS = ${LIBRARY_FLAGS}' \
 "
