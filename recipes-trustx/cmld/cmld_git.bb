@@ -1,23 +1,7 @@
-LICENSE = "GPLv2"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/git/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
-
-BRANCH = "dunfell"
-SRCREV = "${AUTOREV}"
-
-PVBASE := "${PV}"
-PV = "${PVBASE}+${SRCPV}"
-
-# upstream repository comment out for development and use local fork below
-SRC_URI = "git://github.com/gyroidos/cml.git;branch=${BRANCH}"
-
-# uncomment this an replay user/path to your local fork for development
-#SRC_URI = "git:///home/<user>/cml/;protocol=file;branch=wip"
-
-S = "${WORKDIR}/git/"
+require recipes-trustx/cmld/cml-common.inc
 
 PACKAGES =+ "control scd tpm2d rattestation"
 
-INSANE_SKIP_${PN} = "ldflags"
 INSANE_SKIP_scd = "ldflags"
 INSANE_SKIP_tpm2d = "ldflags"
 INSANE_SKIP_control = "ldflags"
@@ -30,10 +14,6 @@ EXTRA_OEMAKE += "TRUSTME_SCHSM=${TRUSTME_SCHSM}"
 EXTRA_OEMAKE += "DEVELOPMENT_BUILD=${DEVELOPMENT_BUILD}"
 EXTRA_OEMAKE += "CC_MODE=${CC_MODE}"
 
-do_configure () {
-    :
-}
-
 do_compile () {
     oe_runmake -C daemon
     oe_runmake -C control
@@ -45,18 +25,18 @@ do_compile () {
 }
 
 do_install () {
-    install -d ${D}${sbindir}/
-    install -d ${D}${sysconfdir}/init.d
-    install -m 0755 ${S}daemon/cmld ${D}${sbindir}/
-    install -m 0755 ${S}control/control ${D}${sbindir}/
-    install -m 0755 ${S}scd/scd ${D}${sbindir}/
-    install -m 0755 ${S}tpm2d/tpm2d ${D}${sbindir}/
-    install -m 0755 ${S}tpm2_control/tpm2_control ${D}${sbindir}/
-    install -m 0755 ${S}rattestation/rattestation ${D}${sbindir}/
-    install -d ${D}${libdir}
-    install -m 0755 ${S}common/libcommon_full.a ${D}${libdir}/
-    install -d 0755 ${D}${includedir}/common
-    install -m 0644 ${S}common/*.h ${D}${includedir}/common
+    install -d ${D}/${sbindir}/
+    install -d ${D}/${sysconfdir}/init.d
+    install -m 0755 ${S}/daemon/cmld ${D}${sbindir}/
+    install -m 0755 ${S}/control/control ${D}${sbindir}/
+    install -m 0755 ${S}/scd/scd ${D}${sbindir}/
+    install -m 0755 ${S}/tpm2d/tpm2d ${D}${sbindir}/
+    install -m 0755 ${S}/tpm2_control/tpm2_control ${D}${sbindir}/
+    install -m 0755 ${S}/rattestation/rattestation ${D}${sbindir}/
+    install -d ${D}/${libdir}
+    install -m 0755 ${S}/common/libcommon_full.a ${D}${libdir}/
+    install -d 0755 ${D}/${includedir}/common
+    install -m 0644 ${S}/common/*.h ${D}${includedir}/common
 }
 
 RDEPENDS_scd += "cmld openssl"
