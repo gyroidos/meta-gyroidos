@@ -11,6 +11,21 @@ MODULE_IMAGE_SUFFIX = "squashfs"
 
 EXTRA_OEMAKE += " INSTALL_MOD_STRIP=1"
 
+KERNEL_MODULE_SIG_KEY ?= ""
+KERNEL_SYSTEM_TRUSTED_KEYS ?= ""
+
+kernel_do_configure:prepend() {
+	# replace or add the config option depending of if it already exists in .config
+	# sed command reference: https://superuser.com/a/976712
+	if [ "" != "${KERNEL_MODULE_SIG_KEY}" ]; then
+		sed -i '/^CONFIG_MODULE_SIG_KEY=/{h;s|=.*|="${KERNEL_MODULE_SIG_KEY}"|};${x;/^$/{s||CONFIG_MODULE_SIG_KEY="${KERNEL_MODULE_SIG_KEY}"|;H};x}' ${B}/.config
+	fi
+
+	if [ "" != "${KERNEL_SYSTEM_TRUSTED_KEYS}" ]; then
+		sed -i '/^CONFIG_SYSTEM_TRUSTED_KEYS=/{h;s|=.*|="${KERNEL_SYSTEM_TRUSTED_KEYS}"|};${x;/^$/{s||CONFIG_SYSTEM_TRUSTED_KEYS="${KERNEL_SYSTEM_TRUSTED_KEYS}"|;H};x}' ${B}/.config
+	fi
+}
+
 kernel_do_deploy:append() {
 	bbwarn "kernel do deploy"
 	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
