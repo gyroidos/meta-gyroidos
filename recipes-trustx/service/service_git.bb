@@ -1,15 +1,7 @@
-LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/git/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
-
-BRANCH = "dunfell"
-SRCREV = "${AUTOREV}"
+require recipes-trustx/cmld/cml-common.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-PVBASE := "${PV}"
-PV = "${PVBASE}+${SRCPV}"
-
-SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH};protocol=https"
 SRC_URI:append = "\
 	file://ssig_pki_generator.conf \
 	file://openssl-dockerlocal-rootca.cnf \
@@ -17,11 +9,8 @@ SRC_URI:append = "\
 	file://openssl-dockerlocal-ssig.cnf \
 "
 
-S = "${WORKDIR}/git"
-
 PACKAGES =+ "converter"
 
-INSANE_SKIP:${PN} = "ldflags"
 INSANE_SKIP:converter = "ldflags"
 
 DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text libtar zlib openssl"
@@ -32,10 +21,6 @@ INHIBIT_PACKAGE_STRIP = "1"
 SCRIPT_DIR = "${TOPDIR}/../trustme/build"
 PROVISIONING_DIR = "${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
-
-do_configure () {
-        :
-}
 
 
 do_compile () {

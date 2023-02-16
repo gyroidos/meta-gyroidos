@@ -1,26 +1,12 @@
-LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/git/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
+require recipes-trustx/cmld/cml-common.inc
 
-BRANCH = "dunfell"
-SRCREV = "${AUTOREV}"
 
-PVBASE := "${PV}"
-PV = "${PVBASE}+${SRCPV}"
 
-SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH};protocol=https"
-
-S = "${WORKDIR}/git"
-
-INSANE_SKIP:${PN} = "ldflags"
 
 DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text"
 
 FILES:${PN} += "${base_sbindir}"
 INHIBIT_PACKAGE_STRIP = "1"
-
-do_configure () {
-        :
-}
 
 do_compile () {
         oe_runmake -C service service-static

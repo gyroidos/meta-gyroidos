@@ -1,23 +1,7 @@
-LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/git/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
-
-BRANCH = "dunfell"
-SRCREV = "${AUTOREV}"
-
-PVBASE := "${PV}"
-PV = "${PVBASE}+${SRCPV}"
-
-# upstream repository comment out for development and use local fork below
-SRC_URI = "git://github.com/trustm3/device_fraunhofer_common_cml.git;branch=${BRANCH};protocol=https"
-
-# uncomment this an replay user/path to your local fork for development
-#SRC_URI = "git:///home/<user>/device_fraunhofer_common_cml/;protocol=file;branch=wip"
-
-S = "${WORKDIR}/git"
+require recipes-trustx/cmld/cml-common.inc
 
 PACKAGES =+ "control scd tpm2d rattestation"
 
-INSANE_SKIP:${PN} = "ldflags"
 INSANE_SKIP:scd = "ldflags"
 INSANE_SKIP:tpm2d = "ldflags"
 INSANE_SKIP:control = "ldflags"
@@ -29,10 +13,6 @@ EXTRA_OEMAKE = "TRUSTME_HARDWARE=${TRUSTME_HARDWARE}"
 EXTRA_OEMAKE += "TRUSTME_SCHSM=${TRUSTME_SCHSM}"
 EXTRA_OEMAKE += "DEVELOPMENT_BUILD=${DEVELOPMENT_BUILD}"
 EXTRA_OEMAKE += "CC_MODE=${CC_MODE}"
-
-do_configure () {
-    :
-}
 
 do_compile () {
     oe_runmake -C daemon
