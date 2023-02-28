@@ -106,8 +106,8 @@ do_build_trustmeimage () {
 		exit 1
 	fi
 
-	if [ -z "${TRUSTME_CONTAINER_ARCH_${MACHINE}}" ];then
-		bbfatal_log "Cannot get bitbake variable \"TRUSTME_CONTAINER_ARCH_${MACHINE}\""
+	if [ -z "${TRUSTME_CONTAINER_ARCH}" ];then
+		bbfatal_log "Cannot get bitbake variable \"TRUSTME_CONTAINER_ARCH\""
 		exit 1
 	fi
 
@@ -149,7 +149,7 @@ do_build_trustmeimage () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	containerarch="${TRUSTME_CONTAINER_ARCH_${MACHINE}}"
+	containerarch="${TRUSTME_CONTAINER_ARCH}"
 	deploy_dir_container="${tmpdir}/deploy/images/$(echo $containerarch | tr "_" "-")"
 
 	src="${TOPDIR}/../trustme/build/"
