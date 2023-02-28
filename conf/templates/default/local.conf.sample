@@ -1,0 +1,33 @@
+DEVELOPMENT_BUILD = "##DEVELOPMENT_BUILD##"
+CC_MODE = "##CC_MODE##"
+EXTRA_IMAGE_FEATURES = "${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'debug-tweaks', '', d)}"
+DISTRO_FEATURES:append = " virtualization"
+
+DISTRO = "gyroidos-cml"
+
+require conf/trustx/##MACHINE##.inc
+
+TRUSTME_SCHSM = "##TRUSTME_SCHSM##"
+
+USER_CLASSES ?= "buildstats"
+
+PATCHRESOLVE = "noop"
+
+BB_DISKMON_DIRS ??= "\
+    STOPTASKS,${TMPDIR},1G,100K \
+    STOPTASKS,${DL_DIR},1G,100K \
+    STOPTASKS,${SSTATE_DIR},1G,100K \
+    STOPTASKS,/tmp,100M,100K \
+    HALT,${TMPDIR},100M,1K \
+    HALT,${DL_DIR},100M,1K \
+    HALT,${SSTATE_DIR},100M,1K \
+    HALT,/tmp,10M,1K"
+
+PACKAGECONFIG:append:pn-qemu-native = " sdl"
+PACKAGECONFIG:append:pn-qemu-system-native = " sdl"
+PACKAGECONFIG:append:pn-nativesdk-qemu = " sdl"
+PACKAGECONFIG:pn-btrfs-tools = ""
+
+FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"
+KERNEL_DEPLOYSUBDIR = "cml-kernel"
+PACKAGECONFIG:append:pn-ovmf = " secureboot"
