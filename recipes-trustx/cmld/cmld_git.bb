@@ -35,7 +35,7 @@ do_install () {
     install -m 0755 ${S}/rattestation/rattestation ${D}/${sbindir}/
     install -d ${D}/${libdir}
     install -m 0755 ${S}/common/libcommon_full.a ${D}/${libdir}/
-    install -d 0755 ${D}/${includedir}/common
+    install -d ${D}/${includedir}/common
     install -m 0644 ${S}/common/*.h ${D}/${includedir}/common
 }
 
