@@ -2,7 +2,7 @@ SCRIPT_DIR = "${TOPDIR}/../trustme/build"
 
 CFG_OVERLAY_DIR = "${SCRIPT_DIR}/config_overlay"
 CONFIG_CREATOR_DIR = "${SCRIPT_DIR}/config_creator"
-PROTO_FILE_DIR = "${TOPDIR}/../trustme/cml/daemon"
+PROTO_FILE_DIR = "${WORKDIR}/recipe-sysroot/${includedir}/proto"
 PROVISIONING_DIR = "${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
