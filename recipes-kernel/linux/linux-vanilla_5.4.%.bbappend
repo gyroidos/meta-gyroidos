@@ -21,15 +21,13 @@ SRC_URI += "\
 	file://0020-UBUNTU-SAUCE-shiftfs-Correct-id-translation-for-lowe.patch \
 	file://0021-UBUNTU-SAUCE-shiftfs-prevent-lower-dentries-from-goi.patch \
 	file://0001-shiftfs-allow-mounting-of-other-shiftfs-on-shiftfs.patch \
-	file://5.4/0001-lib-vdso-Let-do_coarse-return-0-to-simplify-the-call.patch \
 	file://5.4/0002-lib-vdso-Avoid-duplication-in-__cvdso_clock_getres.patch \
 	file://5.4/0003-lib-vdso-Add-unlikely-hint-into-vdso_read_begin.patch \
-	file://5.4/0004-lib-vdso-Mark-do_hres-and-do_coarse-as-__always_inli.patch \
 	file://5.4/0005-ns-Introduce-Time-Namespace.patch \
 	file://5.4/0006-time-Add-timens_offsets-to-be-used-for-tasks-in-time.patch \
 	file://5.4/0007-posix-clocks-Rename-the-clock_get-callback-to-clock_.patch \
 	file://5.4/0008-posix-clocks-Rename-.clock_get_timespec-callbacks-ac.patch \
-	file://5.4/0009-alarmtimer-Rename-gettime-callback-to-get_ktime.patch \
+	file://5.4/0009-alarmtimer-Rename-gettime-callback-to-get_ktime_new.patch \
 	file://5.4/0010-alarmtimer-Provide-get_timespec-callback.patch \
 	file://5.4/0011-posix-clocks-Introduce-clock_get_ktime-callback.patch \
 	file://5.4/0012-posix-timers-Use-clock_get_ktime-in-common_timer_get.patch \
@@ -67,7 +65,6 @@ SRC_URI += "\
 	file://5.4/0002-dm-integrity-log-audit-events-for-dm-integrity-targe.patch \
 	file://5.4/0003-dm-crypt-log-aead-integrity-violations-to-audit-subs.patch \
 	file://5.4/0001-audit-allow-audit-in-userns.patch \
-	file://5.4/0043-batman-adv-user-ns-netlink.patch \
 "
 
 

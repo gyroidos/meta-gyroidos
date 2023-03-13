@@ -18,6 +18,7 @@ SRC_URI_append = "\
 	file://5.4/0015-audit-check-contid-depth-and-add-limit-config-param.patch \
 	file://5.4/0016-audit-check-contid-count-per-netns-and-add-config-pa.patch \
 	file://5.4/0017-audit-add-capcontid-to-set-contid-outside-init_user_.patch \
+	file://5.4/0043-batman-adv-user-ns-netlink.patch \
 	file://lockdown.cfg \
 "
 
