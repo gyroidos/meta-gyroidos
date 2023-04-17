@@ -16,6 +16,6 @@ do_compile () {
 do_install () {
         :
 	install -d ${D}/${base_sbindir}/
-	install -m 0755 ${S}/service/cml-service-container ${D}${base_sbindir}/
-	install -m 0755 ${S}/service/exec_cap_systime ${D}${base_sbindir}/
+	install -m 0755 ${B}/service/cml-service-container ${D}${base_sbindir}/
+	install -m 0755 ${B}/service/exec_cap_systime ${D}${base_sbindir}/
 }
