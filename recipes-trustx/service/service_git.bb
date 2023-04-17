@@ -31,9 +31,9 @@ do_compile () {
 do_install () {
         :
 	install -d ${D}/${base_sbindir}/
-	install -m 0755 ${S}/service/cml-service-container ${D}/${base_sbindir}/
+	install -m 0755 ${B}/service/cml-service-container ${D}/${base_sbindir}/
 	install -d ${D}/${bindir}/
-	install -m 0755 ${S}/converter/converter ${D}${bindir}/
+	install -m 0755 ${B}/converter/converter ${D}${bindir}/
 
 	install -d ${D}/pki_generator
 	install -d ${D}/pki_generator/config_creator

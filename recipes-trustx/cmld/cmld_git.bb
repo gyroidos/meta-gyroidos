@@ -27,14 +27,14 @@ do_compile () {
 do_install () {
     install -d ${D}/${sbindir}/
     install -d ${D}/${sysconfdir}/init.d
-    install -m 0755 ${S}/daemon/cmld ${D}/${sbindir}/
-    install -m 0755 ${S}/control/control ${D}/${sbindir}/
-    install -m 0755 ${S}/scd/scd ${D}/${sbindir}/
-    install -m 0755 ${S}/tpm2d/tpm2d ${D}/${sbindir}/
-    install -m 0755 ${S}/tpm2_control/tpm2_control ${D}/${sbindir}/
-    install -m 0755 ${S}/rattestation/rattestation ${D}/${sbindir}/
+    install -m 0755 ${B}/daemon/cmld ${D}/${sbindir}/
+    install -m 0755 ${B}/control/control ${D}/${sbindir}/
+    install -m 0755 ${B}/scd/scd ${D}/${sbindir}/
+    install -m 0755 ${B}/tpm2d/tpm2d ${D}/${sbindir}/
+    install -m 0755 ${B}/tpm2_control/tpm2_control ${D}/${sbindir}/
+    install -m 0755 ${B}/rattestation/rattestation ${D}/${sbindir}/
     install -d ${D}/${libdir}
-    install -m 0755 ${S}/common/libcommon_full.a ${D}/${libdir}/
+    install -m 0755 ${B}/common/libcommon_full.a ${D}/${libdir}/
     install -d ${D}/${includedir}/common
     install -m 0644 ${S}/common/*.h ${D}/${includedir}/common
 
