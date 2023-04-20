@@ -9,7 +9,7 @@ LINUX_VERSION_EXTENSION = "-stable"
 
 KERNEL_VERSION_SANITY_SKIP="1"
 
-SRCREV_machine="${AUTOREV}"
+SRCREV_machine ?= "${AUTOREV}"
 
 PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
