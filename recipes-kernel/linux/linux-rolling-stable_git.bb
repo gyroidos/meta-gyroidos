@@ -11,7 +11,7 @@ KERNEL_VERSION_SANITY_SKIP="1"
 
 SRCREV_machine ?= "${AUTOREV}"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-vanilla:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-vanilla:"
 SRC_URI += "\
 	file://shiftfs-v6.2/0001-UBUNTU-SAUCE-shiftfs-uid-gid-shifting-bind-mount.patch \
 	file://shiftfs-v6.2/0002-UBUNTU-SAUCE-shiftfs-rework-and-extend.patch \
