@@ -11,6 +11,7 @@ DEPENDS += "squashfs-tools-native openssl-native"
 MODULE_IMAGE_SUFFIX = "squashfs"
 
 EXTRA_OEMAKE += " INSTALL_MOD_STRIP=1"
+KERNEL_EXTRA_ARGS:prepend = "${PARALLEL_MAKE} "
 
 KERNEL_MODULE_SIG_KEY ?= ""
 KERNEL_SYSTEM_TRUSTED_KEYS ?= ""
