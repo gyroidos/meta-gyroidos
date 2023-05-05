@@ -61,8 +61,8 @@ if [ -e "/dev/tpm0" ]; then
 	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/trustme))
 	BOOT_HDD=$(basename $(readlink /dev/disk/by-label/boot))
 
-	echo "CRYPTO_HDD: $(CRYPTO_HDD)"
-	echo "BOOT_HDD: $(BOOT_HDD)"
+	echo "CRYPTO_HDD: ${CRYPTO_HDD}"
+	echo "BOOT_HDD: ${BOOT_HDD}"
 
 	if [ "${BOOT_HDD}" == "" ];then
 		BOOT_HDD=$(basename $(readlink /dev/disk/by-label/BOOT))
@@ -95,9 +95,6 @@ if [ -e "/dev/tpm0" ]; then
 		echo Waiting for /dev/mapper/${CRYPTO_HDD}
 		sleep 1
 	done
-
-	udevadm trigger --type=devices --action=add
-	udevadm settle
 
 	# if crypto hdd is unencrypted, initially encrypt it here
 	if [ "$do_otf" == "do" ]; then
