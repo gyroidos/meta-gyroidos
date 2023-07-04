@@ -20,5 +20,5 @@ DEPENDS += "elfutils-native"
 
 COMPATIBLE_MACHINE = "${MACHINE}"
 
-KBUILD_DEFCONFIG_genericx86-64 = "x86_64_defconfig"
+KBUILD_DEFCONFIG:genericx86-64 = "x86_64_defconfig"
 KCONFIG_MODE="--alldefconfig"
