@@ -1,6 +1,8 @@
 inherit kernel
 require recipes-kernel/linux/linux-yocto.inc
 
+HOMEPAGE = "https://www.kernel.org"
+
 SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git;protocol=git;name=machine;branch=linux-rolling-stable"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
@@ -13,7 +15,7 @@ SRCREV_machine ?= "${AUTOREV}"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/linux-vanilla:"
 
-PVBASE := "${PV}"
+PVBASE := "1.0"
 PV = "${PVBASE}+${SRCPV}"
 
 DEPENDS += "elfutils-native"
