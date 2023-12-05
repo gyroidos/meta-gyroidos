@@ -20,6 +20,7 @@ SRC_URI = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/${TAR_N}.git/sna
 	file://Cross-compile-compatible-enginesdir-variable_${PV}.patch \
 	file://Makefile.am-Use-src_topdir-instead-of-relative-inclu_${PV}.patch \
 	file://src-provider-keymgmt-initialize-order-in-tpm2_keymgm_${PV}.patch \
+	file://0001-fix-uninitialized-variables-reported-by-gcc_${PV}.patch \
 "
 
 S = "${WORKDIR}/${TAR_N}-${PV}"
