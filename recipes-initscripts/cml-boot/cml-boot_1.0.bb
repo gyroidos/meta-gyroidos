@@ -7,6 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 SRC_URI = "\
 	file://init_ascii \
+	file://start_sshd \
 	file://cml-boot-script.stub \
 "
 
@@ -45,7 +46,7 @@ do_install() {
 do_install:append () {
 	if [ "y" = "${DEVELOPMENT_BUILD}" ];then
 		bbwarn "Patching /init script to start SSH server in cml layer"
-		sed -i '\|#DEV_START_SSHD#|e cat ${THISDIR}/files/start_sshd' ${D}/init
+		sed -i '\|#DEV_START_SSHD#|e cat ${WORKDIR}/start_sshd' ${D}/init
 	fi
 	sed -i '/#DEV_START_SSHD#/d' ${D}/init
 }
