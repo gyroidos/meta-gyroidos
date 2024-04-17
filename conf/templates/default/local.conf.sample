@@ -29,6 +29,7 @@ PACKAGECONFIG:append:pn-qemu-native = " sdl"
 PACKAGECONFIG:append:pn-qemu-system-native = " sdl"
 PACKAGECONFIG:append:pn-nativesdk-qemu = " sdl"
 PACKAGECONFIG:pn-btrfs-tools = "programs"
+PACKAGECONFIG:pn-btrfs-tools-native = "programs"
 
 FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"
 KERNEL_DEPLOYSUBDIR = "cml-kernel"
