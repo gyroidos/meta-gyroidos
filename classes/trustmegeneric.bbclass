@@ -185,7 +185,7 @@ do_build_trustmeimage () {
 		cp -f "${device_cfg}" "${rootfs_datadir}/cml/"
 	else # no container provided
 		bbwarn "It seems that no containers were built in directory ${deploy_dir_container}. You will have to provide at least c0 manually!"
-		cp ${cfg_overlay_dir}/${TRUSTME_HARDWARE}/device.conf "${rootfs_datadir}/cml/"
+		cp -f "${device_cfg}" "${rootfs_datadir}/cml/"
 	fi
 
 	# sign container configs
