@@ -15,9 +15,10 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 
 DEPENDS += "ima-evm-utils-native"
 
+EVMCTL_CMD ?= "evmctl sign -r --imasig --hashalgo sha256 --key ${TEST_CERT_DIR}/ssig_subca.key ${IMAGE_ROOTFS}/"
 move_firmware() {
 	mv ${IMAGE_ROOTFS}/lib/firmware/* ${IMAGE_ROOTFS}/
-	evmctl sign -r --imasig --hashalgo sha256 --key ${TEST_CERT_DIR}/ssig_subca.key ${IMAGE_ROOTFS}/
+	${EVMCTL_CMD}
 }
 
 cleanup_root() {
