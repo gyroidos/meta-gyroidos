@@ -7,6 +7,11 @@ PROVISIONING_DIR = "${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 
+inherit p11-signing
+
+GUESTOS_SIG_KEY ?= "${TEST_CERT_DIR}/ssig_cml.key"
+GUESTOS_SIG_CERT ?= "${TEST_CERT_DIR}/ssig_cml.cert"
+
 GUESTS_OUT ?= "${B}/trustx-guests"
 CLEAN_GUEST_OUT ?= "1"
 
@@ -65,7 +70,7 @@ do_sign_guestos () {
     fi
 
     bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
-            ${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert
+            "${GUESTOS_SIG_KEY}" "${GUESTOS_SIG_CERT}"
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
 }
