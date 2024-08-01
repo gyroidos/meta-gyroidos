@@ -15,7 +15,9 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 
 DEPENDS += "ima-evm-utils-native"
 
-EVMCTL_CMD ?= "evmctl ima_sign -r --hashalgo sha256 --key ${TEST_CERT_DIR}/ssig_subca.key ${IMAGE_ROOTFS}/"
+inherit p11-signing
+EVMCTL_CMD = "evmctl ima_sign -r --hashalgo sha256 --key ${TEST_CERT_DIR}/ssig_subca.key ${IMAGE_ROOTFS}/"
+EVMCTL_CMD:pkcs11-sign = "evmctl ima_sign -r --hashalgo sha256 --engine pkcs11 --key '${KERNEL_MODULE_SIG_KEY}' --keyid-from-cert '${STAGING_KERNEL_BUILDDIR}/certs/signing_key.x509' ${IMAGE_ROOTFS}/"
 move_firmware() {
 	mv ${IMAGE_ROOTFS}/lib/firmware/* ${IMAGE_ROOTFS}/
 	${EVMCTL_CMD}
