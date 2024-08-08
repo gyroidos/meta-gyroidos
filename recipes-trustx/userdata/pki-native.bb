@@ -12,9 +12,10 @@ PROVISIONING_DIR = "${S}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 
-inherit native
+DEPENDS = "openssl-native gnutls-native"
 
-DEPENDS = "openssl-native"
+inherit p11-signing native
+
 
 SSTATE_SKIP_CREATION = "1"
 
@@ -35,6 +36,27 @@ do_compile() {
         rm ${TEST_CERT_DIR}.generating
     fi
 }
+
+do_install () {
+        mkdir -p "${D}/${localstatedir}/lib/softhsm/tokens"
+
+	# need to change the softhsm2.conf for this recipes as the token store must point to
+	# the install directory which is subsequently copied to the sysroot.
+        cp ${SOFTHSM2_CONF} .
+        sed -i "/directories.tokendir/d" softhsm2.conf
+        echo "directories.tokendir = ${D}/${localstatedir}/lib/softhsm/tokens" > softhsm2.conf
+        export SOFTHSM2_CONF=softhsm2.conf
+
+        softhsm2-util --module ${PKCS11_MODULE} --init-token --force --so-pin 12345 --pin 1234 --label ssig --slot 0
+
+	p11tool --provider ${PKCS11_MODULE} --login --set-pin 1234 --write "pkcs11:token=ssig" --load-privkey ${TEST_CERT_DIR}/ssig_subca.key --label ssig_subca --id 01
+	p11tool --provider ${PKCS11_MODULE} --login --set-pin 1234 --write "pkcs11:token=ssig" --load-certificate ${TEST_CERT_DIR}/ssig_subca.cert --label ssig_subca --id 01
+
+	p11tool --provider ${PKCS11_MODULE} --login --set-pin 1234 --write "pkcs11:token=ssig" --load-privkey ${TEST_CERT_DIR}/ssig_cml.key --label ssig_cml --id 02
+	p11tool --provider ${PKCS11_MODULE} --login --set-pin 1234 --write "pkcs11:token=ssig" --load-certificate ${TEST_CERT_DIR}/ssig_cml.cert --label ssig_cml --id 02
+}
+
+FILES:${PN} += "/*"
 
 do_clean() {
     if [ -f ${TEST_CERT_DIR}.generating ]; then
