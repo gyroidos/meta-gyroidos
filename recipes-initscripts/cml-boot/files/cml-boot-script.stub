@@ -45,7 +45,7 @@ mount /dev/pts
 echo 1 > /proc/sys/kernel/printk
 
 mkdir -p /dev/shm
-mkdir -p /data
+mkdir -p /data/logs
 
 udevd --daemon
 scan_devices
