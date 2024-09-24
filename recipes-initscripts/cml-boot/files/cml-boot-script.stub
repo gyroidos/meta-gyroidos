@@ -103,7 +103,8 @@ if [ -e "/dev/tpm0" ]; then
 
 		size=$(fdisk -l /dev/${CRYPTO_HDD} | head -n1 | awk '{print $5}')
 		echo "-- Doing on-the-fly encryption of ${CRYPTO_HDD} size=${size} ..."
-		dd if=/dev/${CRYPTO_HDD} bs=512 status=none | pv -s ${size} | dd of=/dev/mapper/${CRYPTO_HDD} bs=512
+		# dd if=/dev/${CRYPTO_HDD} bs=512 status=none | pv -s ${size} | dd of=/dev/mapper/${CRYPTO_HDD} bs=512
+		cat /dev/${CRYPTO_HDD} | pv -s ${size} > /dev/mapper/${CRYPTO_HDD}
 		if [ $? -ne 0 ]; then
 			echo "-- FATAL: Encryption failed! Restart System Setup!"
 			exit 1;
