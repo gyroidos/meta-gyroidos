@@ -16,11 +16,24 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 DEPENDS += "ima-evm-utils-native"
 
 inherit p11-signing
-EVMCTL_CMD = "evmctl ima_sign -r --hashalgo sha256 --key ${TEST_CERT_DIR}/ssig_subca.key ${IMAGE_ROOTFS}/"
-EVMCTL_CMD:pkcs11-sign = "evmctl ima_sign -r --hashalgo sha256 --engine pkcs11 --key '${KERNEL_MODULE_SIG_KEY}' --keyid-from-cert '${STAGING_KERNEL_BUILDDIR}/certs/signing_key.x509' ${IMAGE_ROOTFS}/"
+
 move_firmware() {
 	mv ${IMAGE_ROOTFS}/lib/firmware/* ${IMAGE_ROOTFS}/
-	${EVMCTL_CMD}
+
+	certpath="${FIRMWARE_SIG_CERT}"
+	if [[ "${FIRMWARE_SIG_CERT}" == pkcs11:* ]] # BASH-if on purpose
+	then
+		certpath="${WORKDIR}/FIRMWARE_SIG_CERT"
+		extract_cert "${FIRMWARE_SIG_CERT}" "${certpath}.pem"
+		openssl x509 -in "${certpath}.pem" -outform DER -out "${certpath}.der"
+	fi
+
+	if [[ "${FIRMWARE_SIG_KEY}" == pkcs11:* ]] # BASH-if on purpose
+	then
+		evmctl ima_sign -r --hashalgo sha256 --engine pkcs11 --key "${FIRMWARE_SIG_KEY}" --keyid-from-cert "${certpath}.der" "${IMAGE_ROOTFS}/"
+	else
+		evmctl ima_sign -r --hashalgo sha256 --key "${FIRMWARE_SIG_KEY}" "${IMAGE_ROOTFS}/"
+	fi
 }
 
 cleanup_root() {
