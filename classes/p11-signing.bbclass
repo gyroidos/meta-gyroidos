@@ -1,4 +1,4 @@
-DEPENDS += "libp11-native opensc-native p11-kit-native openssl-native softhsm-native"
+DEPENDS += "libp11-native opensc-native p11-kit-native openssl-native softhsm-native gnutls-native"
 
 python () {
     exists_and_pkcs11 = lambda var: var != None and var.startswith('pkcs11:')
