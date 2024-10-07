@@ -24,3 +24,9 @@ extract_cert () {
 export OPENSSL_ENGINES = "${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-3"
 export PKCS11_MODULE_PATH
 export SOFTHSM2_CONF = "${RECIPE_SYSROOT_NATIVE}/etc/softhsm2.conf"
+
+# default key overrides
+# if no dedicated certificate is specified, default to the key file/URI
+GUESTOS_SIG_CERT ?= "${GUESTOS_SIG_KEY}"
+KERNEL_IMA_SIG_CERT ?= "${GUESTOS_SIG_KEY}"
+SECURE_BOOT_SIG_CERT ?= "${SECURE_BOOT_SIG_KEY}"
