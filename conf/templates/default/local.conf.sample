@@ -43,15 +43,37 @@ KERNEL_DEPLOYSUBDIR = "cml-kernel"
 PACKAGECONFIG:append:pn-ovmf = " secureboot"
 PACKAGECONFIG:append:pn-gnutls-native = " p11-kit"
 
-KERNEL_MODULE_SIG_KEY="${TOPDIR}/test_certificates/certs/signing_key.pem"
+
+# Artefact signing configuration
+
+KERNEL_MODULE_SIG_KEY_CERT="${TOPDIR}/test_certificates/certs/signing_key.pem"
 # Alternatively KERNEL_MODULE_SIG_KEY can be speicified as a PKCS#11 URI
 # pointing to a private key and certificate:
-#KERNEL_MODULE_SIG_KEY="pkcs11:object=ssig_subca?pin-value=1234"
-KERNEL_SYSTEM_TRUSTED_KEYS="${TOPDIR}/test_certificates/ssig_rootca.cert"
+# The URI must point to a private key AND certificate!
+#KERNEL_MODULE_SIG_KEY_CERT="pkcs11:serial=SERIAL;object=ssig_subca"
 
 GUESTOS_SIG_KEY = "${TOPDIR}/test_certificates/ssig_cml.key"
 GUESTOS_SIG_CERT = "${TOPDIR}/test_certificates/ssig_cml.cert"
 # Likewise, GUESTOS_SIG_{KEY,CERT} may be given as a PKCS#11 URI instead
-# of file paths
-#GUESTOS_SIG_KEY="pkcs11:object=ssig_cml?pin-value=1234"
-#GUESTOS_SIG_CERT="pkcs11:object=ssig_cml?pin-value=1234"
+# of file paths.
+# GUESTOS_SIG_CERT may define a list of certificates that are concatenated to
+# form a chain of trust to the root certificate.
+#GUESTOS_SIG_KEY="pkcs11:serial=SERIAL;object=ssig_cml"
+#GUESTOS_SIG_CERT="pkcs11:serial=SERIAL;object=ssig_cml pkcs11:serial=SERIAL;object=ssig_subca_cml"
+
+# Software signing root certificate that is used to check guestos signatures.
+GUESTOS_SIG_ROOT_CERT="${TOPDIR}/test_certificates/ssig_rootca.cert"
+#GUESTOS_SIG_ROOT_CERT="pkcs11:serial=SERIAL;object=ssig_rootca
+
+FIRMWARE_SIG_KEY="${TEST_CERT_DIR}/ssig_subca.key"
+FIRMWARE_SIG_CERT="${TEST_CERT_DIR}/ssig_subca.cert"
+#FIRMWARE_SIG_KEY="pkcs11:serial=SERIAL;object=ssig_subca"
+#FIRMWARE_SIG_CERT="pkcs11:serial=SERIAL;object=ssig_subca"
+
+SECURE_BOOT_SIG_KEY="${TOPDIR}/test_certificates/ssig_subca.key"
+SECURE_BOOT_SIG_CERT="${TOPDIR}/test_certificates/ssig_subca.cert"
+#SECURE_BOOT_SIG_KEY="pkcs11:serial=SERIAL;object=ssig_subca"
+#SECURE_BOOT_SIG_CERT="pkcs11:serial=SERIAL;object=ssig_subca"
+
+KERNEL_SYSTEM_TRUSTED_KEYS="${TOPDIR}/test_certificates/ssig_rootca.cert"
+#KERNEL_SYSTEM_TRUSTED_KEYS="pkcs11:serial=SERIAL;object=ssig_rootca"
