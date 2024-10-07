@@ -1,16 +1,26 @@
 DEPENDS += "libp11-native opensc-native p11-kit-native openssl-native softhsm-native gnutls-native"
 
-python () {
-    exists_and_pkcs11 = lambda var: var != None and var.startswith('pkcs11:')
-    module_sig_key = d.getVar('KERNEL_MODULE_SIG_KEY', True)
-    guestos_sig_key = d.getVar('GUESTOS_SIG_KEY', True)
-    if exists_and_pkcs11(module_sig_key) or exists_and_pkcs11(guestos_sig_key):
-        overrides = d.getVar('OVERRIDES', False)
-        d.setVar('OVERRIDES', overrides + ':pkcs11-sign')
+def get_pkcs11_module_path(d):
+    backend = d.getVar('PKCS11_BACKEND')
+    if backend == "opensc":
+        return "${RECIPE_SYSROOT_NATIVE}/usr/lib/opensc-pkcs11.so"
+    elif backend == "softhsm":
+        return "${RECIPE_SYSROOT_NATIVE}/usr/lib/softhsm/libsofthsm2.so"
+    else:
+        import bb
+        bb.fatal(f"PKCS#11 backend \"{backend}\" not set or unsupported.")
+
+# PKCS#11 backend
+PKCS11_BACKEND ?= "opensc"
+PKCS11_MODULE_PATH = "${@get_pkcs11_module_path(d)}"
+
+# sbsign and evmctl can't handle certificates passed as PKCS#11 URIs.
+# This command provides measures to extract a certificate from a PKCS#11 token.
+extract_cert () {
+        p11tool --provider ${PKCS11_MODULE_PATH} --export-chain $1 > $2
 }
 
-PKCS11_MODULE ?= "${RECIPE_SYSROOT_NATIVE}/usr/lib/softhsm/libsofthsm2.so"
-
+# variables passed to OpenSSL
 export OPENSSL_ENGINES = "${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-3"
-export PKCS11_MODULE_PATH = "${PKCS11_MODULE}"
+export PKCS11_MODULE_PATH
 export SOFTHSM2_CONF = "${RECIPE_SYSROOT_NATIVE}/etc/softhsm2.conf"
