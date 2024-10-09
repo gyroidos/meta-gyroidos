@@ -1,0 +1,13 @@
+diff --git a/makefiletpm20 b/makefiletpm20
+index d676f94..d54b97a 100644
+--- a/makefiletpm20
++++ b/makefiletpm20
+@@ -46,7 +46,7 @@ CC = /usr/bin/gcc
+ # no-deprecated-declarations silences the compiler until the openssl
+ # 3.0 port is complete.
+ 
+-CCFLAGS += 	-DTPM_POSIX -DTPM_TSS_NODEPRECATED -DTPM_TSS_NODEV
++CCFLAGS += 	-DTPM_POSIX -DTPM_TSS_NODEPRECATED
+ 
+ # example of pointing to a locally built openssl
+ #CCFLAGS += 	-I/home/kgold/openssl/include
