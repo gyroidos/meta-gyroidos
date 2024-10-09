@@ -1,0 +1,88 @@
+From d04f8e55793fef8c43718b2968cb9bd877cd57eb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Wed, 9 Aug 2023 14:23:25 +0200
+Subject: [PATCH] Cross-compile compatible enginesdir variable
+
+Get enginesdir from pkg-config instead of non portable use of gcc.
+Further provide a --with-engingesdir option for configure.
+---
+ configure.ac           | 42 ++++++++++++++----------------------------
+ src/engine/Makefile.am |  2 +-
+ 2 files changed, 15 insertions(+), 29 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 9e74274..3423aa7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -55,41 +55,27 @@ PKG_CHECK_MODULES([DEPS], [libcrypto >= 3.0.0],
+                   [ac_have_openssl3=1],
+ 		  [PKG_CHECK_MODULES([DEPS], [libcrypto])])
+ 
+-AC_ARG_WITH(
+-	[enginesdir],
+-	[AC_HELP_STRING([--with-enginesdir], [OpenSSL engines directory])],
+-	[enginesdir="${withval}"],
+-	[AC_LANG_CONFTEST([AC_LANG_PROGRAM(
+-		[[
+-		  #define HEADER_CRYPTLIB_H
+-		  #include <openssl/crypto.h>
+-		  #include <stdio.h>
+-		]],
+-		[[
+-		  #if OPENSSL_VERSION_NUMBER < 0x10100000
+-		  puts(ENGINESDIR);
+-		  #else
+-		  puts(OpenSSL_version(OPENSSL_ENGINES_DIR));
+-		  #endif
+-		]]
+-		)])
+-		gcc $CFLAGS conftest.c -lcrypto
+-		enginesdir=`./a.out|sed 's/ENGINESDIR: //'`
+-	]
+-	)
+-
+-if test -z "$enginesdir" ; then
+-    AC_MSG_FAILURE([Failed to find SSL engines directory])
+-fi
++AC_ARG_WITH([enginesdir],
++	[AS_HELP_STRING([--with-enginesdir],
++		[Set the OpenSSL engine directory (default: use pkg-config)])],
++	[],
++	[with_enginesdir=$ac_enginesdir])
++AS_IF([test -z "$with_enginesdir"],
++	[AC_MSG_WARN([Empty enginesdir, using $libdir/engines instead.])])
++# This weirdness is necessary to enable distcheck via DISTCHECK_CONFIGURE_FLAGS
++AS_IF([test -z "$with_enginesdir"],
++	[with_enginesdir=$libdir/engines])
+ 
+ if test "$ac_have_openssl3" = "1"; then
+     modulesdir=\"`$PKG_CONFIG --variable=modulesdir libcrypto`\"
+     AC_SUBST(modulesdir)
+ fi
+ 
+-AC_SUBST(enginesdir)
++AC_SUBST(ENGINESDIR, "$with_enginesdir")
++
++PKG_CHECK_MODULES([DEPS], [libcrypto],
++	[ac_enginesdir=`$PKG_CONFIG --variable=enginesdir libcrypto`])
+ 
+-PKG_CHECK_MODULES([DEPS], [libcrypto])
+ 
+ AC_SEARCH_LIBS([TSS_Create], [tss ibmtss], [
+ 	AC_DEFINE(HAVE_IBM_TSS, 1, [Defined if we have the IBM TSS])
+diff --git a/src/engine/Makefile.am b/src/engine/Makefile.am
+index 9ce2a25..a2a0cad 100644
+--- a/src/engine/Makefile.am
++++ b/src/engine/Makefile.am
+@@ -1,7 +1,7 @@
+ AM_CPPFLAGS = -I ../include ${DEPRECATION}
+ 
+ openssl_engine_LTLIBRARIES=libtpm2.la
+-openssl_enginedir=@enginesdir@
++openssl_enginedir=$(ENGINESDIR)
+ 
+ COMMONLIB = ../libcommon/libcommon.a
+ 
+-- 
+2.30.2
+

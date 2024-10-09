@@ -1,0 +1,57 @@
+diff --git a/src/engine/Makefile.am b/src/engine/Makefile.am
+index 9ce2a25..af92c02 100644
+--- a/src/engine/Makefile.am
++++ b/src/engine/Makefile.am
+@@ -1,4 +1,4 @@
+-AM_CPPFLAGS = -I ../include ${DEPRECATION}
++AM_CPPFLAGS = -I $(top_srcdir)/src/include ${DEPRECATION}
+ 
+ openssl_engine_LTLIBRARIES=libtpm2.la
+ openssl_enginedir=@enginesdir@
+diff --git a/src/libcommon/Makefile.am b/src/libcommon/Makefile.am
+index ad566ff..1c88e37 100644
+--- a/src/libcommon/Makefile.am
++++ b/src/libcommon/Makefile.am
+@@ -1,6 +1,6 @@
+ noinst_LIBRARIES = libcommon.a
+ 
+-AM_CPPFLAGS = -I ../include/ ${DEPRECATION}
++AM_CPPFLAGS = -I $(top_srcdir)/src/include ${DEPRECATION}
+ 
+ libcommon_a_SOURCES = tpm2-common.c
+ libcommon_a_CFLAGS = -fPIC
+diff --git a/src/opensslmissing/Makefile.am b/src/opensslmissing/Makefile.am
+index bc4243a..a829d4a 100644
+--- a/src/opensslmissing/Makefile.am
++++ b/src/opensslmissing/Makefile.am
+@@ -1,6 +1,6 @@
+ noinst_LIBRARIES = libosslm.a
+ 
+-AM_CPPFLAGS = -I ../include
++AM_CPPFLAGS = -I $(top_srcdir)/src/include
+ 
+ if HAVE_OPENSSL3
+ libosslm_a_SOURCES = rsa.c signature.c
+diff --git a/src/provider/Makefile.am b/src/provider/Makefile.am
+index 5ff91cf..ca6966c 100644
+--- a/src/provider/Makefile.am
++++ b/src/provider/Makefile.am
+@@ -1,4 +1,4 @@
+-AM_CPPFLAGS=-I../include
++AM_CPPFLAGS = -I $(top_srcdir)/src/include
+ COMMONLIB = ../libcommon/libcommon.a ../opensslmissing/libosslm.a
+ 
+ if HAVE_OPENSSL3
+diff --git a/src/tools/Makefile.am b/src/tools/Makefile.am
+index 3012411..b64ceb9 100644
+--- a/src/tools/Makefile.am
++++ b/src/tools/Makefile.am
+@@ -10,7 +10,7 @@ man7_MANS = openssl_tpm2_engine.7
+ CLEANFILES = $(man1_MANS)
+ endif
+ 
+-AM_CPPFLAGS = -I ../include ${DEPRECATION}
++AM_CPPFLAGS = -I $(top_srcdir)/src/include ${DEPRECATION}
+ 
+ bin_PROGRAMS=create_tpm2_key load_tpm2_key seal_tpm2_data unseal_tpm2_data \
+ 	signed_tpm2_policy attest_tpm2_primary

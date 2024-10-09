@@ -1,0 +1,26 @@
+From fab9a93bc950983fb724355e60ce5418cafdd520 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Thu, 10 Aug 2023 13:08:10 +0200
+Subject: [PATCH] src/provider/keymgmt: initialize order in
+ tpm2_keymgmt_import()
+
+---
+ src/provider/keymgmt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/provider/keymgmt.c b/src/provider/keymgmt.c
+index aa9c120..31929da 100644
+--- a/src/provider/keymgmt.c
++++ b/src/provider/keymgmt.c
+@@ -177,7 +177,7 @@ static int tpm2_keymgmt_import(void *key, int selection,
+ 	EC_POINT *pt;
+ 	BIGNUM *x, *y;
+ 	TPMS_ECC_POINT *tpt = &ad->Public.publicArea.unique.ecc;
+-	int order;
++	int order = 0;
+ 	int ret = 1;
+ 
+ 	if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) == 0)
+-- 
+2.30.2
+

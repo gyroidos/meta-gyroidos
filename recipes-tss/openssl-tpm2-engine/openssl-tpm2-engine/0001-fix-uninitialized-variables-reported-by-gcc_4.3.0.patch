@@ -1,0 +1,47 @@
+diff --git a/src/libcommon/tpm2-common.c b/src/libcommon/tpm2-common.c
+index be3fe50..edfc70e 100644
+--- a/src/libcommon/tpm2-common.c
++++ b/src/libcommon/tpm2-common.c
+@@ -687,7 +687,7 @@ TPM_RC tpm2_ObjectPublic_GetName(NAME_2B *name,
+ 	TPM_RC rc = 0;
+ 	uint16_t written = 0;
+ 	TPMT_HA digest;
+-	uint32_t sizeInBytes;
++	uint32_t sizeInBytes = 0;
+ 	uint8_t buffer[MAX_RESPONSE_SIZE];
+ 
+ 	/* marshal the TPMT_PUBLIC */
+@@ -1282,7 +1282,7 @@ TPM_RC tpm2_init_session(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 	int num_commands;
+ 	struct policy_command *commands;
+ 	char prefix[128];
+-	TPM_RC rc;
++	TPM_RC rc = TPM_RC_POLICY;
+ 	TPM_ALG_ID name_alg = app_data->Public.publicArea.nameAlg;
+ 
+ 	*auth = app_data->auth;
+diff --git a/src/provider/provider.c b/src/provider/provider.c
+index f913bc6..d68034b 100644
+--- a/src/provider/provider.c
++++ b/src/provider/provider.c
+@@ -100,7 +100,7 @@ int OSSL_provider_init(const OSSL_CORE_HANDLE *handle,
+ 		       const OSSL_DISPATCH **out,
+ 		       void **provctx)
+ {
+-	OSSL_LIB_CTX *libctx;
++	OSSL_LIB_CTX *libctx = NULL;
+ 	const OSSL_DISPATCH *fns = in;
+ 	int i;
+ 	OSSL_PARAM provider_params[] = {
+diff --git a/src/tools/seal_tpm2_data.c b/src/tools/seal_tpm2_data.c
+index e7eb52a..9903d5e 100644
+--- a/src/tools/seal_tpm2_data.c
++++ b/src/tools/seal_tpm2_data.c
+@@ -392,6 +392,7 @@ int main(int argc, char **argv)
+ 			if (!parent) {
+ 				fprintf(stderr, "Unknown parent '%s'\n",
+ 					parent_str);
++				rc = NOT_TPM_ERROR;
+ 				goto out_flush;
+ 			}
+ 		} else {

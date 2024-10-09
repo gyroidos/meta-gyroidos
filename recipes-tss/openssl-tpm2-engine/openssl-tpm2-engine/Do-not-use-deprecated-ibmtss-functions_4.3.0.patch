@@ -1,0 +1,562 @@
+diff --git a/src/libcommon/tpm2-common.c b/src/libcommon/tpm2-common.c
+index be3fe50..52f28e4 100644
+--- a/src/libcommon/tpm2-common.c
++++ b/src/libcommon/tpm2-common.c
+@@ -692,9 +692,9 @@ TPM_RC tpm2_ObjectPublic_GetName(NAME_2B *name,
+ 
+ 	/* marshal the TPMT_PUBLIC */
+ 	if (rc == 0) {
+-		INT32 size = MAX_RESPONSE_SIZE;
++		UINT32 size = MAX_RESPONSE_SIZE;
+ 		uint8_t *buffer1 = buffer;
+-		rc = TSS_TPMT_PUBLIC_Marshal(tpmtPublic, &written, &buffer1, &size);
++		rc = TSS_TPMT_PUBLIC_Marshalu(tpmtPublic, &written, &buffer1, &size);
+ 	}
+ 	/* hash the public area */
+ 	if (rc == 0) {
+@@ -1068,7 +1068,7 @@ static TPM_RC tpm2_try_policy(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 			      TPM_ALG_ID name_alg, const char *prefix,
+ 			      const struct app_data *ad, const char **auth)
+ {
+-	INT32 size;
++	UINT32 size;
+ 	BYTE *policy;
+ 	TPM_RC rc = TPM_RC_SUCCESS, reason_rc = 0;
+ 	int i;
+@@ -1086,7 +1086,7 @@ static TPM_RC tpm2_try_policy(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 			DIGEST_2B pcrDigest;
+ 			TPML_PCR_SELECTION pcrs;
+ 
+-			rc = TPML_PCR_SELECTION_Unmarshal(
++			rc = TSS_TPML_PCR_SELECTION_Unmarshalu(
+ 				&pcrs, &policy, &size);
+ 			if (rc)
+ 				goto unmarshal_failure;
+@@ -1109,7 +1109,7 @@ static TPM_RC tpm2_try_policy(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 			UINT16 offset;
+ 			TPM_EO operation;
+ 			BYTE *p_buffer;
+-			INT32 p_size;
++			UINT32 p_size;
+ 			int i, c;
+ 			const char *const operand[] = {
+ 				[TPM_EO_EQ] = "==",
+@@ -1129,11 +1129,11 @@ static TPM_RC tpm2_try_policy(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 			/* last UINT16 is the operand */
+ 			p_buffer = policy + size - 2;
+ 			p_size = 2;
+-			TPM_EO_Unmarshal(&operation, &p_buffer, &p_size);
++			TSS_TPM_EO_Unmarshalu(&operation, &p_buffer, &p_size);
+ 			/* second to last UINT16 is the offset */
+ 			p_buffer = policy + size - 4;
+ 			p_size = 2;
+-			UINT16_Unmarshal(&offset, &p_buffer, &p_size);
++			TSS_UINT16_Unmarshalu(&offset, &p_buffer, &p_size);
+ 
+ 			/* and the rest is the OperandB */
+ 			operandB.size = size - 4;
+@@ -1165,14 +1165,14 @@ static TPM_RC tpm2_try_policy(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 			TPMT_TK_VERIFIED ticket;
+ 			NAME_2B name;
+ 
+-			rc = TPM2B_PUBLIC_Unmarshal(&pub, &policy, &size, FALSE);
++			rc = TSS_TPM2B_PUBLIC_Unmarshalu(&pub, &policy, &size, FALSE);
+ 			if (rc)
+ 				goto unmarshal_failure;
+ 
+-			rc = TPM2B_DIGEST_Unmarshal((TPM2B_DIGEST *)&nonce, &policy, &size);
++			rc = TSS_TPM2B_DIGEST_Unmarshalu((TPM2B_DIGEST *)&nonce, &policy, &size);
+ 			if (rc)
+ 				goto unmarshal_failure;
+-			rc = TPMT_SIGNATURE_Unmarshal(&sig, &policy, &size, FALSE);
++			rc = TSS_TPMT_SIGNATURE_Unmarshalu(&sig, &policy, &size, FALSE);
+ 			if (rc)
+ 				goto unmarshal_failure;
+ 			rc = tpm2_PolicyGetDigest(tssContext, handle, &policyHash);
+@@ -1217,13 +1217,13 @@ static TPM_RC tpm2_try_policy(TSS_CONTEXT *tssContext, TPM_HANDLE handle,
+ 			DIGEST_2B policyRef;
+ 			TPM_HANDLE authHandle;
+ 
+-			rc = UINT32_Unmarshal(&authHandle, &policy, &size);
++			rc = TSS_UINT32_Unmarshalu(&authHandle, &policy, &size);
+ 			if (rc)
+ 				goto unmarshal_failure;
+-			rc = TPM2B_NAME_Unmarshal((TPM2B_NAME *)&name, &policy, &size);
++			rc = TSS_TPM2B_NAME_Unmarshalu((TPM2B_NAME *)&name, &policy, &size);
+ 			if (rc)
+ 				goto unmarshal_failure;
+-			rc = TPM2B_DIGEST_Unmarshal((TPM2B_DIGEST *)&policyRef, &policy, &size);
++			rc = TSS_TPM2B_DIGEST_Unmarshalu((TPM2B_DIGEST *)&policyRef, &policy, &size);
+ 			if (rc)
+ 				goto unmarshal_failure;
+ 
+@@ -1837,7 +1837,7 @@ int tpm2_load_bf(BIO *bf, struct app_data *app_data, const char *srk_auth)
+ 	TSSLOADABLE *tssl = NULL;
+ 	TSSPRIVKEY *tpk = NULL;
+ 	BYTE *buffer;
+-	INT32 size;
++	UINT32 size;
+ 	char oid[128];
+ 	int empty_auth;
+ 	enum tpm2_type tpm2_type = TPM2_NONE;
+@@ -1932,7 +1932,7 @@ int tpm2_load_bf(BIO *bf, struct app_data *app_data, const char *srk_auth)
+ 
+ 	buffer = pubkey->data;
+ 	size = pubkey->length;
+-	TPM2B_PUBLIC_Unmarshal(&app_data->Public, &buffer, &size, FALSE);
++	TSS_TPM2B_PUBLIC_Unmarshalu(&app_data->Public, &buffer, &size, FALSE);
+ 
+ 	if (secret) {
+ 		TPM_HANDLE session;
+@@ -1948,7 +1948,7 @@ int tpm2_load_bf(BIO *bf, struct app_data *app_data, const char *srk_auth)
+ 		PRIVATE_2B outPrivate;
+ 		BYTE *buf;
+ 		UINT16 written;
+-		INT32 size;
++		UINT32 size;
+ 
+ 		rc = tpm2_create(&tssContext, app_data->dir);
+ 		if (rc) {
+@@ -1980,12 +1980,12 @@ int tpm2_load_bf(BIO *bf, struct app_data *app_data, const char *srk_auth)
+ 		 * outer wrapped duplicate structure */
+ 		buffer = privkey->data;
+ 		size = privkey->length;
+-		TPM2B_PRIVATE_Unmarshal((TPM2B_PRIVATE *)&duplicate,
++		TSS_TPM2B_PRIVATE_Unmarshalu((TPM2B_PRIVATE *)&duplicate,
+ 					&buffer, &size);
+ 
+ 		buffer = secret->data;
+ 		size = secret->length;
+-		TPM2B_ENCRYPTED_SECRET_Unmarshal((TPM2B_ENCRYPTED_SECRET *)
++		TSS_TPM2B_ENCRYPTED_SECRET_Unmarshalu((TPM2B_ENCRYPTED_SECRET *)
+ 						 &inSymSeed, &buffer, &size);
+ 		rc = tpm2_Import(tssContext, parentHandle, &encryptionKey,
+ 				 &app_data->Public, &duplicate, &inSymSeed,
+@@ -2005,7 +2005,7 @@ int tpm2_load_bf(BIO *bf, struct app_data *app_data, const char *srk_auth)
+ 		buf = priv_2b.buffer;
+ 		size = sizeof(priv_2b.buffer);
+ 		written = 0;
+-		TSS_TPM2B_PRIVATE_Marshal((TPM2B_PRIVATE *)&outPrivate,
++		TSS_TPM2B_PRIVATE_Marshalu((TPM2B_PRIVATE *)&outPrivate,
+ 					  &written, &buf, &size);
+ 		app_data->priv = OPENSSL_malloc(written);
+ 		if (!app_data->priv)
+@@ -2144,7 +2144,7 @@ TPM_HANDLE tpm2_load_key(TSS_CONTEXT **tsscp, const struct app_data *app_data,
+ 	TPM_HANDLE key = 0;
+ 	TPM_RC rc;
+ 	BYTE *buffer;
+-	INT32 size;
++	UINT32 size;
+ 	TPM_HANDLE session;
+ 
+ 	rc = tpm2_create(&tssContext, app_data->dir);
+@@ -2158,7 +2158,7 @@ TPM_HANDLE tpm2_load_key(TSS_CONTEXT **tsscp, const struct app_data *app_data,
+ 
+ 	buffer = app_data->priv;
+ 	size = app_data->priv_len;
+-	TPM2B_PRIVATE_Unmarshal((TPM2B_PRIVATE *)&inPrivate, &buffer, &size);
++	TSS_TPM2B_PRIVATE_Unmarshalu((TPM2B_PRIVATE *)&inPrivate, &buffer, &size);
+ 
+ 	parentHandle = tpm2_handle_int(tssContext, app_data->parent);
+ 	if (tpm2_handle_mso(tssContext, parentHandle, TPM_HT_PERMANENT)) {
+@@ -2277,10 +2277,10 @@ int tpm2_write_tpmfile(const char *file, BYTE *pubkey, int pubkey_len,
+ 		if (secret) {
+ 			BYTE buf[2048];
+ 			BYTE *buffer = buf;
+-			INT32 size = sizeof(buf);
++			UINT32 size = sizeof(buf);
+ 			UINT16 written = 0;
+ 
+-			TSS_TPM2B_ENCRYPTED_SECRET_Marshal((TPM2B_ENCRYPTED_SECRET *)secret, &written, &buffer, &size);
++			TSS_TPM2B_ENCRYPTED_SECRET_Marshalu((TPM2B_ENCRYPTED_SECRET *)secret, &written, &buffer, &size);
+ 			k.tpk.secret = ASN1_OCTET_STRING_new();
+ 			ASN1_STRING_set(k.tpk.secret, buf, written);
+ 		}
+@@ -2345,7 +2345,7 @@ TPM_RC tpm2_parse_policy_file(const char *policy_file,
+ 	unsigned char buf[2048];
+ 	unsigned char *buf_ptr;
+ 	TSSOPTPOLICY *policy = NULL;
+-	INT32 buf_len;
++	UINT32 buf_len;
+ 	TPM_CC code;
+ 	TPM_RC rc = NOT_TPM_ERROR;
+ 	int fd, policy_auth_value = 0;
+@@ -2391,9 +2391,9 @@ TPM_RC tpm2_parse_policy_file(const char *policy_file,
+ 			goto out_munmap;
+ 		}
+ 
+-		rc = TPM_CC_Unmarshal(&code, &buf_ptr, &buf_len);
++		rc = TSS_TPM_CC_Unmarshalu(&code, &buf_ptr, &buf_len);
+ 		if (rc) {
+-			fprintf(stderr, "TPM_CC_Unmarshal() failed\n");
++			fprintf(stderr, "TSS_TPM_CC_Unmarshalu() failed\n");
+ 			goto out_munmap;
+ 		}
+ 
+@@ -2531,7 +2531,7 @@ TPM_RC tpm2_new_signed_policy(char *tpmkey, char *policykey, char *engine,
+ 	EVP_PKEY *pkey;
+ 	TSSOPTPOLICY *policy;
+ 	BYTE *buffer;
+-	INT32 size;
++	UINT32 size;
+ 	TPM2B_PUBLIC pub;
+ 	DIGEST_2B nonce;
+ 	TPMT_HA hash;
+@@ -2563,9 +2563,9 @@ TPM_RC tpm2_new_signed_policy(char *tpmkey, char *policykey, char *engine,
+ 
+ 	buffer = policy->CommandPolicy->data;
+ 	size = policy->CommandPolicy->length;
+-	rc = TPM2B_PUBLIC_Unmarshal(&pub, &buffer, &size, FALSE);
++	rc = TSS_TPM2B_PUBLIC_Unmarshalu(&pub, &buffer, &size, FALSE);
+ 	if (rc == TPM_RC_SUCCESS) {
+-		rc = TPM2B_DIGEST_Unmarshal((TPM2B_DIGEST *)&nonce, &buffer, &size);
++		rc = TSS_TPM2B_DIGEST_Unmarshalu((TPM2B_DIGEST *)&nonce, &buffer, &size);
+ 	} else {
+ 		fprintf(stderr, "Unmarshal Failure on PolicyAuthorize public key\n");
+ 	}
+@@ -2606,10 +2606,10 @@ TPM_RC tpm2_new_signed_policy(char *tpmkey, char *policykey, char *engine,
+ 
+ 	size = sizeof(buf);
+ 	buffer = buf;
+-	TSS_TPM_CC_Marshal(&cc, &written, &buffer, &size);
+-	TSS_TPM2B_PUBLIC_Marshal(&pub, &written, &buffer, &size);
+-	TSS_TPM2B_DIGEST_Marshal((TPM2B_DIGEST *)&nonce, &written, &buffer, &size);
+-	TSS_TPMT_SIGNATURE_Marshal(&sig, &written, &buffer, &size);
++	TSS_TPM_CC_Marshalu(&cc, &written, &buffer, &size);
++	TSS_TPM2B_PUBLIC_Marshalu(&pub, &written, &buffer, &size);
++	TSS_TPM2B_DIGEST_Marshalu((TPM2B_DIGEST *)&nonce, &written, &buffer, &size);
++	TSS_TPMT_SIGNATURE_Marshalu(&sig, &written, &buffer, &size);
+ 
+ 	policy = TSSOPTPOLICY_new();
+ 
+@@ -2791,7 +2791,7 @@ TPM_RC tpm2_pcr_lock_policy(TSS_CONTEXT *tssContext,
+ 	TPM_RC rc;
+ 	BYTE buf[1024];
+ 	UINT16 written = 0;
+-	INT32 size = sizeof(buf);
++	UINT32 size = sizeof(buf);
+ 	const TPM_CC cc = TPM_CC_PolicyPCR;
+ 	DIGEST_2B pcrDigest;
+ 	BYTE *buffer = buf;
+@@ -2819,8 +2819,8 @@ TPM_RC tpm2_pcr_lock_policy(TSS_CONTEXT *tssContext,
+ 		return rc;
+ 
+ 	ASN1_INTEGER_set(policy->CommandCode, cc);
+-	TSS_TPM_CC_Marshal(&cc, &written, &buffer, &size);
+-	TSS_TPML_PCR_SELECTION_Marshal(pcrs, &written, &buffer, &size);
++	TSS_TPM_CC_Marshalu(&cc, &written, &buffer, &size);
++	TSS_TPML_PCR_SELECTION_Marshalu(pcrs, &written, &buffer, &size);
+ 	memcpy(buffer, pcrDigest.buffer, pcrDigest.size);
+ 	written += pcrDigest.size;
+ 	ASN1_STRING_set(policy->CommandPolicy, buf + 4, written - 4);
+@@ -2840,10 +2840,10 @@ void tpm2_add_auth_policy(STACK_OF(TSSOPTPOLICY) *sk, TPMT_HA *digest)
+ 	BYTE buf[4];
+ 	BYTE *buffer = buf;
+ 	UINT16 written = 0;
+-	INT32 size = sizeof(buf);
++	UINT32 size = sizeof(buf);
+ 	const TPM_CC cc = TPM_CC_PolicyAuthValue;
+ 
+-	TSS_TPM_CC_Marshal(&cc, &written, &buffer, &size);
++	TSS_TPM_CC_Marshalu(&cc, &written, &buffer, &size);
+ 
+ 	ASN1_INTEGER_set(policy->CommandCode, cc);
+ 	ASN1_STRING_set(policy->CommandPolicy, "", 0);
+@@ -2862,11 +2862,11 @@ void tpm2_add_locality(STACK_OF(TSSOPTPOLICY) *sk, UINT8 locality,
+ 	BYTE buf[5];
+ 	BYTE *buffer = buf;
+ 	UINT16 written = 0;
+-	INT32 size = sizeof(buf);
++	UINT32 size = sizeof(buf);
+ 	const TPM_CC cc = TPM_CC_PolicyLocality;
+ 
+-	TSS_TPM_CC_Marshal(&cc, &written, &buffer, &size);
+-	TSS_UINT8_Marshal(&locality, &written, &buffer, &size);
++	TSS_TPM_CC_Marshalu(&cc, &written, &buffer, &size);
++	TSS_UINT8_Marshalu(&locality, &written, &buffer, &size);
+ 
+ 	ASN1_INTEGER_set(policy->CommandCode, cc);
+ 	ASN1_STRING_set(policy->CommandPolicy, buf + 4, written - 4);
+@@ -2886,7 +2886,7 @@ TPM_RC tpm2_add_signed_policy(STACK_OF(TSSOPTPOLICY) *sk, char *key_file,
+ 	BYTE buf[1024];
+ 	BYTE *buffer = buf;
+ 	UINT16 written = 0;
+-	INT32 size = sizeof(buf);
++	UINT32 size = sizeof(buf);
+ 	const TPM_CC cc = TPM_CC_PolicyAuthorize;
+ 	EVP_PKEY *pkey = openssl_read_public_key(key_file);
+ 	TPM_RC rc = NOT_TPM_ERROR;
+@@ -2917,10 +2917,10 @@ TPM_RC tpm2_add_signed_policy(STACK_OF(TSSOPTPOLICY) *sk, char *key_file,
+ 
+ 	sig.sigAlg = TPM_ALG_NULL; /* should produce an empty signature */
+ 
+-	TSS_TPM_CC_Marshal(&cc, &written, &buffer, &size);
+-	TSS_TPM2B_PUBLIC_Marshal(&pub, &written, &buffer, &size);
+-	TSS_TPM2B_DIGEST_Marshal((TPM2B_DIGEST *)&nonce, &written, &buffer, &size);
+-	TSS_TPMT_SIGNATURE_Marshal(&sig, &written, &buffer, &size);
++	TSS_TPM_CC_Marshalu(&cc, &written, &buffer, &size);
++	TSS_TPM2B_PUBLIC_Marshalu(&pub, &written, &buffer, &size);
++	TSS_TPM2B_DIGEST_Marshalu((TPM2B_DIGEST *)&nonce, &written, &buffer, &size);
++	TSS_TPMT_SIGNATURE_Marshalu(&sig, &written, &buffer, &size);
+ 
+ 	ASN1_INTEGER_set(policy->CommandCode, cc);
+ 	ASN1_STRING_set(policy->CommandPolicy, buf + 4, written - 4);
+@@ -2953,7 +2953,7 @@ tpm2_add_policy_secret(TSS_CONTEXT *tssContext, STACK_OF(TSSOPTPOLICY) *sk,
+ 	BYTE buf[1024];
+ 	BYTE *buffer = buf;
+ 	UINT16 written = 0;
+-	INT32 size = sizeof(buf);
++	UINT32 size = sizeof(buf);
+ 	const TPM_CC cc = TPM_CC_PolicySecret;
+ 	NAME_2B name;
+ 	DIGEST_2B policyRef = {0};
+@@ -2964,10 +2964,10 @@ tpm2_add_policy_secret(TSS_CONTEXT *tssContext, STACK_OF(TSSOPTPOLICY) *sk,
+ 	if (rc)
+ 		return rc;
+ 	policy = TSSOPTPOLICY_new();
+-	TSS_TPM_CC_Marshal(&cc, &written, &buffer, &size);
+-	TSS_UINT32_Marshal(&handle, &written, &buffer, &size);
+-	TSS_TPM2B_NAME_Marshal((TPM2B_NAME *)&name, &written, &buffer, &size);
+-	TSS_TPM2B_DIGEST_Marshal((TPM2B_DIGEST *)&policyRef, &written, &buffer, &size);
++	TSS_TPM_CC_Marshalu(&cc, &written, &buffer, &size);
++	TSS_UINT32_Marshalu(&handle, &written, &buffer, &size);
++	TSS_TPM2B_NAME_Marshalu((TPM2B_NAME *)&name, &written, &buffer, &size);
++	TSS_TPM2B_DIGEST_Marshalu((TPM2B_DIGEST *)&policyRef, &written, &buffer, &size);
+ 
+ 	ASN1_INTEGER_set(policy->CommandCode, cc);
+ 	ASN1_STRING_set(policy->CommandPolicy, buf + 4, written - 4);
+@@ -3220,7 +3220,7 @@ static TPM_RC tpm2_ecc_seed(EVP_PKEY *parent,
+ 	EC_KEY *e_parent, *e_ephemeral;
+ 	const EC_GROUP *group;
+ 	BYTE *buf;
+-	INT32 size;
++	UINT32 size;
+ 	size_t ssize;
+ 	UINT16 written;
+ 
+@@ -3279,7 +3279,7 @@ static TPM_RC tpm2_ecc_seed(EVP_PKEY *parent,
+ 	size = sizeof(ephemeral_pt);
+ 	written = 0;
+ 	buf = enc_secret->secret;
+-	TSS_TPMS_ECC_POINT_Marshal(&ephemeral_pt.point, &written,
++	TSS_TPMS_ECC_POINT_Marshalu(&ephemeral_pt.point, &written,
+ 				   &buf, &size);
+ 	enc_secret->size = written;
+ 	return 0;
+@@ -3300,7 +3300,7 @@ TPM_RC tpm2_hmacwrap(EVP_PKEY *parent,
+ 	const int integrity_skip = SHA256_DIGEST_LENGTH + 2;
+ 	BYTE *sensitive = p->buffer + integrity_skip;
+ 	BYTE *buf;
+-	INT32 size;
++	UINT32 size;
+ 	UINT16 written = 0;
+ 	unsigned char aeskey[T2_AES_KEY_BYTES];
+ 	/* hmac follows namealg, so set to max size */
+@@ -3348,7 +3348,7 @@ TPM_RC tpm2_hmacwrap(EVP_PKEY *parent,
+ 	memcpy(digest.buffer, &hmac.digest, digest.size);
+ 	size = integrity_skip;
+ 	buf = p->buffer;
+-	TSS_TPM2B_DIGEST_Marshal((TPM2B_DIGEST *)&digest, &written, &buf, &size);
++	TSS_TPM2B_DIGEST_Marshalu((TPM2B_DIGEST *)&digest, &written, &buf, &size);
+ 	return TPM_RC_SUCCESS;
+ }
+ 
+@@ -3363,7 +3363,7 @@ TPM_RC tpm2_outerwrap(EVP_PKEY *parent,
+ 	BYTE *sensitive = p->buffer + integrity_skip;
+ 	BYTE *buf;
+ 	TPM2B *t2b;
+-	INT32 size;
++	UINT32 size;
+ 	UINT16 bsize, written = 0;
+ 	NAME_2B name;
+ 
+@@ -3372,10 +3372,10 @@ TPM_RC tpm2_outerwrap(EVP_PKEY *parent,
+ 	buf = t2b->buffer;
+ 	size = sizeof(p->buffer) - integrity_skip;
+ 	bsize = 0;
+-	TSS_TPMT_SENSITIVE_Marshal(s, &bsize, &buf, &size);
++	TSS_TPMT_SENSITIVE_Marshalu(s, &bsize, &buf, &size);
+ 	buf = (BYTE *)&t2b->size;
+ 	size = 2;
+-	TSS_UINT16_Marshal(&bsize, &written, &buf, &size);
++	TSS_UINT16_Marshalu(&bsize, &written, &buf, &size);
+ 	/* set the total size of the private entity */
+ 	p->size = bsize + sizeof(UINT16) + integrity_skip;
+ 
+diff --git a/src/tools/attest_tpm2_primary.c b/src/tools/attest_tpm2_primary.c
+index cb252fe..7bc71f1 100644
+--- a/src/tools/attest_tpm2_primary.c
++++ b/src/tools/attest_tpm2_primary.c
+@@ -310,9 +310,9 @@ void do_certify(const char *auth, TPM_HANDLE handle, const char *namefile,
+ 	 */
+ 	{
+ 		BYTE *buffer = att.attestationData;
+-		INT32 size = att.size;
++		UINT32 size = att.size;
+ 
+-		rc = TPMS_ATTEST_Unmarshal(&a, &buffer, &size);
++		rc = TSS_TPMS_ATTEST_Unmarshalu(&a, &buffer, &size);
+ 	}
+ 	if (rc) {
+ 		tpm2_error(rc, "Unmarshalling attestation data");
+@@ -338,11 +338,11 @@ void do_certify(const char *auth, TPM_HANDLE handle, const char *namefile,
+ 		BYTE buffer[sizeof(TPM_HANDLE)];
+ 		BYTE *buf = buffer;
+ 		UINT16 written =0;
+-		INT32 size = sizeof(buffer);
++		UINT32 size = sizeof(buffer);
+ 		const TPM_HANDLE perm_ek = EXT_TPM_RH_ENDORSEMENT;
+ 
+ 		tpm2_ObjectPublic_GetName(&ekn, &pubek.publicArea);
+-		TSS_TPM_HANDLE_Marshal(&perm_ek, &written, &buf, &size);
++		TSS_TPM_HANDLE_Marshalu(&perm_ek, &written, &buf, &size);
+ 		digest.hashAlg = TPM_ALG_SHA256;
+ 		TSS_Hash_Generate(&digest,
+ 				  written, buffer,
+@@ -591,7 +591,7 @@ void do_attest(const char *auth, const char *namefile, const char *file,
+ 	const int integrity_skip = SHA256_DIGEST_LENGTH + 2;
+ 	TPM_HANDLE policy;
+ 	BYTE *buf;
+-	INT32 size;
++	UINT32 size;
+ 	UINT16 written = 0;
+ 	int high;
+ 
+@@ -645,7 +645,7 @@ void do_attest(const char *auth, const char *namefile, const char *file,
+ 	size = digest.size + 2;	/* size of marshalled digest */
+ 	private.size = size + integrity_skip;
+ 	buf = &private.buffer[integrity_skip];
+-	TSS_TPM2B_DIGEST_Marshal((TPM2B_DIGEST *)&digest, &written,
++	TSS_TPM2B_DIGEST_Marshalu((TPM2B_DIGEST *)&digest, &written,
+ 				 &buf, &size);
+ 	rc = tpm2_hmacwrap(pkey, &eksignname, "IDENTITY", &private, &enc_secret);
+ 	if (rc)
+diff --git a/src/tools/create_tpm2_key.c b/src/tools/create_tpm2_key.c
+index 778a7de..dd10659 100644
+--- a/src/tools/create_tpm2_key.c
++++ b/src/tools/create_tpm2_key.c
+@@ -142,7 +142,7 @@ TPM_RC tpm2_innerwrap(TPMT_SENSITIVE *s,
+ 		const int hlen = TSS_GetDigestSize(nalg);
+ 		TPM2B *digest = (TPM2B *)buf;
+ 		TPM2B *s2b;
+-		int32_t size;
++		uint32_t size;
+ 		unsigned char null_iv[AES_128_BLOCK_SIZE_BYTES];
+ 		UINT16 bsize, written = 0;
+ 		NAME_2B name;
+@@ -161,16 +161,16 @@ TPM_RC tpm2_innerwrap(TPMT_SENSITIVE *s,
+ 		buf = (BYTE *)&digest->size;
+ 		bsize = hlen;
+ 		size = 2;
+-		TSS_UINT16_Marshal(&bsize, &written, &buf, &size);
++		TSS_UINT16_Marshalu(&bsize, &written, &buf, &size);
+ 
+ 		/* marshal the unencrypted sensitive in place */
+ 		size = sizeof(*s);
+ 		bsize = 0;
+ 		buf = s2b->buffer;
+-		TSS_TPMT_SENSITIVE_Marshal(s, &bsize, &buf, &size);
++		TSS_TPMT_SENSITIVE_Marshalu(s, &bsize, &buf, &size);
+ 		buf = (BYTE *)&s2b->size;
+ 		size = 2;
+-		TSS_UINT16_Marshal(&bsize, &written, &buf, &size);
++		TSS_UINT16_Marshalu(&bsize, &written, &buf, &size);
+ 
+ 		bsize = bsize + sizeof(s2b->size);
+ 		p->size += bsize;
+@@ -193,16 +193,16 @@ TPM_RC tpm2_innerwrap(TPMT_SENSITIVE *s,
+ 				   p->buffer);
+ 	} else if (symdef->algorithm == TPM_ALG_NULL) {
+ 		TPM2B *s2b = (TPM2B *)buf;
+-		int32_t size = sizeof(*s);
++		uint32_t size = sizeof(*s);
+ 		UINT16 bsize = 0, written = 0;
+ 
+ 		buf = s2b->buffer;
+ 
+ 		/* marshal the unencrypted sensitive in place */
+-		TSS_TPMT_SENSITIVE_Marshal(s, &bsize, &buf, &size);
++		TSS_TPMT_SENSITIVE_Marshalu(s, &bsize, &buf, &size);
+ 		buf = (BYTE *)&s2b->size;
+ 		size = 2;
+-		TSS_UINT16_Marshal(&bsize, &written, &buf, &size);
++		TSS_UINT16_Marshalu(&bsize, &written, &buf, &size);
+ 
+ 		p->size += bsize + sizeof(s2b->size);
+ 	} else {
+@@ -461,7 +461,8 @@ int main(int argc, char **argv)
+ 	TPM_RC rc;
+ 	BYTE pubkey[sizeof(TPM2B_PUBLIC)],privkey[sizeof(TPM2B_PRIVATE)], *buffer;
+ 	uint16_t pubkey_len, privkey_len;
+-	int32_t size, key_size = 0;
++	uint32_t size = 0;
++	int32_t key_size = 0;
+ 	TPM2B_PUBLIC objectPublic;
+ 	DATA_2B encryptionKey;
+ 	PRIVATE_2B duplicate;
+@@ -965,11 +966,11 @@ int main(int argc, char **argv)
+ 	buffer = pubkey;
+ 	pubkey_len = 0;
+ 	size = sizeof(pubkey);
+-	TSS_TPM2B_PUBLIC_Marshal(pub, &pubkey_len, &buffer, &size);
++	TSS_TPM2B_PUBLIC_Marshalu(pub, &pubkey_len, &buffer, &size);
+ 	buffer = privkey;
+ 	privkey_len = 0;
+ 	size = sizeof(privkey);
+-	TSS_TPM2B_PRIVATE_Marshal((TPM2B_PRIVATE *)priv, &privkey_len, &buffer, &size);
++	TSS_TPM2B_PRIVATE_Marshalu((TPM2B_PRIVATE *)priv, &privkey_len, &buffer, &size);
+ 	tpm2_write_tpmfile(filename, pubkey, pubkey_len,
+ 			   privkey, privkey_len,
+ 			   auth == NULL && secret_handle == 0, parent, sk,
+diff --git a/src/tools/seal_tpm2_data.c b/src/tools/seal_tpm2_data.c
+index e7eb52a..8b908ba 100644
+--- a/src/tools/seal_tpm2_data.c
++++ b/src/tools/seal_tpm2_data.c
+@@ -144,7 +144,7 @@ int main(int argc, char **argv)
+ 	BYTE pubkey[sizeof(TPM2B_PUBLIC)];
+ 	BYTE privkey[sizeof(PRIVATE_2B)];
+ 	BYTE *buffer;
+-	int32_t size;
++	uint32_t size;
+ 	uint16_t pubkey_len, privkey_len;
+ 	char *parent_str = NULL;
+ 	char *import = NULL;
+@@ -449,12 +449,12 @@ int main(int argc, char **argv)
+ 	buffer = pubkey;
+ 	pubkey_len = 0;
+ 	size = sizeof(pubkey);
+-	TSS_TPM2B_PUBLIC_Marshal(&outPublic, &pubkey_len,
++	TSS_TPM2B_PUBLIC_Marshalu(&outPublic, &pubkey_len,
+ 				 &buffer, &size);
+ 	buffer = privkey;
+ 	privkey_len = 0;
+ 	size = sizeof(privkey);
+-	TSS_TPM2B_PRIVATE_Marshal((TPM2B_PRIVATE *)&outPrivate, &privkey_len,
++	TSS_TPM2B_PRIVATE_Marshalu((TPM2B_PRIVATE *)&outPrivate, &privkey_len,
+ 				  &buffer, &size);
+ 	tpm2_write_tpmfile(filename, pubkey, pubkey_len,
+ 			   privkey, privkey_len,
+diff --git a/src/tools/signed_tpm2_policy.c b/src/tools/signed_tpm2_policy.c
+index 558733f..f6328e6 100644
+--- a/src/tools/signed_tpm2_policy.c
++++ b/src/tools/signed_tpm2_policy.c
+@@ -78,7 +78,7 @@ tpm2_get_name_alg(const char *tpmkey)
+ 	BIO *bf;
+ 	TSSPRIVKEY *tpk;
+ 	BYTE *buffer;
+-	INT32 size;
++	UINT32 size;
+ 	TPM2B_PUBLIC pub;
+ 
+ 	bf = BIO_new_file(tpmkey, "r");
+@@ -100,8 +100,8 @@ tpm2_get_name_alg(const char *tpmkey)
+ 		exit(1);
+ 	}
+ 	buffer = tpk->pubkey->data;
+-	size = tpk->pubkey->length;
+-	TPM2B_PUBLIC_Unmarshal(&pub, &buffer, &size, FALSE);
++	size = (UINT32)tpk->pubkey->length;
++	TSS_TPM2B_PUBLIC_Unmarshalu(&pub, &buffer, &size, FALSE);
+ 	return pub.publicArea.nameAlg;
+ }
+ 
