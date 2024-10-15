@@ -83,10 +83,26 @@ update_tabs_release () {
 }
 
 #TODO modsigning option in image fstype?
+inherit p11-signing
 TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 install_ima_cert () {
+	if [ -z "${FIRMWARE_SIG_CERT}" ];then
+		bbfatal "GUESTOS_SIG_ROOT_CERT is not set. Set GUESTOS_SIG_ROOT_CERT in local.conf."
+	fi
+
 	mkdir -p ${IMAGE_ROOTFS}/etc/keys
-	cp ${TEST_CERT_DIR}/certs/signing_key.x509 ${IMAGE_ROOTFS}/etc/keys/x509_ima.der
+
+	if [[ "${FIRMWARE_SIG_CERT}" == pkcs11:* ]] # BASH-if on purpose
+	then
+		extract_cert "${FIRMWARE_SIG_CERT}" "${WORKDIR}/FIRMWARE_SIG_CERT.pem"
+		openssl x509 -in "${WORKDIR}/FIRMWARE_SIG_CERT.pem" -outform DER -out "${IMAGE_ROOTFS}/etc/keys/x509_ima.der"
+	else
+		if ! [ -f "${FIRMWARE_SIG_CERT}" ];then
+			bbfatal_log "IMA certificate not present at ${GUESTOS_SIG_ROOT_CERT}."
+			exit 1
+		fi
+		openssl x509 -in "${FIRMWARE_SIG_CERT}" -outform DER -out "${IMAGE_ROOTFS}/etc/keys/x509_ima.der"
+	fi
 }
 
 update_modules_dep () {
