@@ -1,5 +1,6 @@
 inherit image_types
 inherit kernel-artifact-names
+inherit p11-signing
 
 #
 # Create an partitioned trustme image that can be dd'ed to the boot medium
@@ -21,6 +22,23 @@ TRUSTME_GENERIC_DEPENDS = " \
 "
 
 DEPENDS += "e2fsprogs-native bc-native"
+
+install_ssig_rootca () {
+	if [ -z "${GUESTOS_SIG_ROOT_CERT}" ];then
+		bbfatal "GUESTOS_SIG_ROOT_CERT is not set. Set GUESTOS_SIG_ROOT_CERT in local.conf."
+	fi
+
+	if [[ "${GUESTOS_SIG_ROOT_CERT}" == pkcs11:* ]] # BASH-if on purpose
+	then
+		extract_cert "${GUESTOS_SIG_ROOT_CERT}" "${rootfs_datadir}/cml/tokens/ssig_rootca.cert"
+	else
+		if ! [ -f "${GUESTOS_SIG_ROOT_CERT}" ];then
+			bbfatal_log "Root certificate not generated at ${GUESTOS_SIG_ROOT_CERT}."
+			exit 1
+		fi
+		cp -f "${GUESTOS_SIG_ROOT_CERT}" "${rootfs_datadir}/cml/tokens/ssig_rootca.cert"
+	fi
+}
 
 do_rootfs () {
 	if [ -z "${TRUSTME_IMAGE_OUT}" ];then
@@ -62,19 +80,13 @@ do_rootfs () {
 	proto_file_dir="${WORKDIR}/cml/daemon"
 	provisioning_dir="${src}/device_provisioning"
 	enrollment_dir="${provisioning_dir}/oss_enrollment"
-	test_cert_dir="${TOPDIR}/test_certificates"
 	cfg_overlay_dir="${src}/config_overlay"
 	device_cfg="${WORKDIR}/device.conf"
-
-	if ! [ -d "${test_cert_dir}" ];then
-		bbfatal_log "Test PKI not generated at ${test_cert_dir}\nIs trustx-cml-userdata built?"
-		exit 1
-	fi
 
 	# copy files to temp data directory
 	bbnote "Preparing files for data partition"
 
-	cp -f "${test_cert_dir}/ssig_rootca.cert" "${rootfs_datadir}/cml/tokens/"
+	install_ssig_rootca
 	mkdir -p "${rootfs_datadir}/cml/operatingsystems/"
 	mkdir -p "${rootfs_datadir}/cml/containers/"
 
