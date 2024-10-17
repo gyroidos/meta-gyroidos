@@ -124,28 +124,14 @@ else
 	#DEV_MOUNT_PLAIN_CML_PART#
 fi
 
-mount -o bind,nosuid,nodev,noexec /mnt/userdata /data
+mount -a
 
 #DEV_ENABLE_EXTFS#
-
-mkdir -p /boot
-mount /boot
-
-mount /lib/modules
-mount /lib/firmware
-
-mkdir -p /tmp
-mount /tmp
-
-mkdir -p /var/volatile
-mount /var/volatile
-
-mkdir -p /var/volatile/tmp
-
 
 echo "/data/core/%t_core" >> /proc/sys/kernel/core_pattern
 ulimit -c 0
 
+mount -o bind,nosuid,nodev,noexec /mnt/userdata /data
 mkdir -p /data/logs
 
 #now modules partition is mounted
@@ -159,6 +145,10 @@ modprobe loop
 modprobe btrfs
 modprobe vport-gre
 modprobe cfg80211
+
+mount -a
+
+mkdir -p /var/volatile/tmp
 
 for suffix in conf sig cert; do
 	if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix" ]; then
