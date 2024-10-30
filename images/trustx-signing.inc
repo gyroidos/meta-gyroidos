@@ -61,12 +61,13 @@ do_sign_guestos () {
             -b ${OS_CONFIG} -v ${trustme_version} \
             -c ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
             -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME} \
-            -d ${root_hash}
+            -u "${UPSTREAM_VERSION}" -d ${root_hash}
     else
         python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
             -b ${OS_CONFIG} -v ${trustme_version} \
             -c ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
-            -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME}
+            -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME} \
+            -u "${UPSTREAM_VERSION}"
     fi
 
     bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
