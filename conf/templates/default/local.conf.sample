@@ -4,6 +4,7 @@ EXTRA_IMAGE_FEATURES = "${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'debug-tweaks',
 DISTRO_FEATURES:append = " virtualization"
 
 DISTRO = "gyroidos-cml"
+UPSTREAM_VERSION = "##UPSTREAM_VERSION##"
 
 TRUSTME_BOOTPART_FS ?= "vfat"
 TRUSTME_BOOTPART_SIZE ?= "512"
