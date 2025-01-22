@@ -19,10 +19,13 @@ inherit native
 
 SSTATE_SKIP_CREATION = "1"
 
+PKI_KEY_SIZE ?= "4096"
+
 do_compile() {
     if [ ! -f ${TEST_CERT_DIR}.generating ]; then
         touch ${TEST_CERT_DIR}.generating
         export DO_PLATFORM_KEYS=${PKI_UEFI_KEYS}
+        export KEY_SIZE=${PKI_KEY_SIZE}
         bash ${PROVISIONING_DIR}/gen_dev_certs.sh ${TEST_CERT_DIR}
         if [ ! -d ${TEST_CERT_DIR}/certs ]; then
             mkdir -p ${TEST_CERT_DIR}/certs
