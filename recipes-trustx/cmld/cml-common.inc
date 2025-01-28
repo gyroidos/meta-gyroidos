@@ -7,7 +7,9 @@ SRCREV = "${AUTOREV}"
 PVBASE := "${PV}"
 PV = "${PVBASE}+${SRCPV}"
 
-SRC_URI = "git://github.com/gyroidos/cml.git;branch=${BRANCH};protocol=https"
+CML_HOST ?= "github.com/gyroidos"
+
+SRC_URI = "git://${CML_HOST}/cml.git;branch=${BRANCH};protocol=https"
 
 S = "${WORKDIR}/git"
 
