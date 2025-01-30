@@ -1,4 +1,4 @@
-SCRIPT_DIR = "${TOPDIR}/../trustme/build"
+SCRIPT_DIR = "${TOPDIR}/../gyroidos/build"
 
 CFG_OVERLAY_DIR = "${SCRIPT_DIR}/config_overlay"
 CONFIG_CREATOR_DIR = "${SCRIPT_DIR}/config_creator"
@@ -17,7 +17,7 @@ CLEAN_GUEST_OUT ?= "1"
 
 CONFIGS_OUT ?= ""
 
-TRUSTME_VERSION ?= "${@'${IMAGE_VERSION_SUFFIX}'.replace('-','')}"
+GYROIDOS_VERSION ?= "${@'${IMAGE_VERSION_SUFFIX}'.replace('-','')}"
 
 DEPENDS += " pki-native python3-native protobuf-native python3-protobuf-native protobuf-c-native cryptsetup-native cmld"
 
@@ -31,7 +31,7 @@ do_sign_guestos () {
         bbfatal "Variable \"OS_CONFIG\" for guestos ${PN} is not set. Please set \"OS_CONFIG\" in the image recipe."
     fi
 
-    trustme_version=${TRUSTME_VERSION}
+    gyroidos_version=${GYROIDOS_VERSION}
     protoc --python_out=${ENROLLMENT_DIR}/config_creator -I${PROTO_FILE_DIR} ${PROTO_FILE_DIR}/guestos.proto
     mkdir -p ${GUESTS_OUT}
 
@@ -43,8 +43,8 @@ do_sign_guestos () {
 
     if [ -f ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs ]; then
 
-        trustme_version="$(readlink ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs | sed -e 's/${IMAGE_BASENAME}-${MACHINE}-//' | sed -e 's/.rootfs.squashfs//' )"
-        mkdir -p ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/
+        gyroidos_version="$(readlink ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs | sed -e 's/${IMAGE_BASENAME}-${MACHINE}-//' | sed -e 's/.rootfs.squashfs//' )"
+        mkdir -p ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/
 
         dd if=/dev/zero of=${B}/${IMAGE_BASENAME}-${MACHINE}.hash bs=1M count=10
 
@@ -54,23 +54,23 @@ do_sign_guestos () {
             cut -d ":" -f2 | \
             tr -d '[:space:]')
 
-        cp ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/root.img
-        cp ${B}/${IMAGE_BASENAME}-${MACHINE}.hash ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/root.hash.img
+        cp ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.img
+        cp ${B}/${IMAGE_BASENAME}-${MACHINE}.hash ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.hash.img
 
         python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
-            -b ${OS_CONFIG} -v ${trustme_version} \
-            -c ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
-            -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME} \
+            -b ${OS_CONFIG} -v ${gyroidos_version} \
+            -c ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}.conf \
+            -i ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/ -n ${OS_NAME} \
             -u "${UPSTREAM_VERSION}" -d ${root_hash}
     else
         python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
-            -b ${OS_CONFIG} -v ${trustme_version} \
-            -c ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
-            -i ${GUESTS_OUT}/${OS_NAME}-${trustme_version}/ -n ${OS_NAME} \
+            -b ${OS_CONFIG} -v ${gyroidos_version} \
+            -c ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}.conf \
+            -i ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/ -n ${OS_NAME} \
             -u "${UPSTREAM_VERSION}"
     fi
 
-    bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${GUESTS_OUT}/${OS_NAME}-${trustme_version}.conf \
+    bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}.conf \
             "${GUESTOS_SIG_KEY}" "${GUESTOS_SIG_CERT}"
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*

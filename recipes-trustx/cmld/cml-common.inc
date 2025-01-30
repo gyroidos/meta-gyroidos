@@ -23,7 +23,7 @@ DEPENDS:append = " rsync-native"
 # If so, build using externalsrc.
 # If not, build from git.
 python () {
-    cml_dir = d.getVar('TOPDIR', True) + "/../trustme/cml"
+    cml_dir = d.getVar('TOPDIR', True) + "/../gyroidos/cml"
     if os.path.isdir(cml_dir):
         d.setVar('EXTERNALSRC', cml_dir)
 }

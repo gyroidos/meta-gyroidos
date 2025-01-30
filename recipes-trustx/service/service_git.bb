@@ -18,7 +18,7 @@ DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text libtar zlib openssl"
 FILES:${PN} += "${base_sbindir}"
 INHIBIT_PACKAGE_STRIP = "1"
 
-SCRIPT_DIR = "${TOPDIR}/../trustme/build"
+SCRIPT_DIR = "${TOPDIR}/../gyroidos/build"
 PROVISIONING_DIR = "${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
 

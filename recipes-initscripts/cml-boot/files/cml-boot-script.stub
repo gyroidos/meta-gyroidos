@@ -58,7 +58,7 @@ if [ -e "/dev/tpm0" ]; then
 		scan_devices
 	done
 
-	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/trustme))
+	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/gyroidos))
 	BOOT_HDD=$(basename $(readlink /dev/disk/by-label/boot))
 
 	echo "CRYPTO_HDD: ${CRYPTO_HDD}"

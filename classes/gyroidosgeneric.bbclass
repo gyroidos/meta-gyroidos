@@ -3,7 +3,7 @@ inherit kernel-artifact-names
 inherit p11-signing
 
 #
-# Create an partitioned trustme image that can be dd'ed to the boot medium
+# Create an partitioned gyroidos image that can be dd'ed to the boot medium
 #
 
 
@@ -11,10 +11,10 @@ TEST_CERT_DIR = "${TOPDIR}/test_certificates"
 SECURE_BOOT_SIGNING_KEY = "${TEST_CERT_DIR}/ssig_subca.key"
 SECURE_BOOT_SIGNING_CERT = "${TEST_CERT_DIR}/ssig_subca.cert"
 
-TRUSTME_IMAGE_OUT="${B}/trustme_image"
-TRUSTME_IMAGE="${TRUSTME_IMAGE_OUT}/trustmeimage.img"
+GYROIDOS_IMAGE_OUT="${B}/gyroidos_image"
+GYROIDOS_IMAGE="${GYROIDOS_IMAGE_OUT}/gyroidosimage.img"
 
-TRUSTME_GENERIC_DEPENDS = " \
+GYROIDOS_GENERIC_DEPENDS = " \
     trustx-cml-initramfs:do_image_complete \
     trustx-cml-modules:do_image_complete \
     trustx-cml-firmware:do_image_complete \
@@ -40,23 +40,23 @@ install_ssig_rootca () {
 }
 
 do_rootfs () {
-	if [ -z "${TRUSTME_IMAGE_OUT}" ];then
-		bbfatal_log "Cannot get bitbake variable \"TRUSTME_IMAGE_OUT\""
+	if [ -z "${GYROIDOS_IMAGE_OUT}" ];then
+		bbfatal_log "Cannot get bitbake variable \"GYROIDOS_IMAGE_OUT\""
 		exit 1
 	fi
 
-	if [ -z "${TRUSTME_CONTAINER_ARCH}" ];then
-		bbfatal_log "Cannot get bitbake variable \"TRUSTME_CONTAINER_ARCH\""
+	if [ -z "${GYROIDOS_CONTAINER_ARCH}" ];then
+		bbfatal_log "Cannot get bitbake variable \"GYROIDOS_CONTAINER_ARCH\""
 		exit 1
 	fi
 
-	rm -f "${TRUSTME_IMAGE}"
+	rm -f "${GYROIDOS_IMAGE}"
 
 	machine=$(echo "${MACHINE}" | tr "-" "_")
 
-	bbnote "Starting to create trustme image"
+	bbnote "Starting to create gyroidos image"
 	# create temporary directories
-	install -d "${TRUSTME_IMAGE_OUT}"
+	install -d "${GYROIDOS_IMAGE_OUT}"
 	rootfs="${IMAGE_ROOTFS}"
 	rootfs_datadir="${rootfs}/userdata/"
 	tmpdir="${TOPDIR}/tmp_container"
@@ -71,10 +71,10 @@ do_rootfs () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	containerarch="${TRUSTME_CONTAINER_ARCH}"
+	containerarch="${GYROIDOS_CONTAINER_ARCH}"
 	deploy_dir_container="${tmpdir}/deploy/images/$(echo $containerarch | tr "_" "-")"
 
-	src="${TOPDIR}/../trustme/build/"
+	src="${TOPDIR}/../gyroidos/build/"
 	config_creator_dir="${src}/config_creator"
 	proto_file_dir="${WORKDIR}/cml/daemon"
 	provisioning_dir="${src}/device_provisioning"
@@ -133,16 +133,16 @@ do_rootfs () {
 
 ROOTFS_PREPROCESS_COMMAND = ""
 
-do_rootfs[depends] += " ${TRUSTME_GENERIC_DEPENDS} "
+do_rootfs[depends] += " ${GYROIDOS_GENERIC_DEPENDS} "
 
-IMAGE_POSTPROCESS_COMMAND:append = " deploy_trustmeimage; "
+IMAGE_POSTPROCESS_COMMAND:append = " deploy_gyroidosimage; "
 
-deploy_trustmeimage () {
-	ln -sf "../${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic" "${TRUSTME_IMAGE_OUT}/trustmeimage.img"
-	ln -sf "../${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic.bmap" "${TRUSTME_IMAGE_OUT}/trustmeimage.img.bmap"
+deploy_gyroidosimage () {
+	ln -sf "../${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img"
+	ln -sf "../${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic.bmap" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img.bmap"
 
 	# deploy rootfs contents for installer build
-	cp -r "${IMAGE_ROOTFS}" "${TRUSTME_IMAGE_OUT}/trustme_datapartition"
+	cp -r "${IMAGE_ROOTFS}" "${GYROIDOS_IMAGE_OUT}/gyroidos_datapartition"
 
-	cp -r "${TRUSTME_IMAGE_OUT}" "${IMGDEPLOYDIR}"
+	cp -r "${GYROIDOS_IMAGE_OUT}" "${IMGDEPLOYDIR}"
 }

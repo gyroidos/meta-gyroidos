@@ -24,7 +24,7 @@ CML_START_MSG = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "-- cml debug console 
 do_install() {
 	echo "#!/bin/sh" >> ${D}/init
 	echo "# Machine ${MACHINE}" >> ${D}/init
-	echo "LOGTTY=\"${TRUSTME_LOGTTY}\"" >> ${D}/init
+	echo "LOGTTY=\"${GYROIDOS_LOGTTY}\"" >> ${D}/init
 	echo "CML_START_MSG=\"${CML_START_MSG}\"" >> ${D}/init
 
 	cat ${WORKDIR}/cml-boot-script.stub >> ${D}/init
@@ -38,9 +38,9 @@ do_install() {
 	mknod -m 622 ${D}/dev/tty0 c 4 0
 	mknod -m 622 ${D}/dev/tty11 c 4 11
 
-	# With DEVELOPMENT_BUILD=y or TRUSTME_PLAIN_DATAPART=y,
+	# With DEVELOPMENT_BUILD=y or GYROIDOS_PLAIN_DATAPART=y,
 	# mounting an unencrypted partiton on /data is allowed for debugging purposes
-	if [ "y" = "${DEVELOPMENT_BUILD}" ] || [ "y" = "${TRUSTME_PLAIN_DATAPART}" ];then
+	if [ "y" = "${DEVELOPMENT_BUILD}" ] || [ "y" = "${GYROIDOS_PLAIN_DATAPART}" ];then
 		bbwarn "Patching /init script to mount plain CML data parition for development purposes"
 		sed -i '\|#DEV_MOUNT_PLAIN_CML_PART#|e cat ${WORKDIR}/dev_mount_plain_cml_part' ${D}/init
 		sed -i '/#DEV_MOUNT_PLAIN_CML_PART#/d' ${D}/init

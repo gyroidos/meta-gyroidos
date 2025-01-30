@@ -1,6 +1,6 @@
 # An example recipe to build service container
 
-inherit trustme-containerimage
+inherit gyroidos-containerimage
 require recipes-core/images/core-image-base.bb
 
 

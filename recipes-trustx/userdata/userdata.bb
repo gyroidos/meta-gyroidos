@@ -1,7 +1,7 @@
 LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://${TOPDIR}/../trustme/build/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
+LIC_FILES_CHKSUM = "file://${TOPDIR}/../gyroidos/build/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-SRC = "${TOPDIR}/../trustme/build/"
+SRC = "${TOPDIR}/../gyroidos/build/"
 
 CFG_OVERLAY_DIR = "${SRC}/config_overlay"
 CONFIG_CREATOR_DIR = "${SRC}/config_creator"
@@ -18,7 +18,7 @@ do_install() {
      bash ${PROVISIONING_DIR}/gen_dev_certs.sh ${TEST_CERT_DIR}
   fi
   install -d ${D}/cml/tokens
-  cp ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/device.conf ${D}/cml/
+  cp ${CFG_OVERLAY_DIR}/${GYROIDOS_HARDWARE}/device.conf ${D}/cml/
   cp ${TEST_CERT_DIR}/ssig_rootca.cert ${D}/cml/tokens/
   cp ${TEST_CERT_DIR}/gen_rootca.cert ${D}/cml/tokens/
 

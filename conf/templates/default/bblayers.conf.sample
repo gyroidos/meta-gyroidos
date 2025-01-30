@@ -19,4 +19,4 @@ BBLAYERS ?= " \
   ${OEROOT}/meta-trustx \
   "
 
-require ${OEROOT}/trustme/build/yocto/##TRUSTME_HARDWARE##/##MACHINE##/metas.inc
+require ${OEROOT}/gyroidos/build/yocto/##GYROIDOS_HARDWARE##/##MACHINE##/metas.inc

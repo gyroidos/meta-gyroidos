@@ -29,7 +29,7 @@ do_sign_guestos:append () {
 
     cp ${CONTAINER_CONFIG} ${CONFIGS_OUT}/container
     sed -i '/guest_os:*/c\guest_os: \"${PN}os\"' ${CONFIGS_OUT}/container/${CONTAINER_CONFIG_FILE}
-    sed -i '/guestos_version:*/c\guestos_version: ${TRUSTME_VERSION}' ${CONFIGS_OUT}/container/${CONTAINER_CONFIG_FILE}
+    sed -i '/guestos_version:*/c\guestos_version: ${GYROIDOS_VERSION}' ${CONFIGS_OUT}/container/${CONTAINER_CONFIG_FILE}
 }
 
 ROOTFS_POSTPROCESS_COMMAND:append = " update_inittab; "

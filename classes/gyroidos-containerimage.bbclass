@@ -1,4 +1,4 @@
-####### Contains necessary properties of a trustme container image
+####### Contains necessary properties of a gyroidos container image
 
 include images/trustx-signing.inc
 
@@ -18,9 +18,9 @@ CONTAINER_CONF_TEMPLATE ??= ""
 CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
 
 do_sign_guestos:prepend () {
-    if [ ! -f ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${PN}os.conf ]; then
-	cp ${GUESTOS_CONF_TEMPLATE}  ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${PN}os.conf
-	sed -i '/name:*/c\name: \"${PN}\"' ${CFG_OVERLAY_DIR}/${TRUSTME_HARDWARE}/${PN}os.conf
+    if [ ! -f ${CFG_OVERLAY_DIR}/${GYROIDOS_HARDWARE}/${PN}os.conf ]; then
+	cp ${GUESTOS_CONF_TEMPLATE}  ${CFG_OVERLAY_DIR}/${GYROIDOS_HARDWARE}/${PN}os.conf
+	sed -i '/name:*/c\name: \"${PN}\"' ${CFG_OVERLAY_DIR}/${GYROIDOS_HARDWARE}/${PN}os.conf
     fi
     if [ ! -z ${CONTAINER_CONF_TEMPLATE} ]; then
 	cp ${CONTAINER_CONF_TEMPLATE} ${CONFIGS_OUT}/container

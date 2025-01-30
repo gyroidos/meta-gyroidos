@@ -1,18 +1,18 @@
 inherit image
-inherit trustmegeneric
+inherit gyroidosgeneric
 
 LICENSE = "GPL-2.0-only"
 
 DEPENDS += "coreutils-native"
 
-IMAGE_FSTYPES="${TRUSTME_FSTYPES}"
+IMAGE_FSTYPES="${GYROIDOS_FSTYPES}"
 
 INITRAMFS_IMAGE_BUNDLE = "1"
 INITRAMFS_IMAGE = "trustx-cml-initramfs"
 
 PACKAGE_CLASSES = "package_ipk"
 
-TRUSTME_DATAPART_LABEL = "trustme"
+GYROIDOS_DATAPART_LABEL = "gyroidos"
 
 prepare_device_conf () {
     cp "${THISDIR}/${PN}/device.conf" "${WORKDIR}"
@@ -43,7 +43,7 @@ GUESTS_OUT = "${B}/cml_updates"
 CLEAN_GUEST_OUT = ""
 OS_NAME = "kernel"
 UPDATE_OUT_GENERIC="${GUESTS_OUT}/${OS_NAME}"
-UPDATE_OUT="${UPDATE_OUT_GENERIC}-${TRUSTME_VERSION}"
+UPDATE_OUT="${UPDATE_OUT_GENERIC}-${GYROIDOS_VERSION}"
 UPDATE_FILES="${UPDATE_OUT_GENERIC} ${UPDATE_OUT_GENERIC}.conf ${UPDATE_OUT_GENERIC}.sig ${UPDATE_OUT_GENERIC}.cert"
 
 do_sign_guestos:prepend () {
@@ -56,10 +56,10 @@ do_sign_guestos:prepend () {
 
 do_sign_guestos:append () {
         tar cf "${UPDATE_OUT}.tar" -C "${GUESTS_OUT}" \
-                "${OS_NAME}-${TRUSTME_VERSION}" \
-                "${OS_NAME}-${TRUSTME_VERSION}.conf" \
-                "${OS_NAME}-${TRUSTME_VERSION}.sig" \
-                "${OS_NAME}-${TRUSTME_VERSION}.cert"
+                "${OS_NAME}-${GYROIDOS_VERSION}" \
+                "${OS_NAME}-${GYROIDOS_VERSION}.conf" \
+                "${OS_NAME}-${GYROIDOS_VERSION}.sig" \
+                "${OS_NAME}-${GYROIDOS_VERSION}.cert"
 
         ln -sf "$(basename ${UPDATE_OUT})" "${UPDATE_OUT_GENERIC}"
         ln -sf "$(basename ${UPDATE_OUT}.conf)" "${UPDATE_OUT_GENERIC}.conf"
