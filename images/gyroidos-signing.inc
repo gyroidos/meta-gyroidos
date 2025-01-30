@@ -12,7 +12,7 @@ inherit p11-signing
 GUESTOS_SIG_KEY ?= "${TEST_CERT_DIR}/ssig_cml.key"
 GUESTOS_SIG_CERT ?= "${TEST_CERT_DIR}/ssig_cml.cert"
 
-GUESTS_OUT ?= "${B}/trustx-guests"
+GUESTS_OUT ?= "${B}/gyroidos-guests"
 CLEAN_GUEST_OUT ?= "1"
 
 CONFIGS_OUT ?= ""

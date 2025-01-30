@@ -8,7 +8,7 @@ DEPENDS += "coreutils-native"
 IMAGE_FSTYPES="${GYROIDOS_FSTYPES}"
 
 INITRAMFS_IMAGE_BUNDLE = "1"
-INITRAMFS_IMAGE = "trustx-cml-initramfs"
+INITRAMFS_IMAGE = "gyroidos-cml-initramfs"
 
 PACKAGE_CLASSES = "package_ipk"
 
@@ -29,7 +29,7 @@ prepare_device_conf () {
 #IMAGE_PREPROCESS_COMMAND:append = " prepare_device_conf;"
 
 ##### provide a tarball for cml update
-include images/trustx-signing.inc
+include images/gyroidos-signing.inc
 deltask do_sign_guestos
 IMAGE_POSTPROCESS_COMMAND:remove = "do_sign_guestos;"
 
@@ -49,8 +49,8 @@ UPDATE_FILES="${UPDATE_OUT_GENERIC} ${UPDATE_OUT_GENERIC}.conf ${UPDATE_OUT_GENE
 do_sign_guestos:prepend () {
         mkdir -p "${UPDATE_OUT}"
         cp "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE_FILE}" "${UPDATE_OUT}/kernel.img"
-        cp "${DEPLOY_DIR_IMAGE}/trustx-cml-firmware-${MACHINE}.squashfs" "${UPDATE_OUT}/firmware.img"
-        cp "${DEPLOY_DIR_IMAGE}/trustx-cml-modules-${MACHINE}.squashfs" "${UPDATE_OUT}/modules.img"
+        cp "${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs" "${UPDATE_OUT}/firmware.img"
+        cp "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs" "${UPDATE_OUT}/modules.img"
         cp "${WORKDIR}/device.conf" "${UPDATE_OUT}/device.img"
 }
 

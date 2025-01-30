@@ -3,7 +3,7 @@ SRC_URI += " \
 	file://0001-audit-allow-logging-of-user-events-in-non-initial-na.patch \
         file://0001-tools-lib-subcmd-Fixed-uninitialized-use-of-variable.patch \
 	file://module_signing.cfg \
-	file://trustx.cfg \
+	file://gyroidos.cfg \
 "
 FILESEXTRAPATHS:prepend := "${THISDIR}/generic:"
 

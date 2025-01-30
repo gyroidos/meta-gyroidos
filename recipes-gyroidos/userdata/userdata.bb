@@ -24,7 +24,7 @@ do_install() {
 
   mkdir -p ${DEPLOY_DIR_IMAGE}
   mkdir -p ${D}/cml/operatingsystems/
-  cp -r ${DEPLOY_DIR_IMAGE}/trustx-guests/* ${D}/cml/operatingsystems/
+  cp -r ${DEPLOY_DIR_IMAGE}/gyroidos-guests/* ${D}/cml/operatingsystems/
 }
 
 FILES:${PN} += "/cml/* "

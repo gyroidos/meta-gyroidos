@@ -1,4 +1,4 @@
-require recipes-trustx/cmld/cml-common.inc
+require recipes-gyroidos/cmld/cml-common.inc
 
 PACKAGES =+ "control scd tpm2d rattestation"
 

@@ -1,6 +1,6 @@
 ####### Contains necessary properties of a gyroidos container image
 
-include images/trustx-signing.inc
+include images/gyroidos-signing.inc
 
 IMAGE_FSTYPES:append = " squashfs"
 PACKAGE_INSTALL:append = " service-static"
@@ -15,7 +15,7 @@ PACKAGE_INSTALL:append = " service-static"
 
 GUESTOS_CONF_TEMPLATE ??= "${CFG_OVERLAY_DIR}/guestos-template.conf"
 CONTAINER_CONF_TEMPLATE ??= ""
-CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/trustx-configs"
+CONFIGS_OUT = "${DEPLOY_DIR_IMAGE}/gyroidos-configs"
 
 do_sign_guestos:prepend () {
     if [ ! -f ${CFG_OVERLAY_DIR}/${GYROIDOS_HARDWARE}/${PN}os.conf ]; then

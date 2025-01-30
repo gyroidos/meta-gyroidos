@@ -1,4 +1,4 @@
-require recipes-trustx/cmld/cml-common.inc
+require recipes-gyroidos/cmld/cml-common.inc
 
 DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text"
 

@@ -58,7 +58,7 @@ LICENSE = "GPL-2.0-only"
 
 IMAGE_FEATURES = ""
 
-export IMAGE_BASENAME = "trustx-cml-initramfs"
+export IMAGE_BASENAME = "gyroidos-cml-initramfs"
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 inherit image
 

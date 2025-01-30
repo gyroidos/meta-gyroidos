@@ -1,4 +1,4 @@
-SUMMARY = "init script to start trustx environment"
+SUMMARY = "init script to start gyroidos environment"
 LICENSE = "MIT"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/files:"

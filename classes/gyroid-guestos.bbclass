@@ -1,6 +1,6 @@
 require recipes-core/images/core-image-minimal.bb
 
-include images/trustx-signing.inc
+include images/gyroidos-signing.inc
 
 # Workaround for ICECC bug causing missing include dir errors
 # uncomment to disable warnings
@@ -19,7 +19,7 @@ IMAGE_INSTALL:append = " util-linux"
 IMAGE_INSTALL:append = " binutils"
 IMAGE_INSTALL:append = " shadow"
 
-CONFIGS_OUT = "${B}/trustx-configs"
+CONFIGS_OUT = "${B}/gyroidos-configs"
 
 IMAGE_POSTPROCESS_COMMAND:append = " do_sign_guestos; "
 
@@ -69,7 +69,7 @@ EOF
 # Manually remove the <guestos>os-<version> directory from
 # ${DEPLOY_DIR_IMAGE} as this is not cleaned up by do_clean().
 # This enables us to completely remove a guestos from a
-# succeding trustx-cml build without orphan directories.
+# succeding gyroidos-cml build without orphan directories.
 # Inetentionally use rmdir so this function will fail if the
 # directory content was not cleaned properly.
 python do_clean:append () {
@@ -79,7 +79,7 @@ python do_clean:append () {
     deploy_dir_image = d.getVar('DEPLOY_DIR_IMAGE')
     pn = d.getVar('PN')
 
-    dirs = glob.glob(deploy_dir_image + '/trustx-guests/' + pn + 'os-*')
+    dirs = glob.glob(deploy_dir_image + '/gyroidos-guests/' + pn + 'os-*')
 
     for dir in dirs:
         os.rmdir(dir)

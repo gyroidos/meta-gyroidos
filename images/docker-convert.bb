@@ -1,6 +1,6 @@
 DECRIPTION = "Minimal root file system for downloading and converting Docker images"
 
-include images/trustx-signing.inc
+include images/gyroidos-signing.inc
 
 PACKAGE_INSTALL = "\
 	busybox \

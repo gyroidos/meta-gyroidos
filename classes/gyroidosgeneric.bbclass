@@ -15,9 +15,9 @@ GYROIDOS_IMAGE_OUT="${B}/gyroidos_image"
 GYROIDOS_IMAGE="${GYROIDOS_IMAGE_OUT}/gyroidosimage.img"
 
 GYROIDOS_GENERIC_DEPENDS = " \
-    trustx-cml-initramfs:do_image_complete \
-    trustx-cml-modules:do_image_complete \
-    trustx-cml-firmware:do_image_complete \
+    gyroidos-cml-initramfs:do_image_complete \
+    gyroidos-cml-modules:do_image_complete \
+    gyroidos-cml-firmware:do_image_complete \
     virtual/kernel:do_deploy \
 "
 
@@ -94,10 +94,10 @@ do_rootfs () {
 		cp -far "${TOPDIR}/../custom_containers/00000000-0000-0000-0000-000000000000.conf" "${rootfs_datadir}/cml/containers_templates/"
 		find "${TOPDIR}/../custom_containers/" -name '*os*' -exec cp -afr {} "${rootfs_datadir}/cml/operatingsystems" \;
 		cp -f "${TOPDIR}/../custom_containers/device.conf" "${rootfs_datadir}/cml/"
-	elif [ -d "${deploy_dir_container}/trustx-guests" ];then # container built in default location
-		bbnote "Installing containers from default location ${deploy_dir_container}/trustx-guests"
-		cp -far "${deploy_dir_container}/trustx-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
-		cp -afr "${deploy_dir_container}/trustx-guests/." "${rootfs_datadir}/cml/operatingsystems"
+	elif [ -d "${deploy_dir_container}/gyroidos-guests" ];then # container built in default location
+		bbnote "Installing containers from default location ${deploy_dir_container}/gyroidos-guests"
+		cp -far "${deploy_dir_container}/gyroidos-configs/container/." "${rootfs_datadir}/cml/containers_templates/"
+		cp -afr "${deploy_dir_container}/gyroidos-guests/." "${rootfs_datadir}/cml/operatingsystems"
 		cp -f "${device_cfg}" "${rootfs_datadir}/cml/"
 	else # no container provided
 		bbwarn "It seems that no containers were built in directory ${deploy_dir_container}. You will have to provide at least c0 manually!"
@@ -111,11 +111,11 @@ do_rootfs () {
 
 	# copy modules to data partition directory
 	bbnote "Copying linux-modules"
-	cp -fL "${DEPLOY_DIR_IMAGE}/trustx-cml-modules-${MACHINE}.squashfs" "${rootfs}/modules.img"
+	cp -fL "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs" "${rootfs}/modules.img"
 
 	# copy firmware to data partition directory
 	bbnote "Copying linux-firmware"
-	cp -fL "${DEPLOY_DIR_IMAGE}/trustx-cml-firmware-${MACHINE}.squashfs" "${rootfs}/firmware.img"
+	cp -fL "${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs" "${rootfs}/firmware.img"
 
 	# copy kernel update files to data partition directory
 	bbnote "Copying kernel update files"

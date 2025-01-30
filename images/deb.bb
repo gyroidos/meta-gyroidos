@@ -2,7 +2,7 @@ SUMMARY = "Skeleton for installing a Debian based container."
 
 LICENSE = "GPL-2.0-only"
 
-include images/trustx-signing.inc
+include images/gyroidos-signing.inc
 
 #IMAGE_INSTALL = "debian-rootfs"
 IMAGE_INSTALL = "\
