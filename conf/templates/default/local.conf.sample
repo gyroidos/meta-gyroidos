@@ -3,7 +3,7 @@ CC_MODE = "##CC_MODE##"
 EXTRA_IMAGE_FEATURES = "${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'debug-tweaks', '', d)}"
 DISTRO_FEATURES:append = " virtualization"
 
-DISTRO = "gyroidos-cml"
+DISTRO = "cml-base"
 UPSTREAM_VERSION = "##UPSTREAM_VERSION##"
 
 GYROIDOS_BOOTPART_FS ?= "vfat"

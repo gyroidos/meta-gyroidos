@@ -1,6 +1,6 @@
 TMPDIR = "${TOPDIR}/tmp_container"
 
-DISTRO = "gyroidos-core"
+DISTRO = "core-ref"
 
 PACKAGE_CLASSES = "package_deb"
 
