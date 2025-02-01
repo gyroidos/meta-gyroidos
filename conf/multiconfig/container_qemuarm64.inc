@@ -17,7 +17,7 @@ CONF_VERSION = "2"
 MACHINE = "qemuarm64"
 
 PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"
-PREFERRED_PROVIDER_virtual/kernel:gyroidos-core = "linux-dummy"
+PREFERRED_PROVIDER_virtual/kernel:core-ref = "linux-dummy"
 PREFERRED_PROVIDER_virtual/kernel:linuxstdbase = "linux-dummy"
 
 KERNEL_DEVICETREE = ""
