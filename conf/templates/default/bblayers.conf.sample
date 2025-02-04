@@ -16,7 +16,7 @@ BBLAYERS ?= " \
   ${OEROOT}/meta-openembedded/meta-perl \
   ${OEROOT}/meta-openembedded/meta-filesystems \
   ${OEROOT}/meta-virtualization \
-  ${OEROOT}/meta-trustx \
+  ${OEROOT}/meta-gyroidos \
   "
 
 require ${OEROOT}/gyroidos/build/yocto/##GYROIDOS_HARDWARE##/##MACHINE##/metas.inc
