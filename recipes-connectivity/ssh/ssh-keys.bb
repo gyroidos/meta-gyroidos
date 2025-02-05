@@ -6,9 +6,9 @@ inherit deploy
 SSTATE_SKIP_CREATION = "1"
 
 do_compile() {
-	ssh-keygen -f "${B}/id_ed25519" -t ed25519 -N ""
+	ssh-keygen -f "${B}/id_ed25519" -t ed25519 -N "" -C "CML Development Client Key"
 	mkdir -p "${B}/etc/ssh"
-	ssh-keygen -A -f "${B}"
+	ssh-keygen -f "${B}/etc/ssh/ssh_host_ed25519_key" -t ed25519 -N "" -C "CML Development Host Key"
 }
 addtask do_compile after do_configure
 
