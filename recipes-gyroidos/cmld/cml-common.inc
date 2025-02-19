@@ -1,7 +1,7 @@
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${S}/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-BRANCH = "main"
+CML_BRANCH ?= "main"
 SRCREV = "${AUTOREV}"
 
 PVBASE := "${PV}"
@@ -9,7 +9,7 @@ PV = "${PVBASE}+${SRCPV}"
 
 CML_HOST ?= "github.com/gyroidos"
 
-SRC_URI = "git://${CML_HOST}/cml.git;branch=${BRANCH};protocol=https"
+SRC_URI = "git://${CML_HOST}/cml.git;branch=${CML_BRANCH};protocol=https"
 
 S = "${WORKDIR}/git"
 
