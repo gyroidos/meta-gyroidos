@@ -59,6 +59,9 @@ if [ -e "/dev/tpm0" ]; then
 	done
 
 	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/gyroidos))
+	if [ "${CRYPTO_HDD}" == "" ];then
+		CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/trustme))
+	fi
 	BOOT_HDD=$(basename $(readlink /dev/disk/by-label/boot))
 
 	echo "CRYPTO_HDD: ${CRYPTO_HDD}"
