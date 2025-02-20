@@ -1,1 +1,0 @@
-linux-vanilla_5.4.%.bbappend

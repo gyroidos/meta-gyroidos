@@ -14,7 +14,7 @@ KERNEL_VERSION_SANITY_SKIP="1"
 
 SRCREV_machine ?= "${AUTOREV}"
 
-FILESEXTRAPATHS:prepend := "${THISDIR}/linux-vanilla:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-rolling:"
 
 PV = "${LINUX_VERSION}+${SRCPV}"
 
