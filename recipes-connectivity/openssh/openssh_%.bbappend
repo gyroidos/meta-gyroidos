@@ -1,1 +1,1 @@
-FILESEXTRAPATHS:prepend:gyroidos-cml := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend:cml-base := "${THISDIR}/${PN}:"
