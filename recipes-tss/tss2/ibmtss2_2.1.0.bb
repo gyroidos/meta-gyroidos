@@ -68,7 +68,7 @@ do_install() {
 	install -m 0755 ${S}/clear ${D}${bindir}/${PREFIX}_clear
 	#install -m 0755 ${S}/create ${D}${bindir}/${PREFIX}_create
 	#install -m 0755 ${S}/createprimary ${D}${bindir}/${PREFIX}_createprimary
-	#install -m 0755 ${S}/pcrextend ${D}${bindir}/${PREFIX}_pcrextend
+	install -m 0755 ${S}/pcrextend ${D}${bindir}/${PREFIX}_pcrextend
 	install -m 0755 ${S}/pcrread ${D}${bindir}/${PREFIX}_pcrread
 	#install -m 0755 ${S}/sign ${D}${bindir}/${PREFIX}_sign
 	#install -m 0755 ${S}/verifysignature ${D}${bindir}/${PREFIX}_verifiysignature
