@@ -79,6 +79,8 @@ if [ -e "/dev/tpm0" ]; then
 		do_otf="do"
 	fi
 
+	#RPI_TPM_INIT#
+
 	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d) for disk encryption of ${CRYPTO_HDD}"
 	tpm2d -n &
 

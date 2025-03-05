@@ -11,6 +11,7 @@ SRC_URI = "\
 	file://dev_enable_extdata \
 	file://dev_enable_extcontainers \
 	file://dev_mount_plain_cml_part \
+	file://rpi_tpm_init \
 	file://cml-boot-script.stub \
 "
 
@@ -67,8 +68,13 @@ do_install() {
 		sed -i 's|/data/core/%t_core|/data/core/%t_core.%s.%p.%P_%u_%g_%E|' ${D}/init
 	fi
 
+	if [ "raspberrypi5" = "${MACHINE}" ];then
+		sed -i '\|#RPI_TPM_INIT#|e cat ${WORKDIR}/rpi_tpm_init' ${D}/init
+	fi
+
 	sed -i '/#DEV_ENABLE_EXTFS#/d' ${D}/init
 	sed -i '/#DEV_START_SSHD#/d' ${D}/init
+	sed -i '/#RPI_TPM_INIT#/d' ${D}/init
 }
 
 FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii"
