@@ -22,13 +22,14 @@ move_firmware() {
 
 	certpath="${FIRMWARE_SIG_CERT}"
 	if is_pkcs11_uri ${FIRMWARE_SIG_CERT}; then
-		certpath="${WORKDIR}/FIRMWARE_SIG_CERT"
-		extract_cert "${FIRMWARE_SIG_CERT}" "${certpath}.pem"
-		openssl x509 -in "${certpath}.pem" -outform DER -out "${certpath}.der"
+		certpath_base="${WORKDIR}/FIRMWARE_SIG_CERT"
+		extract_cert "${FIRMWARE_SIG_CERT}" "${certpath_base}.pem"
+		openssl x509 -in "${certpath_base}.pem" -outform DER -out "${certpath_base}.der"
+		certpath="${certpath_base}.der"
 	fi
 
 	if is_pkcs11_uri ${FIRMWARE_SIG_KEY}; then
-		evmctl ima_sign -r --hashalgo sha256 --engine pkcs11 --key "${FIRMWARE_SIG_KEY}" --keyid-from-cert "${certpath}.der" "${IMAGE_ROOTFS}/"
+		evmctl ima_sign -r --hashalgo sha256 --engine pkcs11 --key "${FIRMWARE_SIG_KEY}" --keyid-from-cert "${certpath}" "${IMAGE_ROOTFS}/"
 	else
 		evmctl ima_sign -r --hashalgo sha256 --key "${FIRMWARE_SIG_KEY}" "${IMAGE_ROOTFS}/"
 	fi
