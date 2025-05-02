@@ -1,1 +1,1 @@
-FILESEXTRAPATHS:append := '${@bb.utils.contains("INITRAMFS_IMAGE", [ 'gyroidos-cml-initramfs' ], ":${THISDIR}/${PN}", "",d)}'
+FILESEXTRAPATHS:prepend := '${@bb.utils.contains("INITRAMFS_IMAGE", [ 'gyroidos-cml-initramfs' ], "${THISDIR}/${PN}:", "",d)}'
