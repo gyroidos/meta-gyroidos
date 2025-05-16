@@ -41,21 +41,21 @@ do_sign_guestos () {
         done
     fi
 
-    if [ -f ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs ]; then
+    if [ -f ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.squashfs ]; then
 
-        gyroidos_version="$(readlink ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs | sed -e 's/${IMAGE_BASENAME}-${MACHINE}-//' | sed -e 's/.rootfs.squashfs//' )"
+        gyroidos_version="$(readlink ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.squashfs | sed -e 's/${IMAGE_LINK_NAME}-//' | sed -e 's/.squashfs//' )"
         mkdir -p ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/
 
-        dd if=/dev/zero of=${B}/${IMAGE_BASENAME}-${MACHINE}.hash bs=1M count=10
+        dd if=/dev/zero of=${B}/${IMAGE_LINK_NAME}.hash bs=1M count=10
 
-        root_hash=$(veritysetup format ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs \
-            ${B}/${IMAGE_BASENAME}-${MACHINE}.hash | \
+        root_hash=$(veritysetup format ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.squashfs \
+            ${B}/${IMAGE_LINK_NAME}.hash | \
             tail -n 1 | \
             cut -d ":" -f2 | \
             tr -d '[:space:]')
 
-        cp ${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.squashfs ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.img
-        cp ${B}/${IMAGE_BASENAME}-${MACHINE}.hash ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.hash.img
+        cp ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.squashfs ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.img
+        cp ${B}/${IMAGE_LINK_NAME}.hash ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.hash.img
 
         python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
             -b ${OS_CONFIG} -v ${gyroidos_version} \
