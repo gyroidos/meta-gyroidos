@@ -1,5 +1,18 @@
+From eb88d4baf6e5954be965eddc6b42a3a64ed32a53 Mon Sep 17 00:00:00 2001
+From: Simon Ott <simon.ott@aisec.fraunhofer.de>
+Date: Wed, 9 Oct 2024 20:10:45 +0200
+Subject: [PATCH] recipes-tss/openssl-tpm2-engine: updated to version 4.3.0
+
+---
+ src/libcommon/tpm2-common.c     | 116 ++++++++++++++++----------------
+ src/tools/attest_tpm2_primary.c |  12 ++--
+ src/tools/create_tpm2_key.c     |  21 +++---
+ src/tools/seal_tpm2_data.c      |   6 +-
+ src/tools/signed_tpm2_policy.c  |   6 +-
+ 5 files changed, 81 insertions(+), 80 deletions(-)
+
 diff --git a/src/libcommon/tpm2-common.c b/src/libcommon/tpm2-common.c
-index be3fe50..52f28e4 100644
+index edfc70e..aa67eeb 100644
 --- a/src/libcommon/tpm2-common.c
 +++ b/src/libcommon/tpm2-common.c
 @@ -692,9 +692,9 @@ TPM_RC tpm2_ObjectPublic_GetName(NAME_2B *name,
@@ -509,7 +522,7 @@ index 778a7de..dd10659 100644
  			   privkey, privkey_len,
  			   auth == NULL && secret_handle == 0, parent, sk,
 diff --git a/src/tools/seal_tpm2_data.c b/src/tools/seal_tpm2_data.c
-index e7eb52a..8b908ba 100644
+index 9903d5e..a7c591a 100644
 --- a/src/tools/seal_tpm2_data.c
 +++ b/src/tools/seal_tpm2_data.c
 @@ -144,7 +144,7 @@ int main(int argc, char **argv)
@@ -521,7 +534,7 @@ index e7eb52a..8b908ba 100644
  	uint16_t pubkey_len, privkey_len;
  	char *parent_str = NULL;
  	char *import = NULL;
-@@ -449,12 +449,12 @@ int main(int argc, char **argv)
+@@ -450,12 +450,12 @@ int main(int argc, char **argv)
  	buffer = pubkey;
  	pubkey_len = 0;
  	size = sizeof(pubkey);
