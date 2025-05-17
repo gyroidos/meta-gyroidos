@@ -1,4 +1,4 @@
-From d04f8e55793fef8c43718b2968cb9bd877cd57eb Mon Sep 17 00:00:00 2001
+From c8f9ae5e24c816bc8fb05603048c5bd119308a49 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
 Date: Wed, 9 Aug 2023 14:23:25 +0200
 Subject: [PATCH] Cross-compile compatible enginesdir variable
@@ -11,7 +11,7 @@ Further provide a --with-engingesdir option for configure.
  2 files changed, 15 insertions(+), 29 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 9e74274..3423aa7 100644
+index 7d7f597..b7b97db 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -55,41 +55,27 @@ PKG_CHECK_MODULES([DEPS], [libcrypto >= 3.0.0],
@@ -83,6 +83,3 @@ index 9ce2a25..a2a0cad 100644
  
  COMMONLIB = ../libcommon/libcommon.a
  
--- 
-2.30.2
-
