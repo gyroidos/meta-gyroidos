@@ -1,4 +1,4 @@
-From fab9a93bc950983fb724355e60ce5418cafdd520 Mon Sep 17 00:00:00 2001
+From 869846e615433cb7ab905c2bdc47ef8a3e5da676 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
 Date: Thu, 10 Aug 2023 13:08:10 +0200
 Subject: [PATCH] src/provider/keymgmt: initialize order in
@@ -9,7 +9,7 @@ Subject: [PATCH] src/provider/keymgmt: initialize order in
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/provider/keymgmt.c b/src/provider/keymgmt.c
-index aa9c120..31929da 100644
+index aa5d55d..5461fda 100644
 --- a/src/provider/keymgmt.c
 +++ b/src/provider/keymgmt.c
 @@ -177,7 +177,7 @@ static int tpm2_keymgmt_import(void *key, int selection,
@@ -21,6 +21,3 @@ index aa9c120..31929da 100644
  	int ret = 1;
  
  	if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) == 0)
--- 
-2.30.2
-

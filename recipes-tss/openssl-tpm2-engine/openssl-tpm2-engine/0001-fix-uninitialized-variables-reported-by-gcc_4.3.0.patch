@@ -1,3 +1,14 @@
+From c5a168b453bed84cedb5fbb88eb89e2fea33323d Mon Sep 17 00:00:00 2001
+From: Johannes Wiesboeck <johannes.wiesboeck@aisec.fraunhofer.de>
+Date: Tue, 5 Dec 2023 15:11:14 +0100
+Subject: [PATCH] recipes-tss/openssl-tpm2-engine: Patch initializing variables
+
+---
+ src/libcommon/tpm2-common.c | 4 ++--
+ src/provider/provider.c     | 2 +-
+ src/tools/seal_tpm2_data.c  | 1 +
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
 diff --git a/src/libcommon/tpm2-common.c b/src/libcommon/tpm2-common.c
 index be3fe50..edfc70e 100644
 --- a/src/libcommon/tpm2-common.c
