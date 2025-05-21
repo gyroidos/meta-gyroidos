@@ -138,8 +138,8 @@ do_rootfs[depends] += " ${GYROIDOS_GENERIC_DEPENDS} "
 IMAGE_POSTPROCESS_COMMAND:append = " deploy_gyroidosimage; "
 
 deploy_gyroidosimage () {
-	ln -sf "../${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img"
-	ln -sf "../${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic.bmap" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img.bmap"
+	ln -sf "../${IMAGE_LINK_NAME}.wic" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img"
+	ln -sf "../${IMAGE_LINK_NAME}.wic.bmap" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img.bmap"
 
 	# deploy rootfs contents for installer build
 	cp -r "${IMAGE_ROOTFS}" "${GYROIDOS_IMAGE_OUT}/gyroidos_datapartition"
