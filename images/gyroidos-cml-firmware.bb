@@ -6,6 +6,7 @@ IMAGE_LINGUAS = ""
 ROOTFS_BOOTSTRAP_INSTALL = ""
 
 IMAGE_FSTYPES = "squashfs"
+IMAGE_NAME_SUFFIX = ""
 
 IMAGE_FEATURES:remove = "package-management"
 
