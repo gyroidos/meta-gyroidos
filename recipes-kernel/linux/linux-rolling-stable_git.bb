@@ -24,3 +24,5 @@ COMPATIBLE_MACHINE = "${MACHINE}"
 
 KBUILD_DEFCONFIG:genericx86-64 = "x86_64_defconfig"
 KCONFIG_MODE="--alldefconfig"
+
+KERNEL_FEATURES:remove = "cfg/efi.scc"
