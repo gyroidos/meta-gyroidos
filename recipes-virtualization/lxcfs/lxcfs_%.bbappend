@@ -1,4 +1,7 @@
 
+SRC_URI:remove = "file://0001-bindings-fix-build-with-newer-linux-libc-headers.patch"
+SRC_URI:remove = "file://0001-meson.build-force-pid-open-send_signal-detection.patch"
+
 REQUIRED_DISTRO_FEATURES:remove = "systemd"
 DEPENDS:remove = "systemd"
 
