@@ -65,6 +65,8 @@ IMAGE_FEATURES:remove = "package-management"
 
 IMAGE_ROOTFS_SIZE = "4096"
 
+IMAGE_NAME_SUFFIX=""
+
 do_rootfs[depends] += "virtual/kernel:do_shared_workdir"
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 
