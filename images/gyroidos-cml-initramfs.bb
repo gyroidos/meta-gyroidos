@@ -47,6 +47,8 @@ DEBUG_PACKAGES = "\
 
 PACKAGE_INSTALL:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "${DEBUG_PACKAGES}", "",d)}'
 
+PACKAGE_EXCLUDE:remove = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "shadow-base", "",d)}'
+
 #PACKAGE_INSTALL += "\
 #	strace \
 #	kvmtool \
