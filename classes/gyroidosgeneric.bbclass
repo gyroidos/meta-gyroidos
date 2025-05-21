@@ -45,8 +45,8 @@ do_rootfs () {
 		exit 1
 	fi
 
-	if [ -z "${GYROIDOS_CONTAINER_ARCH}" ];then
-		bbfatal_log "Cannot get bitbake variable \"GYROIDOS_CONTAINER_ARCH\""
+	if [ -z "${GYROIDOS_GUESTOS_ARCH}" ];then
+		bbfatal_log "Cannot get bitbake variable \"GYROIDOS_GUESTOS_ARCH\""
 		exit 1
 	fi
 
@@ -71,8 +71,8 @@ do_rootfs () {
 
 	# define file locations
 	#deploy_dir_container = "${tmpdir}/deploy/images/qemu-x86-64"
-	containerarch="${GYROIDOS_CONTAINER_ARCH}"
-	deploy_dir_container="${tmpdir}/deploy/images/$(echo $containerarch | tr "_" "-")"
+	guestosarch="${GYROIDOS_GUESTOS_ARCH}"
+	deploy_dir_container="${tmpdir}/deploy/images/$(echo $guestosarch | tr "_" "-")"
 
 	src="${TOPDIR}/../gyroidos/build/"
 	config_creator_dir="${src}/config_creator"
