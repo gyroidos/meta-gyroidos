@@ -34,7 +34,7 @@ LIBRARY_FLAGS = "\
 EXTRA_OEMAKE = "\
 	'--makefile=makefiletpm20' \
 	'CC = ${CC}' \
-	'CCLFLAGS = ${LIBRARY_FLAGS}' \
+	'CCLFLAGS = ${LIBRARY_FLAGS} ${DEBUG_PREFIX_MAP}' \
 "
 
 do_populate_lic:prepend() {
