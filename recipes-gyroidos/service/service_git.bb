@@ -22,6 +22,7 @@ SCRIPT_DIR = "${TOPDIR}/../gyroidos/build"
 PROVISIONING_DIR = "${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR = "${PROVISIONING_DIR}/oss_enrollment"
 
+EXTRA_OEMAKE = "CC='${CC} ${DEBUG_PREFIX_MAP}'"
 
 do_compile () {
         oe_runmake -C service all

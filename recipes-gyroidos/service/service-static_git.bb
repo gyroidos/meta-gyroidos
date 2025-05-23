@@ -5,6 +5,8 @@ DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text"
 FILES:${PN} += "${base_sbindir}"
 INHIBIT_PACKAGE_STRIP = "1"
 
+EXTRA_OEMAKE = "CC='${CC} ${DEBUG_PREFIX_MAP}'"
+
 do_compile () {
         oe_runmake -C service service-static
 }
