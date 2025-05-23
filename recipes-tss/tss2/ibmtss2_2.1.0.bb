@@ -33,7 +33,7 @@ LIBRARY_FLAGS = "\
 # overwrite compiler and compiler flags in makefile
 EXTRA_OEMAKE = "\
 	'--makefile=makefiletpm20' \
-	'CC = ${CC}' \
+	'CC = ${CC} ${DEBUG_PREFIX_MAP}' \
 	'CCLFLAGS = ${LIBRARY_FLAGS}' \
 "
 
