@@ -1,5 +1,18 @@
+From 5b20755d39bbf39c8fa5e144e2d1b9dfc208f10a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Thu, 10 Aug 2023 16:52:13 +0200
+Subject: [PATCH] recipes-tss/openssl-tpm2-engine: Added recipe for Version
+
+---
+ src/engine/Makefile.am         | 2 +-
+ src/libcommon/Makefile.am      | 2 +-
+ src/opensslmissing/Makefile.am | 2 +-
+ src/provider/Makefile.am       | 2 +-
+ src/tools/Makefile.am          | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
 diff --git a/src/engine/Makefile.am b/src/engine/Makefile.am
-index 9ce2a25..af92c02 100644
+index a2a0cad..f9dc402 100644
 --- a/src/engine/Makefile.am
 +++ b/src/engine/Makefile.am
 @@ -1,4 +1,4 @@
@@ -7,7 +20,7 @@ index 9ce2a25..af92c02 100644
 +AM_CPPFLAGS = -I $(top_srcdir)/src/include ${DEPRECATION}
  
  openssl_engine_LTLIBRARIES=libtpm2.la
- openssl_enginedir=@enginesdir@
+ openssl_enginedir=$(ENGINESDIR)
 diff --git a/src/libcommon/Makefile.am b/src/libcommon/Makefile.am
 index ad566ff..1c88e37 100644
 --- a/src/libcommon/Makefile.am

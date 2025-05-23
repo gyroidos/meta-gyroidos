@@ -47,6 +47,8 @@ DEBUG_PACKAGES = "\
 
 PACKAGE_INSTALL:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "${DEBUG_PACKAGES}", "",d)}'
 
+PACKAGE_EXCLUDE:remove = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "shadow-base", "",d)}'
+
 #PACKAGE_INSTALL += "\
 #	strace \
 #	kvmtool \
@@ -65,6 +67,8 @@ inherit image
 IMAGE_FEATURES:remove = "package-management"
 
 IMAGE_ROOTFS_SIZE = "4096"
+
+IMAGE_NAME_SUFFIX=""
 
 do_rootfs[depends] += "virtual/kernel:do_shared_workdir"
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"

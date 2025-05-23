@@ -1,4 +1,4 @@
-From 508060a88b6e928b534a53bc0363d1017babc94e Mon Sep 17 00:00:00 2001
+From 9c3145c78d0e40c1e317e1f031db65e7a4252f64 Mon Sep 17 00:00:00 2001
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 Date: Fri, 1 Nov 2024 17:49:22 -0500
 Subject: [PATCH] Fix 32 bit errors
@@ -12,10 +12,10 @@ Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/src/tools/attest_tpm2_primary.c b/src/tools/attest_tpm2_primary.c
-index 3acd511..8b14f6b 100644
+index 7bc71f1..c692213 100644
 --- a/src/tools/attest_tpm2_primary.c
 +++ b/src/tools/attest_tpm2_primary.c
-@@ -416,8 +416,9 @@ void do_certify(const char *auth, TPM_HANDLE handle, const char *namefile,
+@@ -373,8 +373,9 @@ void do_certify(const char *auth, TPM_HANDLE handle, const char *namefile,
  		tpm2_get_hexname(hexname, &pubh);
  		printf("%s\n", hexname);
  	} else {
@@ -27,6 +27,3 @@ index 3acd511..8b14f6b 100644
  		       a.clockInfo.resetCount);
  	}
  	rc = 0;
--- 
-2.39.5
-
