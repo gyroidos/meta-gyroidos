@@ -1,9 +1,8 @@
 function scan_devices {
 	udevadm trigger --type=subsystems --action=add
-	sleep 2
 	udevadm settle
+	sleep 4
 	udevadm trigger --type=devices --action=add
-	sleep 2
 	udevadm settle
 }
 
