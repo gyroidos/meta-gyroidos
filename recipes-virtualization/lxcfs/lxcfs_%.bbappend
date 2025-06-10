@@ -1,5 +1,13 @@
 
-EXTRA_OECONF:remove = "--with-init-script=${VIRTUAL-RUNTIME_init_manager}"
+SRC_URI:remove = "file://0001-bindings-fix-build-with-newer-linux-libc-headers.patch"
+SRC_URI:remove = "file://0001-meson.build-force-pid-open-send_signal-detection.patch"
+
+REQUIRED_DISTRO_FEATURES:remove = "systemd"
+DEPENDS:remove = "systemd"
+
+#EXTRA_OECONF:remove = "--with-init-script=${VIRTUAL-RUNTIME_init_manager}"
+EXTRA_OEMESON:remove = "-Dinit-script=${VIRTUAL-RUNTIME_init_manager}"
+EXTRA_OEMESON:append = "-Dinit-script=sysvinit"
 
 do_install:append() {
         rm -r ${D}/usr/share/lxc

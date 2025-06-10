@@ -47,10 +47,9 @@ DEBUG_PACKAGES = "\
 
 PACKAGE_INSTALL:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "${DEBUG_PACKAGES}", "",d)}'
 
-#PACKAGE_INSTALL += "\
-#	strace \
-#	kvmtool \
-#"
+# shadow-base is removed by poky-tiny, yet in our dev build it is required by openssh
+# the required CONFIG_MULTIUSER is set in our kernel config
+PACKAGE_EXCLUDE:remove = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "shadow-base", "",d)}'
 
 IMAGE_LINUGUAS = " "
 
@@ -65,6 +64,8 @@ inherit image
 IMAGE_FEATURES:remove = "package-management"
 
 IMAGE_ROOTFS_SIZE = "4096"
+
+IMAGE_NAME_SUFFIX=""
 
 do_rootfs[depends] += "virtual/kernel:do_shared_workdir"
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
