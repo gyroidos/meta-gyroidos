@@ -1,0 +1,25 @@
+From c109525f3632ad9d29986aa10cc91f6fc13ab5d0 Mon Sep 17 00:00:00 2001
+From: Johannes Wiesboeck <johannes.wiesboeck@aisec.fraunhofer.de>
+Date: Mon, 30 Jun 2025 13:11:31 +0200
+Subject: [PATCH] meson.build: Do not link using ld.gold
+
+Linking using ld.gold seems to produce a broken binary on aarch64
+targets. Disable and fall back to ld.bfd.
+
+Signed-off-by: Johannes Wiesboeck <johannes.wiesboeck@aisec.fraunhofer.de>
+---
+ meson.build | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index a0289ad..4e29a0b 100644
+--- a/meson.build
++++ b/meson.build
+@@ -115,7 +115,6 @@ possible_link_flags = [
+     '-Wl,--gc-sections',
+     '-Wl,-z,relro',
+     '-Wl,-z,now',
+-    '-Wl,-fuse-ld=gold',
+ ]
+ 
+ if meson.version().version_compare('>=0.46')
