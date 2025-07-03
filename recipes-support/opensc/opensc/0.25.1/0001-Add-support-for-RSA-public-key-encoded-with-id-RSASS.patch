@@ -1,0 +1,25 @@
+From f316225c4742300e764c4e8c165e39041c0505ad Mon Sep 17 00:00:00 2001
+From: David Sonntag <dsonntag@blackned.de>
+Date: Wed, 26 Feb 2025 17:43:37 +0100
+Subject: [PATCH] Add-support-for-RSA-public-key-encoded-with-id-RSASS
+
+---
+ src/libopensc/pkcs15-algo.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/libopensc/pkcs15-algo.c b/src/libopensc/pkcs15-algo.c
+index eb408cf26..1b8cf2eaf 100644
+--- a/src/libopensc/pkcs15-algo.c
++++ b/src/libopensc/pkcs15-algo.c
+@@ -359,8 +359,9 @@ static struct sc_asn1_pkcs15_algorithm_info algorithm_table[] = {
+ #ifdef SC_ALGORITHM_MD5
+ 	{ SC_ALGORITHM_MD5, {{ 1, 2, 840, 113549, 2, 5, -1}}, NULL, NULL, NULL },
+ #endif
+-#ifdef SC_ALGORITHM_RSA /* really rsaEncryption */
+-	{ SC_ALGORITHM_RSA, {{ 1, 2, 840, 113549, 1, 1, 1, -1}}, NULL, NULL, NULL },
++#ifdef SC_ALGORITHM_RSA /* really rsaEncryption and id-RSASSA-PSS */
++		{SC_ALGORITHM_RSA, {{ 1, 2, 840, 113549, 1, 1, 1, -1}}, NULL, NULL, NULL },
++		{SC_ALGORITHM_RSA, {{ 1, 2, 840, 113549, 1, 1, 10, -1}}, NULL, NULL, NULL },
+ #endif
+ #ifdef SC_ALGORITHM_DH
+ 	{ SC_ALGORITHM_DH, {{ 1, 2, 840, 10046, 2, 1, -1}}, NULL, NULL, NULL },
