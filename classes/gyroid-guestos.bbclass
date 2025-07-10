@@ -21,8 +21,6 @@ IMAGE_INSTALL:append = " shadow"
 
 CONFIGS_OUT = "${B}/gyroidos-configs"
 
-IMAGE_POSTPROCESS_COMMAND:append = " do_sign_guestos; "
-
 do_sign_guestos:append () {
     mkdir -p ${CONFIGS_OUT}
     mkdir -p ${CONFIGS_OUT}/container
