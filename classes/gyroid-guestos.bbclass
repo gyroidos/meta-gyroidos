@@ -7,7 +7,7 @@ include images/gyroidos-signing.inc
 # TARGET_CFLAGS += " -w "
 # BUILD_CFLAGS += " -w "
 
-IMAGE_FSTYPES = "squashfs ext4"
+IMAGE_FSTYPES = "squashfs"
 
 IMAGE_FEATURES:append = " ssh-server-openssh"
 IMAGE_INSTALL:append = " iproute2"
