@@ -174,11 +174,6 @@ for i in {1..4}; do
 	scan_devices
 done
 
-modprobe loop
-modprobe btrfs
-modprobe vport-gre
-modprobe cfg80211
-
 mount -a
 
 mkdir -p /var/volatile/tmp
