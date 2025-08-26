@@ -1,4 +1,5 @@
 function scan_devices {
+	udevadm control --reload
 	udevadm trigger --type=subsystems --action=add
 	udevadm settle
 	sleep 4
