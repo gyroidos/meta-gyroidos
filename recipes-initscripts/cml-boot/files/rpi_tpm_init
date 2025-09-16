@@ -1,4 +1,0 @@
-# measure device serial to PCR1
-tpm2_pcrextend -ha 1 -ic $(vcmailbox 0x00010004 8 8 0 0 | sed 's/0x//g' | awk '{for(i=6;i<8;i++) printf $i; print ""}')
-# measure device secret key to PCR7
-tpm2_pcrextend -ha 7 -ic $(vcmailbox 0x00030081 40 40 0 8 0 0 0 0 0 0 0 0 | sed 's/0x//g' | awk '{for(i=8;i<16;i++) printf $i; print ""}')
