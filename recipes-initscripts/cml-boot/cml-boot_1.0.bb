@@ -12,23 +12,35 @@ SRC_URI = "\
 	file://dev_enable_extcontainers \
 	file://dev_mount_plain_cml_part \
 	file://rpi_tpm_init \
-	file://cml-boot-script.stub \
+	file://60-cml-boot-script.fragment \
 "
 
 
 PR = "r2"
 
-S = "${WORKDIR}"
-
 CML_START_MSG = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "-- cml debug console on tty12 [ready]", "-- cml in release mode [ready]",d)}'
 
-do_install() {
-	echo "#!/bin/sh" >> ${D}/init
-	echo "# Machine ${MACHINE}" >> ${D}/init
-	echo "LOGTTY=\"${GYROIDOS_LOGTTY}\"" >> ${D}/init
-	echo "CML_START_MSG=\"${CML_START_MSG}\"" >> ${D}/init
+do_configure () {
+	for f in ${SRC_URI}; do
+		cp ${WORKDIR}/${f#file://} ${B}
+	done
+}
+do_configure[cleandirs] = "${B}"
 
-	cat ${WORKDIR}/cml-boot-script.stub >> ${D}/init
+do_compile:prepend () {
+	echo "#!/bin/sh" > ${B}/00-preamble.fragment
+	echo "# Machine ${MACHINE}" >> ${B}/00-preamble.fragment
+	echo "LOGTTY=\"${GYROIDOS_LOGTTY}\"" >> ${B}/00-preamble.fragment
+	echo "CML_START_MSG=\"${CML_START_MSG}\"" >> ${B}/00-preamble.fragment
+}
+
+do_compile () {
+	# use ls to ensure that fragments are assembled in correct order
+	cat $(ls ${B}/*.fragment) > ${B}/init
+}
+
+do_install() {
+	install ${B}/init ${D}/init
 
 	chmod 755 ${D}/init
 
