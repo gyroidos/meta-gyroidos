@@ -1,0 +1,4 @@
+##############DBG###################
+echo "[initramfs] Mounting /data/cmld 9pfs"
+mount -t 9p -o trans=virtio,version=9p2000.L extcmld /data/extcmld
+####################################

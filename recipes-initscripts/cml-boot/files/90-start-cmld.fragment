@@ -1,5 +1,3 @@
 echo "Starting Compartment Manager Daemon (cmld)"
 cmld &
 echo "${CML_START_MSG}" > /dev/console
-
-exec /sbin/init > /dev/$LOGTTY 2>&1

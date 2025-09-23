@@ -12,7 +12,10 @@ SRC_URI = "\
 	file://dev_mount_plain_cml_part \
 	file://60-cml-boot-script.fragment \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://80-dev-start-sshd.fragment', '', d)} \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://85-mnt-ext9pfs.fragment', '', d)} \
 	file://90-start-cmld.fragment \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://95-mnt-ext9pfs-again.fragment', '', d)} \
+	file://99-start-init.fragment \
 "
 
 
@@ -24,6 +27,8 @@ do_configure () {
 	# dev build warnings
 	if [ "y" = "${DEVELOPMENT_BUILD}" ];then
 		bbwarn "Patching /init script to start SSH server in cml layer"
+		bbwarn "Patching /init script to mount 9p file systems during early boot"
+		bbwarn "Patching /init script to mount 9p file systems during boot"
 	fi
 
 	for f in ${SRC_URI}; do
