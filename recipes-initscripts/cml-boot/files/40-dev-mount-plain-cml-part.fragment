@@ -1,0 +1,9 @@
+if [ ! -e "/dev/tpm0" ]; then
+	echo "Mounting CML partition in development build"
+	mkdir -p /mnt/
+	mount LABEL=gyroidos /mnt -t ext4 -o nosuid,nodev,noexec
+	if [ $? -ne 0 ]; then
+		mount LABEL=trustme /mnt -t ext4 -o nosuid,nodev,noexec
+	fi
+fi
+

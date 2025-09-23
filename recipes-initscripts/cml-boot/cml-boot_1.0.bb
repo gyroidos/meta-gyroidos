@@ -5,11 +5,17 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/files:"
 
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
+# With DEVELOPMENT_BUILD=y or GYROIDOS_PLAIN_DATAPART=y,
+# mounting an unencrypted partiton on /data is allowed for debugging purposes
+CML_MOUNT_PLAIN_DATAPART = "${@ oe.utils.vartrue('DEVELOPMENT_BUILD', True, oe.utils.vartrue('GYROIDOS_PLAIN_DATAPART', True, False, d), d) }"
+
 SRC_URI = "\
 	file://init_ascii \
 	file://dev_enable_extdata \
 	file://dev_enable_extcontainers \
-	file://dev_mount_plain_cml_part \
+	file://10-cml-boot-script-early.fragment \
+	file://30-mount-tpm-crypt-part.fragment \
+	${@oe.utils.vartrue('CML_MOUNT_PLAIN_DATAPART', 'file://40-dev-mount-plain-cml-part.fragment', 'file://40-disable-mount-plain-cml-part.fragment', d)} \
 	file://60-cml-boot-script.fragment \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://80-dev-start-sshd.fragment', '', d)} \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://85-mnt-ext9pfs.fragment', '', d)} \
@@ -29,6 +35,12 @@ do_configure () {
 		bbwarn "Patching /init script to start SSH server in cml layer"
 		bbwarn "Patching /init script to mount 9p file systems during early boot"
 		bbwarn "Patching /init script to mount 9p file systems during boot"
+	fi
+
+	if [ "y" = "${DEVELOPMENT_BUILD}" ] || [ "y" = "${GYROIDOS_PLAIN_DATAPART}" ];then
+		bbwarn "Patching /init script to mount plain CML data parition for development purposes"
+	else
+		bbnote "Production build: Forbid un-encrypted CML data partition"
 	fi
 
 	for f in ${SRC_URI}; do
@@ -60,18 +72,6 @@ do_install() {
 	mknod -m 622 ${D}/dev/console c 5 1
 	mknod -m 622 ${D}/dev/tty0 c 4 0
 	mknod -m 622 ${D}/dev/tty11 c 4 11
-
-	# With DEVELOPMENT_BUILD=y or GYROIDOS_PLAIN_DATAPART=y,
-	# mounting an unencrypted partiton on /data is allowed for debugging purposes
-	if [ "y" = "${DEVELOPMENT_BUILD}" ] || [ "y" = "${GYROIDOS_PLAIN_DATAPART}" ];then
-		bbwarn "Patching /init script to mount plain CML data parition for development purposes"
-		sed -i '\|#DEV_MOUNT_PLAIN_CML_PART#|e cat ${WORKDIR}/dev_mount_plain_cml_part' ${D}/init
-		sed -i '/#DEV_MOUNT_PLAIN_CML_PART#/d' ${D}/init
-	else
-		bbnote "Production build: Forbid un-encrypted CML data partition"
-		sed -i 's|#DEV_MOUNT_PLAIN_CML_PART#|exit 1|' ${D}/init
-	fi
-
 
 	# For debugging purposes, development builds include a SSH server
 	# in the cml layer, options to mount plain file systems on /data
