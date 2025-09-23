@@ -146,7 +146,9 @@ if [ -e "/dev/tpm0" ]; then
 	fi
 
 	tpm2_control exit
-else
+fi
+
+if [ ! -e "/dev/tpm0" ]; then
 	#DEV_MOUNT_PLAIN_CML_PART#
 fi
 
