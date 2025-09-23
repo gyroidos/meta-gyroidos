@@ -1,0 +1,1 @@
+exec /sbin/init > /dev/$LOGTTY 2>&1
