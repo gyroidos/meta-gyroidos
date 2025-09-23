@@ -1,7 +1,3 @@
-mount -a
-
-#DEV_ENABLE_EXTFS#
-
 echo "/data/core/%t_core" >> /proc/sys/kernel/core_pattern
 ulimit -c 0
 

@@ -11,11 +11,12 @@ CML_MOUNT_PLAIN_DATAPART = "${@ oe.utils.vartrue('DEVELOPMENT_BUILD', True, oe.u
 
 SRC_URI = "\
 	file://init_ascii \
-	file://dev_enable_extdata \
-	file://dev_enable_extcontainers \
 	file://10-cml-boot-script-early.fragment \
 	file://30-mount-tpm-crypt-part.fragment \
 	${@oe.utils.vartrue('CML_MOUNT_PLAIN_DATAPART', 'file://40-dev-mount-plain-cml-part.fragment', 'file://40-disable-mount-plain-cml-part.fragment', d)} \
+	file://50-mount-all.fragment \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://51-dev-enable-extdata.fragment', '', d)} \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://52-dev-enable-extcontainers.fragment', '', d)} \
 	file://60-cml-boot-script.fragment \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://80-dev-start-sshd.fragment', '', d)} \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://85-mnt-ext9pfs.fragment', '', d)} \
@@ -32,6 +33,7 @@ CML_START_MSG = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "-- cml debug console 
 do_configure () {
 	# dev build warnings
 	if [ "y" = "${DEVELOPMENT_BUILD}" ];then
+		bbwarn "Patching /init script to mount external data fs and containers fs for debugging purposes"
 		bbwarn "Patching /init script to start SSH server in cml layer"
 		bbwarn "Patching /init script to mount 9p file systems during early boot"
 		bbwarn "Patching /init script to mount 9p file systems during boot"
@@ -77,17 +79,11 @@ do_install() {
 	# in the cml layer, options to mount plain file systems on /data
 	# and we enable core dumps.
 	if [ "y" = "${DEVELOPMENT_BUILD}" ];then
-		bbwarn "Patching /init script to mount external data fs and containers fs for debugging purposes"
-		sed -i '\|#DEV_ENABLE_EXTFS#|e cat ${WORKDIR}/dev_enable_extdata' ${D}/init
-		sed -i '\|#DEV_ENABLE_EXTFS#|e cat ${WORKDIR}/dev_enable_extcontainers' ${D}/init
-
 		bbwarn "Enabling core dumps for debugging purposes"
 		sed -i 's|ulimit -c 0|ulimit -c 102400|' ${D}/init
 		sed -i 's|.*/proc/sys/kernel/core_pattern|mkdir -p /data/core\n&|' ${D}/init
 		sed -i 's|/data/core/%t_core|/data/core/%t_core.%s.%p.%P_%u_%g_%E|' ${D}/init
 	fi
-
-	sed -i '/#DEV_ENABLE_EXTFS#/d' ${D}/init
 }
 
 FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii"
