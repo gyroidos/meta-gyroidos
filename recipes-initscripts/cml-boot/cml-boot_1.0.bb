@@ -7,11 +7,12 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 SRC_URI = "\
 	file://init_ascii \
-	file://dev_start_sshd \
 	file://dev_enable_extdata \
 	file://dev_enable_extcontainers \
 	file://dev_mount_plain_cml_part \
 	file://60-cml-boot-script.fragment \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://80-dev-start-sshd.fragment', '', d)} \
+	file://90-start-cmld.fragment \
 "
 
 
@@ -20,6 +21,11 @@ PR = "r2"
 CML_START_MSG = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "-- cml debug console on tty12 [ready]", "-- cml in release mode [ready]",d)}'
 
 do_configure () {
+	# dev build warnings
+	if [ "y" = "${DEVELOPMENT_BUILD}" ];then
+		bbwarn "Patching /init script to start SSH server in cml layer"
+	fi
+
 	for f in ${SRC_URI}; do
 		cp ${WORKDIR}/${f#file://} ${B}
 	done
@@ -70,9 +76,6 @@ do_install() {
 		sed -i '\|#DEV_ENABLE_EXTFS#|e cat ${WORKDIR}/dev_enable_extdata' ${D}/init
 		sed -i '\|#DEV_ENABLE_EXTFS#|e cat ${WORKDIR}/dev_enable_extcontainers' ${D}/init
 
-		bbwarn "Patching /init script to start SSH server in cml layer"
-		sed -i '\|#DEV_START_SSHD#|e cat ${WORKDIR}/dev_start_sshd' ${D}/init
-
 		bbwarn "Enabling core dumps for debugging purposes"
 		sed -i 's|ulimit -c 0|ulimit -c 102400|' ${D}/init
 		sed -i 's|.*/proc/sys/kernel/core_pattern|mkdir -p /data/core\n&|' ${D}/init
@@ -80,7 +83,6 @@ do_install() {
 	fi
 
 	sed -i '/#DEV_ENABLE_EXTFS#/d' ${D}/init
-	sed -i '/#DEV_START_SSHD#/d' ${D}/init
 }
 
 FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii"
