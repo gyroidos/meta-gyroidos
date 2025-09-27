@@ -1,0 +1,40 @@
+From 46937143f58a4c0fe2a61bfca5a85f58a7f1ddbc Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Mon, 29 Sep 2025 11:01:28 +0200
+Subject: [PATCH 5/6] test/pixel: Fixed warning in verfiy() maybe-uninitilaized
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes following warning:
+
+    ../test/pixel-test.c: In function ‘verify’:
+    ../test/pixel-test.c:2977:27: warning: ‘mask’ may be used uninitialized [-Wmaybe-uninitialized]
+     2977 |     if (have_mask && mask != NULL)
+          |                           ^
+    ../test/pixel-test.c:2861:27: note: ‘mask’ was declared here
+     2861 |     pixman_image_t *src, *mask, *dest;
+          |                           ^~~~
+
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ test/pixel-test.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/test/pixel-test.c b/test/pixel-test.c
+index 7dc0eff..8766f8e 100644
+--- a/test/pixel-test.c
++++ b/test/pixel-test.c
+@@ -2858,7 +2858,8 @@ static pixman_bool_t
+ verify (int test_no, const pixel_combination_t *combination, int size,
+ 	pixman_bool_t component_alpha)
+ {
+-    pixman_image_t *src, *mask, *dest;
++    pixman_image_t *src, *dest;
++    pixman_image_t *mask = NULL;
+     pixel_checker_t src_checker, mask_checker, dest_checker;
+     color_t source_color, mask_color, dest_color, reference_color;
+     pixman_bool_t have_mask = (combination->mask_format != PIXMAN_null);
+-- 
+2.47.3
+

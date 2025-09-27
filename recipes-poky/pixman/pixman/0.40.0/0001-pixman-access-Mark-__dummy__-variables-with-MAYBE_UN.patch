@@ -1,0 +1,30 @@
+From 5fcd3028f32a23742db4965cf9da520c2ee9ad39 Mon Sep 17 00:00:00 2001
+From: Matt Turner <mattst88@gmail.com>
+Date: Wed, 3 Jan 2024 21:13:21 -0500
+Subject: [PATCH 1/6] pixman-access: Mark __dummy__ variables with MAYBE_UNUSED
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+(cherry picked from commit 7e76c962810914464122b9eec3699e910b3e6017)
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ pixman/pixman-access.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pixman/pixman-access.c b/pixman/pixman-access.c
+index 7c5ce78..f6f1b78 100644
+--- a/pixman/pixman-access.c
++++ b/pixman/pixman-access.c
+@@ -465,7 +465,7 @@ convert_and_store_pixel (bits_image_t *		image,
+ 	    image, bits, offset, PIXMAN_ ## format);			\
+     }									\
+ 									\
+-    static const void *const __dummy__ ## format
++    static const void *const __dummy__ ## format MAYBE_UNUSED
+ 
+ MAKE_ACCESSORS(a8r8g8b8);
+ MAKE_ACCESSORS(x8r8g8b8);
+-- 
+2.47.3
+

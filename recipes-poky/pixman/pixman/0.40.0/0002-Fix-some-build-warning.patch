@@ -1,0 +1,109 @@
+From 95f7d455954f3e0dd27d5c62b0b21749a819f3a0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Piku=C5=82a?= <m.pikula@partner.samsung.com>
+Date: Mon, 7 Apr 2025 10:52:25 +0200
+Subject: [PATCH 2/6] Fix some build warning
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- `unused-but-set-variable` for platforms without float128 in
+  `test/matrix-test.c`
+- `unused-but-set-variable` for `test/pixel-test.c`
+- `maybe-uninitialized` for `pixman_image_fill_rectangles`
+- enable `__force_align_arg_pointer__` only for x86
+
+Signed-off-by: Marek Pikuła <m.pikula@partner.samsung.com>
+(cherry picked from commit b61453104f0d63e23e2696f149ce6ab28f1e4270)
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ pixman/pixman-glyph.c | 15 ++++++++-------
+ pixman/pixman.c       |  2 +-
+ test/matrix-test.c    |  2 ++
+ 3 files changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/pixman/pixman-glyph.c b/pixman/pixman-glyph.c
+index 96a349a..db812b7 100644
+--- a/pixman/pixman-glyph.c
++++ b/pixman/pixman-glyph.c
+@@ -391,7 +391,8 @@ box32_intersect (pixman_box32_t *dest,
+     return dest->x2 > dest->x1 && dest->y2 > dest->y1;
+ }
+ 
+-#if defined(__GNUC__) && !defined(__x86_64__) && !defined(__amd64__)
++#if defined(__GNUC__) && defined(__i386__) && !defined(__x86_64__) &&          \
++    !defined(__amd64__)
+ __attribute__((__force_align_arg_pointer__))
+ #endif
+ PIXMAN_EXPORT void
+@@ -418,10 +419,10 @@ pixman_composite_glyphs_no_mask (pixman_op_t            op,
+ 
+     _pixman_image_validate (src);
+     _pixman_image_validate (dest);
+-    
++
+     dest_format = dest->common.extended_format_code;
+     dest_flags = dest->common.flags;
+-    
++
+     pixman_region32_init (&region);
+     if (!_pixman_compute_composite_region32 (
+ 	    &region,
+@@ -452,9 +453,9 @@ pixman_composite_glyphs_no_mask (pixman_op_t            op,
+ 	glyph_box.y1 = dest_y + glyphs[i].y - glyph->origin_y;
+ 	glyph_box.x2 = glyph_box.x1 + glyph->image->bits.width;
+ 	glyph_box.y2 = glyph_box.y1 + glyph->image->bits.height;
+-	
++
+ 	pbox = pixman_region32_rectangles (&region, &n);
+-	
++
+ 	info.mask_image = glyph_img;
+ 
+ 	while (n--)
+@@ -588,7 +589,7 @@ add_glyphs (pixman_glyph_cache_t *cache,
+ 	glyph_box.y1 = glyphs[i].y - glyph->origin_y + off_y;
+ 	glyph_box.x2 = glyph_box.x1 + glyph->image->bits.width;
+ 	glyph_box.y2 = glyph_box.y1 + glyph->image->bits.height;
+-	
++
+ 	if (box32_intersect (&composite_box, &glyph_box, &dest_box))
+ 	{
+ 	    int src_x = composite_box.x1 - glyph_box.x1;
+@@ -623,7 +624,7 @@ out:
+  *
+  * Then (mask_x, mask_y) in the infinite mask and (src_x, src_y) in the source
+  * image are both aligned with (dest_x, dest_y) in the destination image. Then
+- * these three images are composited within the 
++ * these three images are composited within the
+  *
+  *       (dest_x, dest_y, dst_x + width, dst_y + height)
+  *
+diff --git a/pixman/pixman.c b/pixman/pixman.c
+index c09b528..b54427b 100644
+--- a/pixman/pixman.c
++++ b/pixman/pixman.c
+@@ -839,7 +839,7 @@ pixman_image_fill_rectangles (pixman_op_t                 op,
+                               int                         n_rects,
+                               const pixman_rectangle16_t *rects)
+ {
+-    pixman_box32_t stack_boxes[6];
++    pixman_box32_t stack_boxes[6] = {0};
+     pixman_box32_t *boxes;
+     pixman_bool_t result;
+     int i;
+diff --git a/test/matrix-test.c b/test/matrix-test.c
+index 0a5f203..c60a641 100644
+--- a/test/matrix-test.c
++++ b/test/matrix-test.c
+@@ -219,6 +219,8 @@ test_matrix (int testnum, int verbose)
+                 }
+             }
+         }
++#else
++        (void)transform_ok;
+ #endif
+         byteswap_vector_48_16 (&result_i);
+         crc32 = compute_crc32 (crc32, &result_i, sizeof (result_i));
+-- 
+2.47.3
+
