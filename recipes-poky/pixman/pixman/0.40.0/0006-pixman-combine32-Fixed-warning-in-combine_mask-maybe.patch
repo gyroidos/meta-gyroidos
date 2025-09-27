@@ -1,0 +1,49 @@
+From b71871d35726d1cb954755d722394c48e75f9510 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Mon, 29 Sep 2025 11:13:08 +0200
+Subject: [PATCH 6/6] pixman-combine32: Fixed warning in combine_mask()
+ maybe-uninitialized
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes following warning if compiled with -Og:
+
+    In function ‘combine_mask’,
+        inlined from ‘combine_exclusion_u’ at ../pixman/pixman-combine32.c:805:1:
+    ../pixman/pixman-combine32.h:93:12: warning: ‘m’ may be used uninitialized [-Wmaybe-uninitialized]
+       93 |         t  = ((x) & RB_MASK) * (a);                                     \
+          |            ^
+    ../pixman/pixman-combine32.h:137:9: note: in expansion of macro ‘UN8_rb_MUL_UN8’
+      137 |         UN8_rb_MUL_UN8 (r2__, (a), t__);                                \
+          |         ^~~~~~~~~~~~~~
+    ../pixman/pixman-combine32.c:137:9: note: in expansion of macro ‘UN8x4_MUL_UN8’
+      137 |         UN8x4_MUL_UN8 (s, m);
+          |         ^~~~~~~~~~~~~
+    ../pixman/pixman-combine32.c: In function ‘combine_exclusion_u’:
+    ../pixman/pixman-combine32.c:124:17: note: ‘m’ was declared here
+      124 |     uint32_t s, m;
+          |
+
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ pixman/pixman-combine32.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/pixman/pixman-combine32.c b/pixman/pixman-combine32.c
+index 4a89384..0e37139 100644
+--- a/pixman/pixman-combine32.c
++++ b/pixman/pixman-combine32.c
+@@ -121,7 +121,8 @@ combine_mask_alpha_ca (const uint32_t *src, uint32_t *mask)
+ static force_inline uint32_t
+ combine_mask (const uint32_t *src, const uint32_t *mask, int i)
+ {
+-    uint32_t s, m;
++    uint32_t m = 0;
++    uint32_t s;
+ 
+     if (mask)
+     {
+-- 
+2.47.3
+
