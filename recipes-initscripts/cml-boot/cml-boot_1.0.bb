@@ -9,6 +9,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 # mounting an unencrypted partiton on /data is allowed for debugging purposes
 CML_MOUNT_PLAIN_DATAPART = "${@ oe.utils.vartrue('DEVELOPMENT_BUILD', True, oe.utils.vartrue('GYROIDOS_PLAIN_DATAPART', True, False, d), d) }"
 
+# For debugging purposes, development builds include a SSH server
+# in the cml layer, options to mount plain file systems on /data
+# and we enable core dumps.
 SRC_URI = "\
 	file://init_ascii \
 	file://10-cml-boot-script-early.fragment \
@@ -17,6 +20,7 @@ SRC_URI = "\
 	file://50-mount-all.fragment \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://51-dev-enable-extdata.fragment', '', d)} \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://52-dev-enable-extcontainers.fragment', '', d)} \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://55-dev-enable-core-dumps.fragment', 'file://55-disable-core-dumps.fragment', d)} \
 	file://60-cml-boot-script.fragment \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://80-dev-start-sshd.fragment', '', d)} \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://85-mnt-ext9pfs.fragment', '', d)} \
@@ -37,6 +41,7 @@ do_configure () {
 		bbwarn "Patching /init script to start SSH server in cml layer"
 		bbwarn "Patching /init script to mount 9p file systems during early boot"
 		bbwarn "Patching /init script to mount 9p file systems during boot"
+		bbwarn "Enabling core dumps for debugging purposes"
 	fi
 
 	if [ "y" = "${DEVELOPMENT_BUILD}" ] || [ "y" = "${GYROIDOS_PLAIN_DATAPART}" ];then
@@ -74,16 +79,6 @@ do_install() {
 	mknod -m 622 ${D}/dev/console c 5 1
 	mknod -m 622 ${D}/dev/tty0 c 4 0
 	mknod -m 622 ${D}/dev/tty11 c 4 11
-
-	# For debugging purposes, development builds include a SSH server
-	# in the cml layer, options to mount plain file systems on /data
-	# and we enable core dumps.
-	if [ "y" = "${DEVELOPMENT_BUILD}" ];then
-		bbwarn "Enabling core dumps for debugging purposes"
-		sed -i 's|ulimit -c 0|ulimit -c 102400|' ${D}/init
-		sed -i 's|.*/proc/sys/kernel/core_pattern|mkdir -p /data/core\n&|' ${D}/init
-		sed -i 's|/data/core/%t_core|/data/core/%t_core.%s.%p.%P_%u_%g_%E|' ${D}/init
-	fi
 }
 
 FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii"
