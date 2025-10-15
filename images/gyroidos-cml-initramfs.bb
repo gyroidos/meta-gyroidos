@@ -67,7 +67,7 @@ IMAGE_ROOTFS_SIZE = "4096"
 
 IMAGE_NAME_SUFFIX=""
 
-do_rootfs[depends] += "virtual/kernel:do_shared_workdir"
+do_rootfs[depends] += "virtual/kernel:do_shared_workdir gyroidos-cml-modules:do_image_complete gyroidos-cml-firmware:do_image_complete"
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 
 # In development builds, a debugging shell is available on tty12 for debugging purposes
@@ -128,10 +128,41 @@ cleanup_debug_files () {
         rm -f ${IMAGE_ROOTFS}/usr/lib/.debug/libprotoc.so.*
 }
 
+hash_modules_firmware () {
+	# modules.img
+	if [ ! -f "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs" ]; then
+		bbfatal "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs does not exist. Hash can not be calculated. Image will not be bootable."
+	fi
+
+	hash_modules=$(sha256sum ${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs | cut -d" " -f1)
+	bbnote "Locking modules image with hash $hash_modules ."
+	echo $hash_modules > ${IMAGE_ROOTFS}/etc/modules.hash
+
+	# sanity check
+	if [ "65" != "$(stat -c%s ${IMAGE_ROOTFS}/etc/modules.hash)" ]; then
+		bbfatal "modules.hash has the wrong size. Image will not be bootable. content $(cat ${IMAGE_ROOTFS}/etc/modules.hash)"
+	fi
+
+	# firmware.img
+	if [ ! -f "${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs" ]; then
+		bbfatal "${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs does not exist. Hash can not be calculated. Image will not be bootable."
+	fi
+
+	hash_firmware=$(sha256sum ${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs  | cut -d" " -f1)
+	bbnote "Locking firmware image with hash $hash_firmware ."
+	echo $hash_firmware > ${IMAGE_ROOTFS}/etc/firmware.hash
+
+	# sanity check
+	if [ "65" != "$(stat -c%s ${IMAGE_ROOTFS}/etc/firmware.hash)" ]; then
+		bbfatal "firmware.hash has the wrong size. Image will not be bootable. content $(cat ${IMAGE_ROOTFS}/etc/firmware.hash)"
+	fi
+}
+
 ROOTFS_POSTPROCESS_COMMAND:append = " update_modules_dep; "
 ROOTFS_POSTPROCESS_COMMAND:append = " update_hostname; "
 ROOTFS_POSTPROCESS_COMMAND:append = " cleanup_boot; "
 ROOTFS_POSTPROCESS_COMMAND:append = " install_ima_cert; "
+ROOTFS_POSTPROCESS_COMMAND:append = " hash_modules_firmware; "
 
 # protobuf debug symbols are huge >100M, remove this from initramfs
 ROOTFS_POSTPROCESS_COMMAND:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', " cleanup_debug_files; ", "",d)}'
