@@ -15,6 +15,8 @@ CML_MOUNT_PLAIN_DATAPART = "${@ oe.utils.vartrue('DEVELOPMENT_BUILD', True, oe.u
 SRC_URI = "\
 	file://init_ascii \
 	file://10-cml-boot-script-early.fragment \
+	file://15-redirect-logtty.fragment \
+	file://20-setup.fragment \
 	file://30-mount-tpm-crypt-part.fragment \
 	${@oe.utils.vartrue('CML_MOUNT_PLAIN_DATAPART', 'file://40-dev-mount-plain-cml-part.fragment', 'file://40-disable-mount-plain-cml-part.fragment', d)} \
 	file://50-mount-all.fragment \

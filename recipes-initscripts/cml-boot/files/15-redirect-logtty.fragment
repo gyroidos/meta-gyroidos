@@ -1,0 +1,3 @@
+exec > /dev/$LOGTTY
+exec 2>&1
+
