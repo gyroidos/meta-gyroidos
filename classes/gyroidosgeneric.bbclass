@@ -109,14 +109,6 @@ do_rootfs () {
 		${enrollment_dir}/config_creator/sign_config.sh {} \
 		${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert \;
 
-	# copy modules to data partition directory
-	bbnote "Copying linux-modules"
-	cp -fL "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs" "${rootfs}/modules.img"
-
-	# copy firmware to data partition directory
-	bbnote "Copying linux-firmware"
-	cp -fL "${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs" "${rootfs}/firmware.img"
-
 	# copy kernel update files to data partition directory
 	bbnote "Copying kernel update files"
 	if ! [ -z "${UPDATE_FILES}" ];then
