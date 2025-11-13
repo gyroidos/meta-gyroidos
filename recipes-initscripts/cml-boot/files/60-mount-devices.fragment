@@ -8,9 +8,17 @@ fi
 # find module/firmware image in guestos store and mount
 modules=$(find /data/cml/operatingsystems -name modules.img -exec sh -c 'printf "%s  %s\n" "$0" "$1" | sha256sum -c - >/dev/null 2>&1' "$(cat /etc/modules.hash)" {} \; -print -quit)
 mount -o loop,nosuid,noexec $modules /lib/modules
+if [ $? -ne 0 ]; then
+	exit
+fi
+
 firmware=$(find /data/cml/operatingsystems -name firmware.img -exec sh -c 'printf "%s  %s\n" "$0" "$1" | sha256sum -c - >/dev/null 2>&1' "$(cat /etc/firmware.hash)" {} \; -print -quit)
 mount -o loop,nosuid,noexec $firmware /lib/firmware
+if [ $? -ne 0 ]; then
+	exit
+fi
 
+# create logs directory
 mkdir -p /data/logs
 
 #now modules partition is mounted
