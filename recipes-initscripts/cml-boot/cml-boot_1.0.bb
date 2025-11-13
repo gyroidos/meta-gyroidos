@@ -59,15 +59,18 @@ do_configure () {
 do_configure[cleandirs] = "${B}"
 
 do_compile:prepend () {
-	echo "#!/bin/sh" > ${B}/00-preamble.fragment
 	echo "# Machine ${MACHINE}" >> ${B}/00-preamble.fragment
 	echo "LOGTTY=\"${GYROIDOS_LOGTTY}\"" >> ${B}/00-preamble.fragment
 	echo "CML_START_MSG=\"${CML_START_MSG}\"" >> ${B}/00-preamble.fragment
 }
 
 do_compile () {
+	echo "#!/bin/sh" > ${B}/init
 	# use ls to ensure that fragments are assembled in correct order
-	cat $(ls ${B}/*.fragment) > ${B}/init
+	for f in $(ls ${B}/*.fragment); do
+		echo "\n# $(basename $f)" >> ${B}/init
+		cat $f >> ${B}/init
+	done
 }
 
 do_install() {
