@@ -24,6 +24,7 @@ SRC_URI = "\
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://52-dev-enable-extcontainers.fragment', '', d)} \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://55-dev-enable-core-dumps.fragment', 'file://55-disable-core-dumps.fragment', d)} \
 	file://60-mount-devices.fragment \
+	file://61-remove-modules.fragment \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://80-dev-start-sshd.fragment', '', d)} \
 	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://85-mnt-ext9pfs.fragment', '', d)} \
 	file://90-start-cmld.fragment \
