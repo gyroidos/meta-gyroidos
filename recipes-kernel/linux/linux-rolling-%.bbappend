@@ -11,3 +11,4 @@ SRC_URI += "\
 "
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+KERNEL_FEATURES:remove = "cfg/efi.scc"
