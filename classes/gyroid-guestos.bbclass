@@ -7,7 +7,7 @@ include images/gyroidos-signing.inc
 # TARGET_CFLAGS += " -w "
 # BUILD_CFLAGS += " -w "
 
-IMAGE_FSTYPES = "squashfs ext4"
+IMAGE_FSTYPES = "squashfs"
 
 IMAGE_FEATURES:append = " ssh-server-openssh"
 IMAGE_INSTALL:append = " iproute2"
@@ -20,8 +20,6 @@ IMAGE_INSTALL:append = " binutils"
 IMAGE_INSTALL:append = " shadow"
 
 CONFIGS_OUT = "${B}/gyroidos-configs"
-
-IMAGE_POSTPROCESS_COMMAND:append = " do_sign_guestos; "
 
 do_sign_guestos:append () {
     mkdir -p ${CONFIGS_OUT}
