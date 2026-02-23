@@ -7,7 +7,7 @@ INSANE_SKIP:tpm2d = "ldflags"
 INSANE_SKIP:control = "ldflags"
 INSANE_SKIP:rattestation = "ldflags"
 
-DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text e2fsprogs openssl ibmtss2 sc-hsm-embedded efivar"
+DEPENDS = "protobuf-c-native protobuf-c protobuf-c-text e2fsprogs openssl ibmtss2 sc-hsm-embedded"
 
 EXTRA_OEMAKE = "GYROIDOS_HARDWARE=${GYROIDOS_HARDWARE}"
 EXTRA_OEMAKE += "SCHSM=${GYROIDOS_SCHSM}"
@@ -52,7 +52,6 @@ do_install () {
     fi
 }
 
-RDEPENDS:cmld += "efivar"
 RDEPENDS:scd += "cmld openssl"
 RDEPENDS:tpm2d += "cmld ibmtss2"
 RDEPENDS:control += "protobuf-c protobuf-c-text"
