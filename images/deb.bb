@@ -2,6 +2,8 @@ SUMMARY = "Skeleton for installing a Debian based container."
 
 LICENSE = "GPL-2.0-only"
 
+OS_CONFIG = "${THISDIR}/${PN}/${GYROIDOS_HARDWARE}/${PN}os.conf"
+
 include images/gyroidos-signing.inc
 
 #IMAGE_INSTALL = "debian-rootfs"
@@ -12,7 +14,6 @@ IMAGE_INSTALL = "\
 	perl \
 	debian-archive-keyring \
 	debootstrap \
-	service \
 	debian-boot \
 "
 
