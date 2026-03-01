@@ -1,5 +1,7 @@
 DECRIPTION = "Minimal root file system for downloading and converting Docker images"
 
+OS_CONFIG = "${THISDIR}/${PN}/${GYROIDOS_HARDWARE}/${PN}os.conf"
+
 include images/gyroidos-signing.inc
 
 PACKAGE_INSTALL = "\
