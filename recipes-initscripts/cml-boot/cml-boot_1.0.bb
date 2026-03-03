@@ -1,7 +1,7 @@
 SUMMARY = "init script to start gyroidos environment"
 LICENSE = "MIT"
 
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
@@ -13,6 +13,7 @@ CML_MOUNT_PLAIN_DATAPART = "${@ oe.utils.vartrue('DEVELOPMENT_BUILD', True, oe.u
 # in the cml layer, options to mount plain file systems on /data
 # and we enable core dumps.
 SRC_URI = "\
+	file://ima_policy \
 	file://init_ascii \
 	file://10-cml-boot-script-early.fragment \
 	file://15-redirect-logtty.fragment \
@@ -85,9 +86,11 @@ do_install() {
 	mknod -m 622 ${D}/dev/console c 5 1
 	mknod -m 622 ${D}/dev/tty0 c 4 0
 	mknod -m 622 ${D}/dev/tty11 c 4 11
+
+	install -m 0755 ${WORKDIR}/ima_policy ${D}${sysconfdir}/ima_policy
 }
 
-FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii"
+FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii ${sysconfdir}/ima_policy"
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"

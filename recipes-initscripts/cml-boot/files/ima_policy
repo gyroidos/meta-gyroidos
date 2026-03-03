@@ -1,0 +1,4 @@
+appraise func=MODULE_CHECK appraise_type=imasig|modsig
+measure func=MODULE_CHECK template=ima-modsig
+appraise func=FIRMWARE_CHECK
+measure func=FIRMWARE_CHECK template=ima-sig
