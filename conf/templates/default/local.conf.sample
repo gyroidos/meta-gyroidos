@@ -1,4 +1,5 @@
 DEVELOPMENT_BUILD = "##DEVELOPMENT_BUILD##"
+DEV_SSH_PUBKEY = "##DEV_SSH_PUBKEY##"
 CC_MODE = "##CC_MODE##"
 EXTRA_IMAGE_FEATURES = "${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'debug-tweaks', '', d)}"
 DISTRO_FEATURES:append = " virtualization"
