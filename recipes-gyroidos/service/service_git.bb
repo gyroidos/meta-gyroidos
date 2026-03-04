@@ -6,7 +6,9 @@ SRC_URI:append = "\
 	file://ssig_pki_generator.conf \
 	file://openssl-dockerlocal-rootca.cnf \
 	file://openssl-dockerlocal-subca.cnf \
+	file://openssl-dockerlocal-subca-cml.cnf \
 	file://openssl-dockerlocal-ssig.cnf \
+	file://openssl-dockerlocal-ssig-cml.cnf \
 "
 
 PACKAGES =+ "converter"
@@ -43,7 +45,9 @@ do_install () {
 	install -m 0600 ${WORKDIR}/ssig_pki_generator.conf ${D}/pki_generator/
 	install -m 0600 ${WORKDIR}/openssl-dockerlocal-rootca.cnf ${D}/pki_generator
 	install -m 0600 ${WORKDIR}/openssl-dockerlocal-subca.cnf ${D}/pki_generator
+	install -m 0600 ${WORKDIR}/openssl-dockerlocal-subca-cml.cnf ${D}/pki_generator
 	install -m 0600 ${WORKDIR}/openssl-dockerlocal-ssig.cnf ${D}/pki_generator
+	install -m 0600 ${WORKDIR}/openssl-dockerlocal-ssig-cml.cnf ${D}/pki_generator
 
 	mkdir -p ${DEPLOY_DIR_IMAGE}/proto
 	cp ${S}/daemon/*.proto ${DEPLOY_DIR_IMAGE}/proto
