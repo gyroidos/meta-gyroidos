@@ -22,7 +22,6 @@ DEBUG_PACKAGES = "\
        util-linux-sfdisk \
        util-linux \
        openssh-sshd \
-       ssh-keys \
        binutils \
        cmld-dbg \
 "
