@@ -37,7 +37,6 @@ ROOTFS_POSTPROCESS_COMMAND:append = " update_hostname; "
 ROOTFS_POSTPROCESS_COMMAND:append = " update_network_interfaces; "
 
 update_inittab () {
-    sed -i "/ttyS[[:digit:]]\+/d" ${IMAGE_ROOTFS}/etc/inittab
     #echo "1::respawn:${base_sbindir}/mingetty --autologin root tty1" >> ${IMAGE_ROOTFS}/etc/inittab
     echo "1:12345:respawn:${base_sbindir}/getty 38400 tty1" >> ${IMAGE_ROOTFS}/etc/inittab
     echo "2:12345:respawn:${base_sbindir}/getty 38400 tty2" >> ${IMAGE_ROOTFS}/etc/inittab
