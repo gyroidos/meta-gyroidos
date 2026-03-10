@@ -30,3 +30,9 @@ DEBUG_PACKAGES = "\
 IMAGE_INSTALL:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', ' ${DEBUG_PACKAGES}', "",d)}'
 
 EXTRA_IMAGE_FEATURES:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', ' tools-debug', "",d)}'
+
+do_sign_guestos:append () {
+    if [ "n" = ${DEVELOPMENT_BUILD} ]; then
+        echo 'assign_dev: "c 4:64 rwm"' >> ${CONFIGS_OUT}/container/${CONTAINER_CONFIG_FILE}
+    fi
+}
