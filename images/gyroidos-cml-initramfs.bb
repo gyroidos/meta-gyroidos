@@ -36,7 +36,6 @@ DEBUG_PACKAGES = "\
 	util-linux-sfdisk \
 	util-linux \
 	openssh-sshd \
-	ssh-keys \
 	tcpdump \
 	binutils \
 	gdb \
@@ -158,6 +157,14 @@ hash_modules_firmware () {
 	fi
 }
 
+install_ssh_key() {
+	bbnote "Installing ${DEV_SSH_PUBKEY} as authorized_keys for sshd"
+	install -d -m 0700 "${IMAGE_ROOTFS}/etc/ssh"
+	echo "${DEV_SSH_PUBKEY}" > ${IMAGE_ROOTFS}/etc/ssh/authorized_keys
+	chmod 0600 "${IMAGE_ROOTFS}/etc/ssh/authorized_keys"
+}
+
+
 ROOTFS_POSTPROCESS_COMMAND:append = " update_modules_dep; "
 ROOTFS_POSTPROCESS_COMMAND:append = " update_hostname; "
 ROOTFS_POSTPROCESS_COMMAND:append = " cleanup_boot; "
@@ -169,6 +176,7 @@ ROOTFS_POSTPROCESS_COMMAND:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', " 
 
 # For debug purpose allow login if debug-tweaks is set in local.conf
 ROOTFS_POSTPROCESS_COMMAND:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', " update_tabs ; ", " update_tabs_release ; ",d)}'
+ROOTFS_POSTPROCESS_COMMAND:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', " install_ssh_key ; ", "",d)}'
 
 inherit extrausers
 # password for root is 'root'
