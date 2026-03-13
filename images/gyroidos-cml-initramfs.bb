@@ -43,6 +43,7 @@ DEBUG_PACKAGES = "\
 	gdbserver \
 	strace \
 	cmld-dbg \
+	softhsm \
 "
 
 PACKAGE_INSTALL:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "${DEBUG_PACKAGES}", "",d)}'
