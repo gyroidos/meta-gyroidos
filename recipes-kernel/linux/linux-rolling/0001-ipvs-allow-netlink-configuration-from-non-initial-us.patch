@@ -1,4 +1,4 @@
-From 59325f36876d877e054a676ac47eee14e3dabd77 Mon Sep 17 00:00:00 2001
+From b6dc46e2b70c7d9b89803abe360d97ffa8d30da2 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
 Date: Wed, 21 Feb 2024 20:14:54 +0100
 Subject: [PATCH] ipvs: allow netlink configuration from non-initial
@@ -29,15 +29,15 @@ Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
  1 file changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-index 143a341bbc0a..d39120c64207 100644
+index 2aaf50f52c8e8..c2abd36e9d9a0 100644
 --- a/net/netfilter/ipvs/ip_vs_ctl.c
 +++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -1080,7 +1080,7 @@ ip_vs_new_dest(struct ip_vs_service *svc, struct ip_vs_dest_user_kern *udest)
+@@ -1079,7 +1079,7 @@ ip_vs_new_dest(struct ip_vs_service *svc, struct ip_vs_dest_user_kern *udest)
  			return -EINVAL;
  	}
  
--	dest = kzalloc(sizeof(struct ip_vs_dest), GFP_KERNEL);
-+	dest = kzalloc(sizeof(struct ip_vs_dest), GFP_KERNEL_ACCOUNT);
+-	dest = kzalloc_obj(struct ip_vs_dest);
++	dest = kzalloc_obj(struct ip_vs_dest, GFP_KERNEL_ACCOUNT);
  	if (dest == NULL)
  		return -ENOMEM;
  
@@ -45,12 +45,12 @@ index 143a341bbc0a..d39120c64207 100644
  		ret_hooks = ret;
  	}
  
--	svc = kzalloc(sizeof(struct ip_vs_service), GFP_KERNEL);
-+	svc = kzalloc(sizeof(struct ip_vs_service), GFP_KERNEL_ACCOUNT);
+-	svc = kzalloc_obj(struct ip_vs_service);
++	svc = kzalloc_obj(struct ip_vs_service, GFP_KERNEL_ACCOUNT);
  	if (svc == NULL) {
  		IP_VS_DBG(1, "%s(): no memory\n", __func__);
  		ret = -ENOMEM;
-@@ -4139,98 +4139,98 @@ static const struct genl_small_ops ip_vs_genl_ops[] = {
+@@ -4135,98 +4135,98 @@ static const struct genl_small_ops ip_vs_genl_ops[] = {
  	{
  		.cmd	= IPVS_CMD_NEW_SERVICE,
  		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
@@ -166,5 +166,5 @@ index 143a341bbc0a..d39120c64207 100644
  	},
  };
 -- 
-2.39.2
+2.53.0
 
