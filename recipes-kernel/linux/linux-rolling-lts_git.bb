@@ -7,6 +7,8 @@ SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git;protoc
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
+include linux-logo.inc
+
 LINUX_VERSION ?= "1.0"
 LINUX_VERSION_EXTENSION = "-lts"
 

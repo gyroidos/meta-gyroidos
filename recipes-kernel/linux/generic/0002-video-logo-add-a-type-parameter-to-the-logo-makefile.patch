@@ -1,0 +1,53 @@
+From a7aa2b512b141afe638b715f7b84c1588cdc9845 Mon Sep 17 00:00:00 2001
+From: Vincent Mailhol <mailhol@kernel.org>
+Date: Thu, 8 Jan 2026 20:04:50 +0100
+Subject: [PATCH 2/3] video/logo: add a type parameter to the logo makefile
+ function
+
+When translating a portable pixmap file into a .c file, the pnmtologo
+tool expects to receive the image type (either mono, vga16 or clut224)
+as an argument under the -t option.
+
+Currently, this information is stored in the file name. Because we
+will allow for custom logo in an upcoming change, it is preferable to
+decouple the image name from its type.
+
+Add a new $2 parameter to the Makefile logo function which contains
+the image type.
+
+Update all the individual targets to provide this new argument.
+
+Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
+Signed-off-by: Helge Deller <deller@gmx.de>
+---
+ drivers/video/logo/Makefile | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
+index 8b67c4941a4c..3f249e9dcf37 100644
+--- a/drivers/video/logo/Makefile
++++ b/drivers/video/logo/Makefile
+@@ -22,13 +22,16 @@ hostprogs := pnmtologo
+ 
+ # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
+ quiet_cmd_logo = LOGO    $@
+-      cmd_logo = $(obj)/pnmtologo -t $(lastword $(subst _, ,$*)) -n $* -o $@ $<
++      cmd_logo = $(obj)/pnmtologo -t $2 -n $* -o $@ $<
+ 
+ $(obj)/%.c: $(src)/%.pbm $(obj)/pnmtologo FORCE
+-	$(call if_changed,logo)
++	$(call if_changed,logo,mono)
+ 
+-$(obj)/%.c: $(src)/%.ppm $(obj)/pnmtologo FORCE
+-	$(call if_changed,logo)
++$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(obj)/pnmtologo FORCE
++	$(call if_changed,logo,vga16)
++
++$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(obj)/pnmtologo FORCE
++	$(call if_changed,logo,clut224)
+ 
+ # generated C files
+ targets += *_mono.c *_vga16.c *_clut224.c
+-- 
+2.47.3
+
