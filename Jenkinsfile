@@ -1,5 +1,5 @@
 pipeline {
-	agent any
+	agent none
 
 	parameters {
 	string(name: 'CI_LIB_VERSION', defaultValue: 'main', description: 'Version of gyroidos_ci_common to use for this build')
