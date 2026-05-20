@@ -21,6 +21,8 @@ GYROIDOS_GENERIC_DEPENDS = " \
     virtual/kernel:do_deploy \
 "
 
+GYROIDOS_GUESTOS_MCDEPENDS ?= "mc::guestos:gyroidos-core:do_image_complete"
+
 DEPENDS += "e2fsprogs-native bc-native"
 
 install_ssig_rootca () {
@@ -126,6 +128,7 @@ do_rootfs () {
 ROOTFS_PREPROCESS_COMMAND = ""
 
 do_rootfs[depends] += " ${GYROIDOS_GENERIC_DEPENDS} "
+do_rootfs[mcdepends] += "${GYROIDOS_GUESTOS_MCDEPENDS}"
 
 IMAGE_POSTPROCESS_COMMAND:append = " deploy_gyroidosimage; "
 
