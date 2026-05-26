@@ -30,11 +30,27 @@ do_compile() {
         if [ ! -d ${TEST_CERT_DIR}/certs ]; then
             mkdir -p ${TEST_CERT_DIR}/certs
         fi
+
         openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform DER -out ${TEST_CERT_DIR}/certs/signing_key.x509
         if [ -f ${TEST_CERT_DIR}/ssig_subca.key ]; then
                 cp ${TEST_CERT_DIR}/ssig_subca.key ${TEST_CERT_DIR}/certs/signing_key.pem
                 openssl x509 -in ${TEST_CERT_DIR}/ssig_subca.cert -outform PEM >> ${TEST_CERT_DIR}/certs/signing_key.pem
         fi
+
+        # Perform basic validity checks to provide early feedback during development
+        bbwarn "Performing basic certificate validity checks"
+        bbwarn "openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} ${KERNEL_MODULE_SIG_KEY_CERT}"
+        openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} ${KERNEL_MODULE_SIG_KEY_CERT}
+
+        bbwarn "openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} -untrusted ${GUESTOS_SIG_CERT} ${GUESTOS_SIG_CERT}"
+        openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} -untrusted ${GUESTOS_SIG_CERT} ${GUESTOS_SIG_CERT}
+
+        bbwarn "openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} -untrusted ${FIRMWARE_SIG_CERT} ${FIRMWARE_SIG_CERT}"
+        openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} -untrusted ${FIRMWARE_SIG_CERT} ${FIRMWARE_SIG_CERT}
+
+        bbwarn "openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} -untrusted ${SECURE_BOOT_SIG_CERT} ${SECURE_BOOT_SIG_CERT}"
+        openssl verify -CAfile ${GUESTOS_SIG_ROOT_CERT} -untrusted ${SECURE_BOOT_SIG_CERT} ${SECURE_BOOT_SIG_CERT}
+
         if [ -f ${TEST_CERT_DIR}/PK.crt ]; then 
             openssl x509 -in ${TEST_CERT_DIR}/PK.crt -outform DER -out ${TEST_CERT_DIR}/PK.cer
         fi
