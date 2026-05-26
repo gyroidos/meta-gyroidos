@@ -106,8 +106,10 @@ do_rootfs () {
 
 	# sign container configs
 	find "${rootfs_datadir}/cml/containers_templates" -name '*.conf' -exec bash \
-		${enrollment_dir}/config_creator/sign_config.sh {} \
-		${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert \;
+		--config ${enrollment_dir}/config_creator/sign_config.sh {} \
+		--key ${TEST_CERT_DIR}/ssig_cml.key \
+		--cert ${TEST_CERT_DIR}/ssig_cml.cert \
+		--cert ${TEST_CERT_DIR}/ssig_subca_cml.cert \;
 
 	# copy kernel update files to data partition directory
 	bbnote "Copying kernel update files"
