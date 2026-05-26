@@ -69,8 +69,10 @@ do_sign_guestos () {
             -u "${UPSTREAM_VERSION}"
     fi
 
-    bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}.conf \
-            "${GUESTOS_SIG_KEY}" "${GUESTOS_SIG_CERT}"
+    bash ${ENROLLMENT_DIR}/config_creator/sign_config.sh \
+        --config ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}.conf \
+        --key "${GUESTOS_SIG_KEY}" \
+        ${@' '.join([f'--cert {x}' for x in d.getVar('GUESTOS_SIG_CERT').split())}
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
 }
