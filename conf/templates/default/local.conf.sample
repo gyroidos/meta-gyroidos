@@ -58,7 +58,7 @@ KERNEL_MODULE_SIG_KEY_CERT="${TOPDIR}/test_certificates/certs/signing_key.pem"
 #KERNEL_MODULE_SIG_KEY_CERT="pkcs11:serial=SERIAL;object=ssig_subca"
 
 GUESTOS_SIG_KEY = "${TOPDIR}/test_certificates/ssig_cml.key"
-GUESTOS_SIG_CERT = "${TOPDIR}/test_certificates/ssig_cml.cert"
+GUESTOS_SIG_CERT = "${TOPDIR}/test_certificates/ssig_cml.cert ${TOPDIR}/test_certificates/ssig_subca_cml.cert"
 # Likewise, GUESTOS_SIG_{KEY,CERT} may be given as a PKCS#11 URI instead
 # of file paths.
 # GUESTOS_SIG_CERT may define a list of certificates that are concatenated to
