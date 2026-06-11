@@ -1,0 +1,10 @@
+# Dev/CI diagnostics. Dumps the kernel command line and a few sanity-check
+# bits to stdout, which at this point is $LOGTTY (ttyS2 → cml.log artifact in
+# CI). Lets us confirm whether console=ttyS1 etc. actually reached the
+# running kernel, without needing live access to the VM.
+echo "=== diag: /proc/cmdline ==="
+cat /proc/cmdline
+echo "=== diag: serial devices ==="
+ls -l /dev/ttyS* 2>/dev/null || echo "no /dev/ttyS* nodes"
+echo "=== diag: LOGTTY=$LOGTTY ==="
+
