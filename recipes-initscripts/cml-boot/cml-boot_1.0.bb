@@ -19,6 +19,7 @@ SRC_URI = "\
 	file://15-redirect-logtty.fragment \
 	file://20-setup.fragment \
 	${@oe.utils.vartrue('GYROIDOS_SANITIZERS', 'file://21-setup-asan.fragment', '', d)} \
+	${@oe.utils.vartrue('DEVELOPMENT_BUILD', 'file://22-dump-diag.fragment', '', d)} \
 	file://30-mount-tpm-crypt-part.fragment \
 	${@oe.utils.vartrue('CML_MOUNT_PLAIN_DATAPART', 'file://40-dev-mount-plain-cml-part.fragment', 'file://40-disable-mount-plain-cml-part.fragment', d)} \
 	file://50-mount-all.fragment \
@@ -35,7 +36,7 @@ SRC_URI = "\
 "
 
 
-PR = "r2"
+PR = "r3"
 
 CML_START_MSG = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', "-- cml debug console on tty12 [ready]", "-- cml in release mode [ready]",d)}'
 
