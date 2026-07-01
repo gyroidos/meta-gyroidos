@@ -52,6 +52,12 @@ do_sign_guestos:prepend () {
         cp "${DEPLOY_DIR_IMAGE}/gyroidos-cml-firmware-${MACHINE}.squashfs" "${UPDATE_OUT}/firmware.img"
         cp "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs" "${UPDATE_OUT}/modules.img"
         cp "${WORKDIR}/device.conf" "${UPDATE_OUT}/device.img"
+
+        for f in kernel.img modules.img firmware.img device.img; do
+                if [ ! -f "${UPDATE_OUT}/$f" ]; then
+                        bbfatal "$f missing from ${UPDATE_OUT} — image will not boot"
+                fi
+        done
 }
 
 do_sign_guestos:append () {
