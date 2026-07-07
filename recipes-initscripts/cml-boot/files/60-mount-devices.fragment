@@ -1,7 +1,13 @@
-# check if data is already mounted by debugging feature or fstab
-mountpoint /data
-if [ $? -ne 0 ]; then
-	mount -o bind,nosuid,nodev,noexec /mnt/userdata /data
+mkdir -p /data
+userdata_present() { [ -d /mnt/userdata ]; }
+wait_for "/mnt/userdata (CML data partition on /mnt)" 10 true userdata_present
+
+# bind onto /data unless a debugging feature (fragment 51) or fstab already did
+if ! mountpoint -q /data; then
+	if ! mount -o bind,nosuid,nodev,noexec /mnt/userdata /data; then
+		echo "FATAL: failed to bind-mount /mnt/userdata on /data"
+		exit 1
+	fi
 fi
 
 # data partition is now mounted
