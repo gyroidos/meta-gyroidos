@@ -1,12 +1,8 @@
 mkdir -p /mnt/extdata
-mount LABEL=extdata -o nosuid,nodev,noexec /mnt/extdata
-if [ $? -eq 0 ]
-then
+if mount LABEL=extdata -o nosuid,nodev,noexec /mnt/extdata; then
 	mkdir -p /mnt/extdata/workdir
 	mkdir -p /mnt/extdata/data
-	mount -t overlay overlay -o lowerdir=/mnt/userdata,upperdir=/mnt/extdata/data,workdir=/mnt/extdata/workdir /data
-	if [ $? -ne 0 ]
-	then
+	if ! mount -t overlay overlay -o lowerdir=/mnt/userdata,upperdir=/mnt/extdata/data,workdir=/mnt/extdata/workdir /data; then
 		echo "WARN: Failed to mount external data as overlayfs"
 		mount -o bind,nosuid,nodev,noexec /mnt/userdata /data
 	fi
