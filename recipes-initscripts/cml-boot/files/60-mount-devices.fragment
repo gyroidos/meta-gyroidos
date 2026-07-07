@@ -16,10 +16,12 @@ GUESTOS_STORE="/data/cml/operatingsystems"
 # Echo the path of the first image named $1 whose sha256 matches the trusted
 # digest in $2 (a bare 64-char hex + newline), or return 1 if none matches.
 find_verified_image() {
-	_expected="$(cat "$2" 2>/dev/null)"
+	_expected=""
+	read -r _expected < "$2" 2>/dev/null || true
 	for _cand in "$GUESTOS_STORE"/*/"$1"; do
 		[ -f "$_cand" ] || continue		# skip the unexpanded glob / non-files
-		if [ "$(sha256sum "$_cand" | cut -d' ' -f1)" = "$_expected" ]; then
+		_sum="$(sha256sum "$_cand")" || continue
+		if [ "${_sum%% *}" = "$_expected" ]; then	# strip "  filename" (no `cut`)
 			printf '%s\n' "$_cand"
 			return 0
 		fi
@@ -27,8 +29,7 @@ find_verified_image() {
 	return 1
 }
 
-modules="$(find_verified_image modules.img /etc/modules.hash)"
-if [ -z "$modules" ]; then
+if ! modules="$(find_verified_image modules.img /etc/modules.hash)" || [ -z "$modules" ]; then
 	echo "FATAL: no modules.img in $GUESTOS_STORE matches /etc/modules.hash"
 	exit 1
 fi
@@ -38,8 +39,7 @@ if ! mount -o loop,nosuid,noexec "$modules" /lib/modules; then
 	exit 1
 fi
 
-firmware="$(find_verified_image firmware.img /etc/firmware.hash)"
-if [ -z "$firmware" ]; then
+if ! firmware="$(find_verified_image firmware.img /etc/firmware.hash)" || [ -z "$firmware" ]; then
 	echo "FATAL: no firmware.img in $GUESTOS_STORE matches /etc/firmware.hash"
 	exit 1
 fi
@@ -54,18 +54,23 @@ mkdir -p /data/logs
 
 #now modules partition is mounted
 echo "Waiting for devices"
-for i in {1..4}; do
+for i in 1 2 3 4; do
 	echo -n "."
 	scan_devices
 done
 
-mount -a
+# best-effort: fstab has optional entries (e.g. efivarfs on non-EFI) that are allowed to fail
+mount -a || true
 
 mkdir -p /var/volatile/tmp
 
 for suffix in conf sig cert; do
-	if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix" ]; then
-		cp -a "/data/cml/containers_templates/00000000-0000-0000-0000-000000000000.$suffix" "/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix"
+	c0_dst="/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix"
+	if [ ! -f "$c0_dst" ]; then
+		if ! cp -a "/data/cml/containers_templates/00000000-0000-0000-0000-000000000000.$suffix" "$c0_dst"; then
+			echo "FATAL: failed to install c0 container template ($suffix)"
+			exit 1
+		fi
 	fi
 done
 
