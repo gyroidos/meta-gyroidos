@@ -1,6 +1,5 @@
 mkdir -p /data
-userdata_present() { [ -d /mnt/userdata ]; }
-wait_for "/mnt/userdata (CML data partition on /mnt)" 10 true userdata_present
+wait_for "/mnt/userdata (CML data partition on /mnt)" 30 test -d /mnt/userdata
 
 # bind onto /data unless a debugging feature (fragment 51) or fstab already did
 if ! is_mounted /data; then
@@ -52,13 +51,8 @@ fi
 # create logs directory
 mkdir -p /data/logs
 
-#now modules partition is mounted
-echo "Waiting for devices"
-for i in 1 2 3 4; do
-	echo -n "."
-	scan_devices
-done
-
+# reload udev
+udevadm control --reload
 # best-effort: fstab has optional entries (e.g. efivarfs on non-EFI) that are allowed to fail
 mount -a || true
 
