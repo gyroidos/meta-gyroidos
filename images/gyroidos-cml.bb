@@ -25,6 +25,10 @@ prepare_device_conf () {
             bbwarn "Setting for signed_configs already specified, leaving unchanged..."
         fi
     fi
+
+    if [ "y" = "${GYROIDOS_PKCS11}" ]; then
+        echo 'scd_env: "SOFTHSM2_CONF=/data/cml/tokens/softhsm2.conf"' >> ${WORKDIR}/device.conf
+    fi
 }
 #IMAGE_PREPROCESS_COMMAND:append = " prepare_device_conf;"
 
@@ -37,6 +41,25 @@ do_rootfs:prepend () {
 	prepare_kernel_conf
 	prepare_device_conf
 	do_sign_guestos
+}
+
+# PKCS#11 (softhsm2) runtime state on the data partition, 'pkcs11' image only.
+# Ships just the module-dir symlink, the softhsm2 config and an empty tokendir:
+# scd initializes its own token (label = container UUID) and wrapping key per
+# container at first pairing, so no token or key is provisioned at build time.
+# The symlink is mandatory — /data is mounted noexec, a module copied there
+# would fail dlopen; the .so itself lives in the initramfs root.
+install_pkcs11_data () {
+	if [ "y" = "${GYROIDOS_PKCS11}" ]; then
+		install -d ${IMAGE_ROOTFS}/userdata/cml/pkcs11
+		ln -sf /usr/lib/softhsm/libsofthsm2.so ${IMAGE_ROOTFS}/userdata/cml/pkcs11/libsofthsm2.so
+		install -d ${IMAGE_ROOTFS}/userdata/cml/tokens/softhsm
+		echo "directories.tokendir = /data/cml/tokens/softhsm" > ${IMAGE_ROOTFS}/userdata/cml/tokens/softhsm2.conf
+	fi
+}
+
+do_rootfs:append () {
+	install_pkcs11_data
 }
 
 GUESTS_OUT = "${B}/cml_updates"
