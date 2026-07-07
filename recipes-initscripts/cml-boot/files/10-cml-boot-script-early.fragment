@@ -7,6 +7,30 @@ function scan_devices {
 	udevadm settle
 }
 
+# Generic bounded readiness wait: re-evaluate a readiness check until it passes,
+# giving slow storage / udev time to settle, and abort the boot loudly instead
+# of hanging forever or failing later with a cryptic downstream error.
+# Arguments:
+#   DESCRIPTION - human-readable name of what we wait for (used in messages)
+#   MAX_TRIES   - give up and `exit 1` after this many failed attempts
+#   NUDGE_FN    - run between attempts to prod things along (e.g. scan_devices
+#                 to re-trigger udev; pass `true` for a plain wait)
+#   CHECK_FN    - returns success once the awaited thing is ready
+function wait_for {
+	_what="$1"; _max="$2"; _nudge="$3"; _check="$4"
+	_tries=0
+	while ! "$_check"; do
+		_tries=$((_tries + 1))
+		if [ "$_tries" -gt "$_max" ]; then
+			echo "FATAL: timed out waiting for $_what"
+			exit 1
+		fi
+		echo "Waiting for $_what (try $_tries) ..."
+		"$_nudge"
+		sleep 1
+	done
+}
+
 cat /etc/init_ascii
 
 echo "-- cml init log on $LOGTTY [ready]"
