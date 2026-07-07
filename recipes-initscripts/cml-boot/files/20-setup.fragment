@@ -31,5 +31,10 @@ mkdir -p /dev/shm
 mkdir -p /data/logs
 
 udevd --daemon || true          # if udev is dead, later device waits fail loudly
-scan_devices
+
+# one-time coldplug: process the devices present now. udevd keeps handling new
+# uevents on its own afterwards, later stages just wait on the actual device
+udevadm trigger --type=subsystems --action=add || true
+udevadm trigger --type=devices --action=add || true
+udevadm settle || true
 
