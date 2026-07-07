@@ -31,6 +31,13 @@ function wait_for {
 	done
 }
 
+# is_mounted DIR -- true if DIR is currently a mount point. Uses /proc/mounts so
+# it does not depend on the `mountpoint` applet, which is not built into this
+# image's busybox.
+function is_mounted {
+	grep -qF " $1 " /proc/mounts
+}
+
 cat /etc/init_ascii
 
 echo "-- cml init log on $LOGTTY [ready]"
