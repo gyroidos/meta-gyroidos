@@ -1,1 +1,2 @@
-mount -a
+# best-effort: fstab has optional entries (e.g. efivarfs on non-EFI) that are allowed to fail
+mount -a || true
