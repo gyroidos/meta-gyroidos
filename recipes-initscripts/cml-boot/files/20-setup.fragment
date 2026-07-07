@@ -5,25 +5,31 @@ mkdir -p /proc
 mkdir -p /sys
 mkdir -p /run
 
-mount /proc
-mount /sys
-mount /dev
-mount /run
+for _fs in /proc /sys /dev /run; do
+	if ! mount "$_fs"; then
+		echo "FATAL: failed to mount $_fs"
+		exit 1
+	fi
+done
 
 mkdir -p /sys/kernel/security
-mount -t securityfs securityfs /sys/kernel/security
+mount -t securityfs securityfs /sys/kernel/security || true
 
-cat /etc/ima_policy > /sys/kernel/security/ima/policy
+# IMA appraisal is security-critical: refuse to boot if the policy cannot load
+if ! cat /etc/ima_policy > /sys/kernel/security/ima/policy; then
+	echo "FATAL: failed to load IMA policy into /sys/kernel/security/ima/policy"
+	exit 1
+fi
 
 mkdir -p /dev/pts
-mount /dev/pts
+mount /dev/pts || true          # only needed for interactive PTYs (getty/sshd)
 
-# do not log kernel messages to console
-echo 1 > /proc/sys/kernel/printk
+# do not log kernel messages to console (best-effort)
+echo 1 > /proc/sys/kernel/printk || true
 
 mkdir -p /dev/shm
 mkdir -p /data/logs
 
-udevd --daemon
+udevd --daemon || true          # if udev is dead, later device waits fail loudly
 scan_devices
 
