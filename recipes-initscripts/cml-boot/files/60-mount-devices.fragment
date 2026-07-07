@@ -3,7 +3,7 @@ userdata_present() { [ -d /mnt/userdata ]; }
 wait_for "/mnt/userdata (CML data partition on /mnt)" 10 true userdata_present
 
 # bind onto /data unless a debugging feature (fragment 51) or fstab already did
-if ! mountpoint -q /data; then
+if ! is_mounted /data; then
 	if ! mount -o bind,nosuid,nodev,noexec /mnt/userdata /data; then
 		echo "FATAL: failed to bind-mount /mnt/userdata on /data"
 		exit 1

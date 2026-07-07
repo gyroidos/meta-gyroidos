@@ -9,12 +9,12 @@ if [ ! -e "/dev/tpm0" ]; then
 	wait_for "data partition (LABEL=gyroidos/trustme)" 10 scan_devices data_label_ready
 
 	if [ -e /dev/disk/by-label/gyroidos ]; then
-		mount /dev/disk/by-label/gyroidos /mnt -t ext4 -o nosuid,nodev,noexec
+		data_dev=/dev/disk/by-label/gyroidos
 	else
-		mount /dev/disk/by-label/trustme /mnt -t ext4 -o nosuid,nodev,noexec
+		data_dev=/dev/disk/by-label/trustme
 	fi
-	if ! mountpoint -q /mnt; then
-		echo "FATAL: failed to mount CML data partition on /mnt"
+	if ! mount "$data_dev" /mnt -t ext4 -o nosuid,nodev,noexec; then
+		echo "FATAL: failed to mount CML data partition ($data_dev) on /mnt"
 		exit 1
 	fi
 fi
