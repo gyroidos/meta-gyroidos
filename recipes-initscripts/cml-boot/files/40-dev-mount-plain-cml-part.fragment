@@ -3,10 +3,9 @@ if [ ! -e "/dev/tpm0" ]; then
 	mkdir -p /mnt/
 
 	# On slow storage / under load the udev by-label symlink for the data
-	# partition may not exist yet; wait for it before mounting (scan_devices
-	# nudges udev between attempts).
+	# partition may not exist yet; wait on it before mounting.
 	data_label_ready() { [ -e /dev/disk/by-label/gyroidos ] || [ -e /dev/disk/by-label/trustme ]; }
-	wait_for "data partition (LABEL=gyroidos/trustme)" 10 scan_devices data_label_ready
+	wait_for "data partition (LABEL=gyroidos/trustme)" 30 data_label_ready
 
 	if [ -e /dev/disk/by-label/gyroidos ]; then
 		data_dev=/dev/disk/by-label/gyroidos
