@@ -1,8 +1,8 @@
 # migration path: if modules/firmware have been successfully mounted, delete the legacy images
-if [ -n "$modules" ] && is_mounted /lib/modules; then
+if [ -n "${modules:-}" ] && is_mounted /lib/modules; then
 	rm -f /mnt/modules.img
 fi
 
-if [ -n "$firmware" ] && is_mounted /lib/firmware; then
+if [ -n "${firmware:-}" ] && is_mounted /lib/firmware; then
 	rm -f /mnt/firmware.img
 fi
