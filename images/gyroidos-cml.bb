@@ -43,7 +43,7 @@ do_rootfs:prepend () {
 	do_sign_guestos
 }
 
-# PKCS#11 (softhsm2) runtime state on the data partition, 'pkcs11' image only.
+# PKCS#11 (softhsm2) runtime state on the data partition, 'dev' image only.
 # Ships just the module-dir symlink, the softhsm2 config and an empty tokendir:
 # scd initializes its own token (label = container UUID) and wrapping key per
 # container at first pairing, so no token or key is provisioned at build time.

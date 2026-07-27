@@ -22,7 +22,7 @@ PACKAGE_INSTALL = "\
 	pv \
 "
 
-# PKCS#11 module scd dlopens at runtime; shipped only in the 'pkcs11' image.
+# PKCS#11 module scd dlopens at runtime; shipped only in the 'dev' image.
 # oe.utils.conditional (not vartrue) so an unreplaced "##GYROIDOS_PKCS11##"
 # placeholder degrades to the else-branch instead of failing every parse.
 PACKAGE_INSTALL:append = '${@oe.utils.conditional('GYROIDOS_PKCS11', 'y', ' softhsm', '', d)}'
