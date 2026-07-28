@@ -1,0 +1,170 @@
+From 59325f36876d877e054a676ac47eee14e3dabd77 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20Wei=C3=9F?= <michael.weiss@aisec.fraunhofer.de>
+Date: Wed, 21 Feb 2024 20:14:54 +0100
+Subject: [PATCH] ipvs: allow netlink configuration from non-initial
+ usernamespace
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Configure ipvs, e.g., with 'ipvsadm' using the corresponding genl
+netlink interface, this is currently resulting in in an EPERM. This
+is due to the use of GENL_ADMIN_PERM flag in 'ip_vs_ctl.c'.
+
+Similarily to other genl interfaces, we switch to the use of
+GENL_UNS_ADMIN_PERM flag which allows connection from non-initial
+user namespace. Thus, it would be feasible to configure ipvs using
+the genl interface also from within an unprivileged system container.
+
+Since, adding of new services and new dests are triggered from
+userspace, accounting for the corresponding memory allocations in
+ip_vs_new_dest() and ip_vs_add_service() is activated.
+
+We tested this by simply running some samples from "man ipvsadm"
+within an unprivileged user namespaced system container in GyroidOS.
+
+Signed-off-by: Michael Weiß <michael.weiss@aisec.fraunhofer.de>
+---
+ net/netfilter/ipvs/ip_vs_ctl.c | 36 +++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
+index 143a341bbc0a..d39120c64207 100644
+--- a/net/netfilter/ipvs/ip_vs_ctl.c
++++ b/net/netfilter/ipvs/ip_vs_ctl.c
+@@ -1080,7 +1080,7 @@ ip_vs_new_dest(struct ip_vs_service *svc, struct ip_vs_dest_user_kern *udest)
+ 			return -EINVAL;
+ 	}
+ 
+-	dest = kzalloc(sizeof(struct ip_vs_dest), GFP_KERNEL);
++	dest = kzalloc(sizeof(struct ip_vs_dest), GFP_KERNEL_ACCOUNT);
+ 	if (dest == NULL)
+ 		return -ENOMEM;
+ 
+@@ -1421,7 +1421,7 @@ ip_vs_add_service(struct netns_ipvs *ipvs, struct ip_vs_service_user_kern *u,
+ 		ret_hooks = ret;
+ 	}
+ 
+-	svc = kzalloc(sizeof(struct ip_vs_service), GFP_KERNEL);
++	svc = kzalloc(sizeof(struct ip_vs_service), GFP_KERNEL_ACCOUNT);
+ 	if (svc == NULL) {
+ 		IP_VS_DBG(1, "%s(): no memory\n", __func__);
+ 		ret = -ENOMEM;
+@@ -4139,98 +4139,98 @@ static const struct genl_small_ops ip_vs_genl_ops[] = {
+ 	{
+ 		.cmd	= IPVS_CMD_NEW_SERVICE,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_SET_SERVICE,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_DEL_SERVICE,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_GET_SERVICE,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_get_cmd,
+ 		.dumpit	= ip_vs_genl_dump_services,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_NEW_DEST,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_SET_DEST,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_DEL_DEST,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_GET_DEST,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.dumpit	= ip_vs_genl_dump_dests,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_NEW_DAEMON,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_daemon,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_DEL_DAEMON,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_daemon,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_GET_DAEMON,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.dumpit	= ip_vs_genl_dump_daemons,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_SET_CONFIG,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_GET_CONFIG,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_get_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_GET_INFO,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_get_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_ZERO,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ 	{
+ 		.cmd	= IPVS_CMD_FLUSH,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags	= GENL_ADMIN_PERM,
++		.flags	= GENL_UNS_ADMIN_PERM,
+ 		.doit	= ip_vs_genl_set_cmd,
+ 	},
+ };
+-- 
+2.39.2
+
