@@ -5,6 +5,10 @@ HOMEPAGE = "https://www.kernel.org"
 
 SRC_URI = "git://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git;protocol=https;name=machine;branch=linux-rolling-lts"
 
+SRC_URI += "\
+        file://lts/0001-ipvs-allow-netlink-configuration-from-non-initial-us.patch \
+"
+
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 include linux-logo.inc
