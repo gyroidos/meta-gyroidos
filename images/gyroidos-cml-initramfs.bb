@@ -66,7 +66,7 @@ IMAGE_ROOTFS_SIZE = "4096"
 
 IMAGE_NAME_SUFFIX=""
 
-do_rootfs[depends] += "virtual/kernel:do_shared_workdir gyroidos-cml-modules:do_image_complete gyroidos-cml-firmware:do_image_complete"
+do_rootfs[depends] += "virtual/kernel:do_shared_workdir"
 KERNELVERSION="$(cat "${STAGING_KERNEL_BUILDDIR}/kernel-abiversion")"
 
 # In development builds, a debugging shell is available on tty12 for debugging purposes
@@ -127,7 +127,7 @@ cleanup_debug_files () {
         rm -f ${IMAGE_ROOTFS}/usr/lib/.debug/libprotoc.so.*
 }
 
-hash_modules_firmware () {
+do_hash_modules_firmware () {
 	# modules.img
 	if [ ! -f "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs" ]; then
 		bbfatal "${DEPLOY_DIR_IMAGE}/gyroidos-cml-modules-${MACHINE}.squashfs does not exist. Hash can not be calculated. Image will not be bootable."
@@ -157,6 +157,25 @@ hash_modules_firmware () {
 	fi
 }
 
+# The hashes above bind this initramfs to the modules/firmware images from the
+# same build. The squashfs images are not bit-reproducible (mksquashfs, plus
+# non-deterministic IMA signatures in the firmware image), so a signature-
+# identical rebuild of those images can change their bytes. If this step lived
+# in do_rootfs, a stamp/sstate-restored do_rootfs would keep a stale hash while
+# the freshly-built squashfs on disk differs -> unbootable image.
+#
+# It therefore runs as a dedicated [nostamp] task that ALWAYS re-executes over
+# the actually-deployed squashfs. The image-packaging tasks are also marked
+# [nostamp] so the freshly computed hashes are re-cpio'd into and re-deployed
+# with the final initramfs. Only these lightweight steps repeat every build;
+# the expensive do_rootfs (package installation) is still served from cache.
+do_hash_modules_firmware[depends] += "gyroidos-cml-modules:do_image_complete gyroidos-cml-firmware:do_image_complete"
+do_hash_modules_firmware[nostamp] = "1"
+addtask do_hash_modules_firmware after do_rootfs before do_image
+
+do_image[nostamp] = "1"
+do_image_complete[nostamp] = "1"
+
 install_ssh_key() {
 	bbnote "Installing ${DEV_SSH_PUBKEY} as authorized_keys for sshd"
 	install -d -m 0700 "${IMAGE_ROOTFS}/etc/ssh"
@@ -169,7 +188,6 @@ ROOTFS_POSTPROCESS_COMMAND:append = " update_modules_dep; "
 ROOTFS_POSTPROCESS_COMMAND:append = " update_hostname; "
 ROOTFS_POSTPROCESS_COMMAND:append = " cleanup_boot; "
 ROOTFS_POSTPROCESS_COMMAND:append = " install_ima_cert; "
-ROOTFS_POSTPROCESS_COMMAND:append = " hash_modules_firmware; "
 
 # protobuf debug symbols are huge >100M, remove this from initramfs
 ROOTFS_POSTPROCESS_COMMAND:append = '${@oe.utils.vartrue('DEVELOPMENT_BUILD', " cleanup_debug_files; ", "",d)}'
