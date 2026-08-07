@@ -69,11 +69,12 @@ do_compile:prepend () {
 }
 
 do_compile () {
-	echo "#!/bin/sh" > ${B}/init
-	# use ls to ensure that fragments are assembled in correct order
-	for f in $(ls ${B}/*.fragment); do
-		echo "\n# $(basename $f)" >> ${B}/init
-		cat $f >> ${B}/init
+	echo "#!/bin/sh" > "${B}/init"
+	echo "set -eu" >> "${B}/init"
+	# Assemble fragments in order
+	find "${B}" -maxdepth 1 -name '*.fragment' | sort | while IFS= read -r f ; do
+		printf '\n# %s\n' "$(basename "$f")" >> "${B}/init"
+		cat "$f" >> "${B}/init"
 	done
 }
 

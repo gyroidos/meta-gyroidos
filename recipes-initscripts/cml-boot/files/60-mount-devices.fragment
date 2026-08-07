@@ -1,48 +1,70 @@
-# check if data is already mounted by debugging feature or fstab
-mountpoint /data
-if [ $? -ne 0 ]; then
-	mount -o bind,nosuid,nodev,noexec /mnt/userdata /data
+mkdir -p /data
+wait_for "/mnt/userdata (CML data partition on /mnt)" 30 test -d /mnt/userdata
+
+# bind onto /data unless a debugging feature (fragment 51) or fstab already did
+if ! is_mounted /data; then
+	if ! mount -o bind,nosuid,nodev,noexec /mnt/userdata /data; then
+		echo "FATAL: failed to bind-mount /mnt/userdata on /data"
+		exit 1
+	fi
 fi
 
-# data partition is now mounted
-# find module/firmware image in guestos store and mount
-modules=$(find /data/cml/operatingsystems -name modules.img -exec sh -c 'printf "%s  %s\n" "$0" "$1" | sha256sum -c - >/dev/null 2>&1' "$(cat /etc/modules.hash)" {} \; -print -quit)
-if [ -z "$modules" ]; then
-	echo "FATAL: no modules.img matching /etc/modules.hash under /data/cml/operatingsystems"
+# Locate + loop-mount the modules/firmware image from the guestos store.
+GUESTOS_STORE="/data/cml/operatingsystems"
+
+# Echo the path of the first image named $1 whose sha256 matches the trusted
+# digest in $2 (a bare 64-char hex + newline), or return 1 if none matches.
+find_verified_image() {
+	_expected=""
+	read -r _expected < "$2" 2>/dev/null || true
+	for _cand in "$GUESTOS_STORE"/*/"$1"; do
+		[ -f "$_cand" ] || continue		# skip the unexpanded glob / non-files
+		_sum="$(sha256sum "$_cand")" || continue
+		if [ "${_sum%% *}" = "$_expected" ]; then	# strip "  filename" (no `cut`)
+			printf '%s\n' "$_cand"
+			return 0
+		fi
+	done
+	return 1
+}
+
+if ! modules="$(find_verified_image modules.img /etc/modules.hash)" || [ -z "$modules" ]; then
+	echo "FATAL: no modules.img in $GUESTOS_STORE matches /etc/modules.hash"
 	exit 1
 fi
-mount -o loop,nosuid,noexec $modules /lib/modules
-if [ $? -ne 0 ]; then
-	exit
+mkdir -p /lib/modules
+if ! mount -o loop,nosuid,noexec "$modules" /lib/modules; then
+	echo "FATAL: failed to loop-mount $modules on /lib/modules"
+	exit 1
 fi
 
-firmware=$(find /data/cml/operatingsystems -name firmware.img -exec sh -c 'printf "%s  %s\n" "$0" "$1" | sha256sum -c - >/dev/null 2>&1' "$(cat /etc/firmware.hash)" {} \; -print -quit)
-if [ -z "$firmware" ]; then
-	echo "FATAL: no firmware.img matching /etc/firmware.hash under /data/cml/operatingsystems"
+if ! firmware="$(find_verified_image firmware.img /etc/firmware.hash)" || [ -z "$firmware" ]; then
+	echo "FATAL: no firmware.img in $GUESTOS_STORE matches /etc/firmware.hash"
 	exit 1
 fi
-mount -o loop,nosuid,noexec $firmware /lib/firmware
-if [ $? -ne 0 ]; then
-	exit
+mkdir -p /lib/firmware
+if ! mount -o loop,nosuid,noexec "$firmware" /lib/firmware; then
+	echo "FATAL: failed to loop-mount $firmware on /lib/firmware"
+	exit 1
 fi
 
 # create logs directory
 mkdir -p /data/logs
 
-#now modules partition is mounted
-echo "Waiting for devices"
-for i in {1..4}; do
-	echo -n "."
-	scan_devices
-done
-
-mount -a
+# reload udev
+udevadm control --reload
+# best-effort: fstab has optional entries (e.g. efivarfs on non-EFI) that are allowed to fail
+mount -a || true
 
 mkdir -p /var/volatile/tmp
 
 for suffix in conf sig cert; do
-	if [ ! -f "/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix" ]; then
-		cp /data/cml/containers_templates/00000000-0000-0000-0000-000000000000.$suffix /data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix
+	c0_dst="/data/cml/containers/00000000-0000-0000-0000-000000000000.$suffix"
+	if [ ! -f "$c0_dst" ]; then
+		if ! cp -a "/data/cml/containers_templates/00000000-0000-0000-0000-000000000000.$suffix" "$c0_dst"; then
+			echo "FATAL: failed to install c0 container template ($suffix)"
+			exit 1
+		fi
 	fi
 done
 
