@@ -20,42 +20,26 @@ inherit native
 SSTATE_SKIP_CREATION = "1"
 
 PKI_KEY_SIZE ?= "4096"
+PKI_KEY_TYPE ?= "rsa:${PKI_KEY_SIZE}"
 
+# gen_dev_certs.sh owns all generation logic: serialization (genlock),
+# idempotence, atomic publish and the derived exports (kernel module
+# signing key, PK.cer). The ssig PKI normally already exists from
+# pki-bootstrap's BuildStarted handler (created before task signatures were
+# computed, see pki-bootstrap.bbclass). This task is the fallback for it,
+# the anchor for the [depends] ordering in p11-signing.bbclass, and the
+# only place the UEFI platform keys are generated: those need efitools,
+# which is staged into this recipe's sysroot (efitools-native via the BSP
+# bbappend) but unavailable to the event handler on the host PATH.
+# Deliberately a shell task, not python: BSP layers append shell fragments
+# to it (e.g. meta-gyroidos-nxp).
 do_compile() {
-    # Serialize across multiconfigs: ${TEST_CERT_DIR} is shared (TOPDIR-scoped),
-    # so a parallel mc's pki-native:do_compile would otherwise race here.
-    # flock makes the second invocation BLOCK until the first finishes, then the
-    # .generated stamp lets it skip without redoing work — previously the second
-    # invocation returned fake success and downstream consumers ran before certs existed.
-    (
-        flock 9
-        if [ ! -f "${TEST_CERT_DIR}/.generated" ]; then
-            export DO_PLATFORM_KEYS="${PKI_UEFI_KEYS}"
-            export KEY_SIZE="${PKI_KEY_SIZE}"
-            bash "${PROVISIONING_DIR}/gen_dev_certs.sh" "${TEST_CERT_DIR}"
-            if [ ! -d "${TEST_CERT_DIR}/certs" ]; then
-                mkdir -p "${TEST_CERT_DIR}/certs"
-            fi
-            openssl x509 -in "${TEST_CERT_DIR}/ssig_subca.cert" -outform DER -out "${TEST_CERT_DIR}/certs/signing_key.x509"
-            if [ -f "${TEST_CERT_DIR}/ssig_subca.key" ]; then
-                    cp "${TEST_CERT_DIR}/ssig_subca.key" "${TEST_CERT_DIR}/certs/signing_key.pem"
-                    openssl x509 -in "${TEST_CERT_DIR}/ssig_subca.cert" -outform PEM >> "${TEST_CERT_DIR}/certs/signing_key.pem"
-            fi
-            if [ -f "${TEST_CERT_DIR}/PK.crt" ]; then
-                openssl x509 -in "${TEST_CERT_DIR}/PK.crt" -outform DER -out "${TEST_CERT_DIR}/PK.cer"
-            fi
-            touch "${TEST_CERT_DIR}/.generated"
-        fi
-    ) 9>"${TEST_CERT_DIR}.lock"
+    DO_PLATFORM_KEYS="${PKI_UEFI_KEYS}" bash "${PROVISIONING_DIR}/gen_dev_certs.sh" "${TEST_CERT_DIR}" "${PKI_KEY_TYPE}"
 }
 
 do_clean() {
-    if [ -f "${TEST_CERT_DIR}.lock" ]; then
-        rm "${TEST_CERT_DIR}.lock"
-    fi
-    if [ -d ${TEST_CERT_DIR} ]; then
-        rm -r ${TEST_CERT_DIR}
-    fi
+    rm -f "${TEST_CERT_DIR}.genlock" "${TEST_CERT_DIR}.lock"
+    rm -rf "${TEST_CERT_DIR}" "${TEST_CERT_DIR}".tmp.*
     if [ -n "`ls ${ENROLLMENT_DIR}/certificates/ | egrep *.txt*`" ]; then
         for txt in ${ENROLLMENT_DIR}/certificates/*.txt*; do
             rm ${txt}
