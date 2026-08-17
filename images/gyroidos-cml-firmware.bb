@@ -25,7 +25,7 @@ move_firmware() {
 	if is_pkcs11_uri ${FIRMWARE_SIG_CERT}; then
 		certpath_base="${WORKDIR}/FIRMWARE_SIG_CERT"
 		extract_cert "${FIRMWARE_SIG_CERT}" "${certpath_base}.pem"
-		openssl x509 -in "${certpath_base}.pem" -outform DER -out "${certpath_base}.der"
+		convert_cert "${certpath_base}.pem" "${certpath_base}.der" der
 		certpath="${certpath_base}.der"
 	fi
 

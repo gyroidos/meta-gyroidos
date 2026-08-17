@@ -94,13 +94,13 @@ install_ima_cert () {
 
 	if is_pkcs11_uri ${FIRMWARE_SIG_CERT}; then
 		extract_cert "${FIRMWARE_SIG_CERT}" "${WORKDIR}/FIRMWARE_SIG_CERT.pem"
-		openssl x509 -in "${WORKDIR}/FIRMWARE_SIG_CERT.pem" -outform DER -out "${IMAGE_ROOTFS}/etc/keys/x509_ima.der"
+		convert_cert "${WORKDIR}/FIRMWARE_SIG_CERT.pem" "${IMAGE_ROOTFS}/etc/keys/x509_ima.der" der
 	else
 		if ! [ -f "${FIRMWARE_SIG_CERT}" ];then
 			bbfatal_log "IMA certificate not present at ${GUESTOS_SIG_ROOT_CERT}."
 			exit 1
 		fi
-		openssl x509 -in "${FIRMWARE_SIG_CERT}" -outform DER -out "${IMAGE_ROOTFS}/etc/keys/x509_ima.der"
+		convert_cert "${FIRMWARE_SIG_CERT}" "${IMAGE_ROOTFS}/etc/keys/x509_ima.der" der
 	fi
 }
 

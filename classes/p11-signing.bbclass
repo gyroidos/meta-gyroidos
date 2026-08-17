@@ -52,6 +52,14 @@ extract_cert () {
         p11tool --provider ${PKCS11_MODULE_PATH} --export-chain $1 > $2
 }
 
+# convert_cert <in> <out> <pem|der>
+# Extracts the first certificate of a PEM (chain) file, converted to the
+# given format. The single funnel for cert format conversions in recipes, so
+# openssl invocation details live in one place.
+convert_cert () {
+	openssl x509 -in "$1" -outform "$3" -out "$2"
+}
+
 is_pkcs11_uri () {
 	if [ "${1#pkcs11:}" != "${1}" ]; then
 	    return 0 # this is TRUE in shell script. trust|me i know
@@ -84,3 +92,21 @@ def pki_native_dep(d):
 do_rootfs[depends]   += "${@pki_native_dep(d)}"
 do_deploy[depends]   += "${@pki_native_dep(d)}"
 do_install[depends]  += "${@pki_native_dep(d)}"
+
+# Tie cert/key file content into the sstate hash so that a workspace wipe
+# followed by cert regeneration invalidates cached signed artifacts instead
+# of silently serving binaries signed with the previous CA.
+# Also used by consumers with signing variables outside P11_SIGNING_VARS
+# (e.g. the kernel module signing key in linux-gyroidos.inc).
+def signing_file_checksums(d, varnames=None):
+    paths = set()
+    for v in (varnames or d.getVar('P11_SIGNING_VARS') or '').split():
+        # a variable may hold a list of paths, e.g. a GUESTOS_SIG_CERT chain
+        for val in (d.getVar(v) or '').split():
+            if not val.startswith('pkcs11:'):
+                paths.add(val)
+    return ' '.join('%s:True' % p for p in sorted(paths))
+
+do_rootfs[file-checksums]   += "${@signing_file_checksums(d)}"
+do_deploy[file-checksums]   += "${@signing_file_checksums(d)}"
+do_install[file-checksums]  += "${@signing_file_checksums(d)}"

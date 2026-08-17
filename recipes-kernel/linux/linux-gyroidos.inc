@@ -52,6 +52,23 @@ KERNEL_SYSTEM_TRUSTED_KEYS ?= ""
 
 inherit p11-signing
 
+# These two are not in P11_SIGNING_VARS, so the file-checksums hooks in
+# p11-signing.bbclass do not cover them: modules are signed during
+# modules_install and the verification cert is linked into vmlinux, but
+# neither task signature would reflect the key file content — a regenerated
+# PKI would leave sstate serving artifacts signed with the previous certs.
+# Flagging do_configure cascades to all downstream tasks.
+do_configure[file-checksums] += "${@signing_file_checksums(d, 'KERNEL_MODULE_SIG_KEY_CERT KERNEL_SYSTEM_TRUSTED_KEYS')}"
+
+# The kernel consumes the PKI before do_install: do_compile embeds the
+# CONFIG_MODULE_SIG_KEY cert into vmlinux and signs modules with its key,
+# but p11-signing only orders do_rootfs/do_deploy/do_install behind
+# pki-native:do_compile. In dev builds the pki-bootstrap handler masks this
+# by generating at BuildStarted; with a seeded release PKI or without the
+# handler, do_compile could race the PKI producer. Order do_configure (and
+# thereby everything downstream) explicitly behind it.
+do_configure[depends] += "${@pki_native_dep(d)}"
+
 kernel_do_configure:prepend() {
 	# replace or add the config option depending of if it already exists in .config
 	# sed command reference: https://superuser.com/a/976712
@@ -83,4 +100,12 @@ kernel_do_configure:append() {
 		echo 'CONFIG_CMDLINE_BOOL=y' >> ${B}/.config
 	fi
 	echo 'CONFIG_CMDLINE="${GYROIDOS_KERNEL_CMDLINE}"' >> ${B}/.config
+
+	# Re-resolve the config after the edits above: CMDLINE_BOOL=y makes
+	# dependent symbols newly visible (CMDLINE_OVERRIDE on x86, CMDLINE_FORCE/
+	# CMDLINE_EXTEND elsewhere), and these were not in the .config when
+	# kernel_do_configure ran olddefconfig. Left unresolved, do_compile's
+	# syncconfig would prompt for them interactively and die with
+	# 'Error in reading or end of file'.
+	eval ${KERNEL_CONFIG_COMMAND}
 }

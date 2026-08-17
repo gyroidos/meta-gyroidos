@@ -1,4 +1,6 @@
-include linux-gyroidos.inc
+# require, not include: the entire PKI/signing wiring of the kernel hangs
+# off this file — a silent include failure must be a parse error instead.
+require linux-gyroidos.inc
 
 LINUX_VERSION_EXTENSION = "-gyroidos"
 
