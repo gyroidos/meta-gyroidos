@@ -1,0 +1,23 @@
+## move from initramfs to tmpfs root to allow pivot_root
+## to work for container start
+
+mount /proc
+
+CMLROOTFS_SIZE=512M
+
+ROOTFS_TYPE=$(awk '$2 == "/" { print $3; exit }' /proc/mounts)
+
+# we mount proc later on in fragments again for both cases
+umount /proc
+
+if [ "${ROOTFS_TYPE}" = "rootfs" ]; then
+	mkdir -p /cmlroot
+	mount -t tmpfs -o size="${CMLROOTFS_SIZE}",mode=755 tmpfs /cmlroot
+	cd /
+	for i in *; do
+		if [ "$i" != "cmlroot" ]; then
+			cp -a "$i" cmlroot/
+		fi
+	done
+	exec switch_root /cmlroot /init
+fi
