@@ -15,6 +15,7 @@ CML_MOUNT_PLAIN_DATAPART = "${@ oe.utils.vartrue('DEVELOPMENT_BUILD', True, oe.u
 SRC_URI = "\
 	file://ima_policy \
 	file://init_ascii \
+	file://00-move-initramfs-tmpfs.fragment \
 	file://10-cml-boot-script-early.fragment \
 	file://15-redirect-logtty.fragment \
 	file://20-setup.fragment \
