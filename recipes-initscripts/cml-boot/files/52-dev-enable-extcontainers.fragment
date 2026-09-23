@@ -1,1 +1,4 @@
-mount LABEL=containers -o nosuid,nodev,noexec /data/cml/containers
+# dev convenience: external containers fs is optional; do not abort the boot
+if ! mount LABEL=containers -o nosuid,nodev,noexec /data/cml/containers; then
+	echo "WARN: no external containers fs (LABEL=containers) mounted"
+fi
