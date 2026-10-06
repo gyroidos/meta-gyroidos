@@ -71,10 +71,10 @@ GUESTOS_SIG_CERT = "${TOPDIR}/test_certificates/ssig_cml.cert"
 GUESTOS_SIG_ROOT_CERT="${TOPDIR}/test_certificates/ssig_rootca.cert"
 #GUESTOS_SIG_ROOT_CERT="pkcs11:serial=SERIAL;object=ssig_rootca
 
-FIRMWARE_SIG_KEY="${TEST_CERT_DIR}/ssig_subca.key"
-FIRMWARE_SIG_CERT="${TEST_CERT_DIR}/ssig_subca.cert"
-#FIRMWARE_SIG_KEY="pkcs11:serial=SERIAL;object=ssig_subca"
-#FIRMWARE_SIG_CERT="pkcs11:serial=SERIAL;object=ssig_subca"
+FIRMWARE_SIG_KEY="${TEST_CERT_DIR}/ssig.key"
+FIRMWARE_SIG_CERT="${TEST_CERT_DIR}/ssig.cert"
+#FIRMWARE_SIG_KEY="pkcs11:serial=SERIAL;object=ssig"
+#FIRMWARE_SIG_CERT="pkcs11:serial=SERIAL;object=ssig"
 
 SECURE_BOOT_SIG_KEY="${TOPDIR}/test_certificates/ssig_subca.key"
 SECURE_BOOT_SIG_CERT="${TOPDIR}/test_certificates/ssig_subca.cert"
