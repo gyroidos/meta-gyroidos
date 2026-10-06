@@ -1,13 +1,31 @@
-function scan_devices {
-	udevadm control --reload
-	udevadm trigger --type=subsystems --action=add
-	udevadm settle
-	sleep 4
-	udevadm trigger --type=devices --action=add
-	udevadm settle
+# Bounded readiness wait for a condition -- typically a device node / by-label
+# symlink that udevd creates once the device's uevent arrives. Polls once per
+# second and aborts the boot loudly on timeout, rather than re-triggering udev
+# or assuming the device shows up after a fixed number of tries.
+# Arguments:
+#   DESCRIPTION - human-readable name of what we wait for (used in messages)
+#   TIMEOUT_S   - give up and `exit 1` after this many seconds
+#   CONDITION.. - command polled as the readiness check, e.g. `test -e /dev/x`
+wait_for() {
+	_what="$1"; _timeout="$2"; shift 2; _waited=0
+	while ! "$@"; do
+		if [ "$_waited" -ge "$_timeout" ]; then
+			echo "FATAL: timed out waiting for $_what"
+			exit 1
+		fi
+		sleep 1
+		_waited=$((_waited + 1))
+	done
 }
 
-cat /etc/init_ascii
+# is_mounted DIR -- true if DIR is currently a mount point. Uses /proc/mounts so
+# it does not depend on the `mountpoint` applet, which is not built into this
+# image's busybox.
+is_mounted() {
+	grep -qF " $1 " /proc/mounts
+}
+
+cat /etc/init_ascii || true
 
 echo "-- cml init log on $LOGTTY [ready]"
 echo "-- waiting for c0 to start ..."

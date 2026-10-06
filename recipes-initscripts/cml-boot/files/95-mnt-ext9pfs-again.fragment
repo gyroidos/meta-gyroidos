@@ -1,4 +1,5 @@
 ##############DBG###################
 echo "[initramfs] Mounting /data/cmld 9pfs"
-mount -t 9p -o trans=virtio,version=9p2000.L extcmld /data/extcmld
+# dev: the 9p backend is optional; note its absence rather than aborting the boot
+mount -t 9p -o trans=virtio,version=9p2000.L extcmld /data/extcmld || echo "[initramfs] extcmld 9pfs not available"
 ####################################

@@ -1,23 +1,32 @@
-## move from initramfs to tmpfs root to allow pivot_root
-## to work for container start
+## Containers are started via pivot_root, which cannot be called while the
+## root filesystem is the initial ramdisk (rootfs) on kernels before 7.0.
+## Only on such kernels, relocate the CML root into a tmpfs via switch_root.
+## On kernel >= 7.0 pivot_root works on rootfs directly: skip the copy, it
+## would only double peak RAM usage and slow down boot.
+##
+## /init only ever runs as the initramfs init, and the single way it runs
+## twice is the switch_root below -- so the marker created in the new root
+## is what tells the second invocation to proceed with the normal boot.
 
-mount /proc
-
-CMLROOTFS_SIZE=512M
-
-ROOTFS_TYPE=$(awk '$2 == "/" { print $3; exit }' /proc/mounts)
-
-# we mount proc later on in fragments again for both cases
-umount /proc
-
-if [ "${ROOTFS_TYPE}" = "rootfs" ]; then
+KMAJ="$(uname -r)"
+KMAJ="${KMAJ%%.*}"
+if [ "$KMAJ" -lt 7 ] && [ ! -e /.cml-root-relocated ]; then
 	mkdir -p /cmlroot
-	mount -t tmpfs -o size="${CMLROOTFS_SIZE}",mode=755 tmpfs /cmlroot
-	cd /
-	for i in *; do
-		if [ "$i" != "cmlroot" ]; then
-			cp -a "$i" cmlroot/
+	# no size= on purpose: tmpfs allocates lazily and defaults to a 50%-of-RAM
+	# cap. The copy needs the content in RAM twice regardless, so an explicit
+	# (fixed or computed) cap only adds a failure mode for large images.
+	if ! mount -t tmpfs -o mode=755 tmpfs /cmlroot; then
+		echo "FATAL: cannot mount the tmpfs for the relocated root"
+		exit 1
+	fi
+	for _entry in /*; do
+		case "$_entry" in /cmlroot) continue ;; esac
+		# an incomplete root must never be switch_root'ed into
+		if ! cp -a "$_entry" /cmlroot/; then
+			echo "FATAL: copying $_entry into the tmpfs root failed"
+			exit 1
 		fi
 	done
+	: > /cmlroot/.cml-root-relocated
 	exec switch_root /cmlroot /init
 fi

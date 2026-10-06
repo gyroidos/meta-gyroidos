@@ -1,27 +1,33 @@
 if [ -e "/dev/tpm0" ]; then
-	echo "$(blkid)"
-	echo "Waiting for '/dev/disk/by-label/boot' "
-	while [ ! -e /dev/disk/by-label/boot ] && [ ! -e /dev/disk/by-label/BOOT ];do
-		echo -n "."
-		scan_devices
-	done
+	do_otf=""
+	src_dev=""
 
-	CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/gyroidos))
-	if [ "${CRYPTO_HDD}" == "" ];then
-		CRYPTO_HDD=$(basename $(readlink /dev/disk/by-label/trustme))
+	blkid
+	boot_label_ready() { [ -e /dev/disk/by-label/boot ] || [ -e /dev/disk/by-label/BOOT ]; }
+	wait_for "boot partition label" 30 boot_label_ready
+
+	# an absent label is expected (e.g. an already-encrypted partition exposes
+	# no fs label); an empty CRYPTO_HDD then means "derive partition 2" below.
+	CRYPTO_HDD="$(readlink /dev/disk/by-label/gyroidos 2>/dev/null || true)"
+	if [ -z "$CRYPTO_HDD" ]; then
+		CRYPTO_HDD="$(readlink /dev/disk/by-label/trustme 2>/dev/null || true)"
 	fi
-	BOOT_HDD=$(basename $(readlink /dev/disk/by-label/boot))
+	CRYPTO_HDD="${CRYPTO_HDD##*/}"
+
+	BOOT_HDD="$(readlink /dev/disk/by-label/boot 2>/dev/null || true)"
+	BOOT_HDD="${BOOT_HDD##*/}"
 
 	echo "CRYPTO_HDD: ${CRYPTO_HDD}"
 	echo "BOOT_HDD: ${BOOT_HDD}"
 
-	if [ "${BOOT_HDD}" == "" ];then
-		BOOT_HDD=$(basename $(readlink /dev/disk/by-label/BOOT))
+	if [ -z "$BOOT_HDD" ]; then
+		BOOT_HDD="$(readlink /dev/disk/by-label/BOOT 2>/dev/null || true)"
+		BOOT_HDD="${BOOT_HDD##*/}"
 	fi
 
 	# check if crypto hdd is unencrypted during setup
-	if [ "${CRYPTO_HDD}" == "" ]; then
-		CRYPTO_HDD=${BOOT_HDD::-1}2
+	if [ -z "${CRYPTO_HDD}" ]; then
+		CRYPTO_HDD="${BOOT_HDD%?}2"
 	else
 		echo "${CRYPTO_HDD} is not encrypted. Will do otf."
 		do_otf="do"
@@ -31,35 +37,21 @@ if [ -e "/dev/tpm0" ]; then
 	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d) for disk encryption of ${CRYPTO_HDD}"
 	tpm2d -n &
 
-	if [ ! -S /run/socket/cml-tpm2d-control ]; then
-		echo "Waiting for tpm2d's control interface"
-	fi
-	while [ ! -S /run/socket/cml-tpm2d-control ]; do
-		echo -n "."
-		sleep 1
-	done
+	wait_for "tpm2d control socket" 30 test -S /run/socket/cml-tpm2d-control
 
 	# here optionally it could be asked for a password
-	tpm2_control dmcrypt_setup /dev/${CRYPTO_HDD}
+	tpm2_control dmcrypt_setup "/dev/${CRYPTO_HDD}"
 
-	while [ ! -e /dev/mapper/${CRYPTO_HDD} ]; do
-		echo Waiting for /dev/mapper/${CRYPTO_HDD}
-		sleep 1
-	done
+	wait_for "/dev/mapper/${CRYPTO_HDD}" 30 test -e "/dev/mapper/${CRYPTO_HDD}"
 
 	if [ "$do_otf" != "do" ]; then
-		mount /dev/mapper/${CRYPTO_HDD} /mnt
-		if [ $? -ne 0 ]; then
-			(cd /dev && ln -s ${CRYPTO_HDD} ${CRYPTO_HDD}-legacy)
-			tpm2_control dmcrypt_setup --key_len 32 /dev/${CRYPTO_HDD}-legacy
-			while [ ! -e /dev/mapper/${CRYPTO_HDD}-legacy ]; do
-				echo Waiting for /dev/mapper/${CRYPTO_HDD}-legacy
-				sleep 1
-			done
-			mount /dev/mapper/${CRYPTO_HDD}-legacy /mnt
-			if [ $? -ne 0 ]; then
+		if ! mount "/dev/mapper/${CRYPTO_HDD}" /mnt; then
+			(cd /dev && ln -s "${CRYPTO_HDD}" "${CRYPTO_HDD}-legacy")
+			tpm2_control dmcrypt_setup --key_len 32 "/dev/${CRYPTO_HDD}-legacy"
+			wait_for "/dev/mapper/${CRYPTO_HDD}-legacy" 30 test -e "/dev/mapper/${CRYPTO_HDD}-legacy"
+			if ! mount "/dev/mapper/${CRYPTO_HDD}-legacy" /mnt; then
 				echo "ERROR: Encryption failed! Reboot System and retry!" > /dev/console
-				exit 1;
+				exit 1
 			fi
 			umount /mnt
 			echo "-- AES-128 encryption detected! Re-encrypt with full NVindex len to AES-256"
@@ -69,27 +61,24 @@ if [ -e "/dev/tpm0" ]; then
 	fi
 
 	# if crypto hdd is unencrypted or legacy mode, initially encrypt it here
-	if [ "$do_otf" == "do" ]; then
+	if [ "$do_otf" = "do" ]; then
 		exec > /dev/console
 		exec 2>&1
 
-		size=$(fdisk -l /dev/${CRYPTO_HDD} | head -n1 | awk '{print $5}')
+		size="$(fdisk -l "/dev/${CRYPTO_HDD}" | head -n1 | awk '{print $5}')"
 		echo "-- Doing on-the-fly encryption of ${src_dev} size=${size} ..."
-		# dd if=/dev/${CRYPTO_HDD} bs=512 status=none | pv -s ${size} | dd of=/dev/mapper/${CRYPTO_HDD} bs=512
-		cat ${src_dev} | pv -s ${size} > /dev/mapper/${CRYPTO_HDD}
-		if [ $? -ne 0 ]; then
+		if ! pv -s "${size}" "${src_dev}" > "/dev/mapper/${CRYPTO_HDD}"; then
 			echo "-- FATAL: Encryption failed! Restart System Setup!"
-			exit 1;
+			exit 1
 		fi
 		echo "-- Encryption of ${CRYPTO_HDD} done!"
 
-		exec > /dev/$LOGTTY
+		exec > "/dev/$LOGTTY"
 		exec 2>&1
 
-		mount /dev/mapper/${CRYPTO_HDD} /mnt
-		if [ $? -ne 0 ]; then
+		if ! mount "/dev/mapper/${CRYPTO_HDD}" /mnt; then
 			echo "ERROR: Encryption failed! Reboot System and retry!" > /dev/console
-			exit 1;
+			exit 1
 		fi
 	fi
 
