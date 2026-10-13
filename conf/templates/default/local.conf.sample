@@ -27,6 +27,18 @@ USER_CLASSES ?= "buildstats"
 
 PATCHRESOLVE = "noop"
 
+# Delete each recipe's WORKDIR as soon as its build completes to keep disk
+# usage down. Task logs (WORKDIR/temp) are always kept (rm_work's default
+# RM_WORK_EXCLUDE_ITEMS). Excluded recipes, whose WORKDIR contents are
+# consumed after the build:
+#   cml-boot     - CI archives tmp/work/**/cml-boot/**/image/init
+#   gyroidos-cml - CI archives tmp/work/**/gyroidos-cml/**/rootfs/userdata/cml/device.conf
+#   cmld         - VM-container-tests.sh --branch inspects tmp/work/core*/cmld/git*/git
+# To inspect another recipe's WORKDIR, add RM_WORK_EXCLUDE += "<recipe>" to
+# your conf/local.conf and rebuild it: bitbake -c cleansstate <recipe> && bitbake <recipe>
+INHERIT += "rm_work"
+RM_WORK_EXCLUDE += "cml-boot gyroidos-cml cmld"
+
 BB_DISKMON_DIRS ??= "\
     STOPTASKS,${TMPDIR},1G,100K \
     STOPTASKS,${DL_DIR},1G,100K \
