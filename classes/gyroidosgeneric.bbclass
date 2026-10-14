@@ -135,7 +135,8 @@ deploy_gyroidosimage () {
 	ln -sf "../${IMAGE_LINK_NAME}.wic.bmap" "${GYROIDOS_IMAGE_OUT}/gyroidosimage.img.bmap"
 
 	# deploy rootfs contents for installer build
-	cp -r "${IMAGE_ROOTFS}" "${GYROIDOS_IMAGE_OUT}/gyroidos_datapartition"
+	# hardlinks instead of copies: same filesystem, content is final at this point
+	cp -al "${IMAGE_ROOTFS}" "${GYROIDOS_IMAGE_OUT}/gyroidos_datapartition"
 
-	cp -r "${GYROIDOS_IMAGE_OUT}" "${IMGDEPLOYDIR}"
+	cp -al "${GYROIDOS_IMAGE_OUT}" "${IMGDEPLOYDIR}"
 }
