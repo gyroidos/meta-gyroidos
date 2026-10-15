@@ -94,6 +94,14 @@ do_install() {
 	install -m 0755 ${WORKDIR}/ima_policy ${D}${sysconfdir}/ima_policy
 }
 
+inherit deploy
+
+# publish the assembled init for CI artifact collection
+do_deploy() {
+	install -D -m 0755 ${B}/init ${DEPLOYDIR}/cml-boot/init
+}
+addtask deploy after do_compile before do_build
+
 FILES:${PN} += " /init /dev ${sysconfdir}/init_ascii ${sysconfdir}/ima_policy"
 
 # Due to kernel dependency
