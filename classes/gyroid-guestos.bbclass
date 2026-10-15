@@ -21,13 +21,17 @@ IMAGE_INSTALL:append = " shadow"
 
 CONFIGS_OUT = "${B}/gyroidos-configs"
 
-IMAGE_POSTPROCESS_COMMAND:append = " do_sign_guestos; "
+# do_sign_guestos and do_deploy_guestos are hooked into IMAGE_POSTPROCESS_COMMAND
+# by gyroidos-signing.inc (sign, then deploy). Do not append do_sign_guestos
+# again here: a second run after deployment would modify files that
+# do_deploy_guestos has already hardlinked into IMGDEPLOYDIR.
 
 do_sign_guestos:append () {
     mkdir -p ${CONFIGS_OUT}
     mkdir -p ${CONFIGS_OUT}/container
 
-    cp ${CONTAINER_CONFIG} ${CONFIGS_OUT}/container
+    # install, not cp: never rewrite an existing, possibly hardlinked file in place
+    install -m 0644 ${CONTAINER_CONFIG} ${CONFIGS_OUT}/container/
     sed -i '/guest_os:*/c\guest_os: \"${PN}os\"' ${CONFIGS_OUT}/container/${CONTAINER_CONFIG_FILE}
     sed -i '/guestos_version:*/c\guestos_version: ${GYROIDOS_VERSION}' ${CONFIGS_OUT}/container/${CONTAINER_CONFIG_FILE}
 }

@@ -53,7 +53,8 @@ do_sign_guestos () {
 
         root_hash="$(cat ${B}/${IMAGE_LINK_NAME}.roothash)"
 
-        cp ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.squashfs ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.img
+        # hardlink the dereferenced squashfs (same filesystem, file is final)
+        cp -l -L ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.squashfs ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.img
         cp ${B}/${IMAGE_LINK_NAME}.hash ${GUESTS_OUT}/${OS_NAME}-${gyroidos_version}/root.hash.img
 
         python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
@@ -78,8 +79,13 @@ do_sign_guestos () {
 }
 
 do_deploy_guestos () {
-    cp -r "${GUESTS_OUT}" "${IMGDEPLOYDIR}"
+    # Guest images are large and final: hardlink them (same filesystem).
+    cp -al "${GUESTS_OUT}" "${IMGDEPLOYDIR}"
     if [ -n "${CONFIGS_OUT}" ]; then
+        # Container configs are tiny, so hardlinking saves nothing, but it
+        # would alias the deployed template to CONFIGS_OUT: any later in-place
+        # rewrite there (e.g. a re-run of do_sign_guestos) would silently
+        # corrupt the already-deployed, about-to-be-signed template. Copy.
         cp -r "${CONFIGS_OUT}" "${IMGDEPLOYDIR}"
     fi
 }
