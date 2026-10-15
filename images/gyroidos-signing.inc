@@ -79,8 +79,13 @@ do_sign_guestos () {
 }
 
 do_deploy_guestos () {
+    # Guest images are large and final: hardlink them (same filesystem).
     cp -al "${GUESTS_OUT}" "${IMGDEPLOYDIR}"
     if [ -n "${CONFIGS_OUT}" ]; then
-        cp -al "${CONFIGS_OUT}" "${IMGDEPLOYDIR}"
+        # Container configs are tiny, so hardlinking saves nothing, but it
+        # would alias the deployed template to CONFIGS_OUT: any later in-place
+        # rewrite there (e.g. a re-run of do_sign_guestos) would silently
+        # corrupt the already-deployed, about-to-be-signed template. Copy.
+        cp -r "${CONFIGS_OUT}" "${IMGDEPLOYDIR}"
     fi
 }
