@@ -37,7 +37,7 @@ if [ -e "/dev/tpm0" ]; then
 	echo "Starting TPM/TSS 2.0 Helper Daemon (tpm2d) for disk encryption of ${CRYPTO_HDD}"
 	tpm2d -n &
 
-	wait_for "tpm2d control socket" 30 test -S /run/socket/cml-tpm2d-control
+	wait_for "tpm2d control socket" 300 test -S /run/socket/cml-tpm2d-control
 
 	# here optionally it could be asked for a password
 	tpm2_control dmcrypt_setup "/dev/${CRYPTO_HDD}"
